@@ -1,12 +1,17 @@
 { pkgs, lib, ... }:
 
 {
-  home.packages = [
-    pkgs.htop
-    pkgs.fortune
-  ];
 
-  programs.git.enable = true;
+  programs.direnv  = {
+    enable = true;
+    enableNixDirenvIntegration = true;
+  };
+
+  programs.git = {
+    enable = true;
+    userEmail = "mwg2202@yahoo.com";
+    userName = "mwg2202";
+  };
 
   programs.neovim = {
     enable = true;
@@ -21,22 +26,26 @@
       tender-vim
       vim-commentary
       vim-nix
+      rust-vim
     ];
     extraConfig = ''
-	  set number relativenumber
-	  set nohlsearch
-      set tabstop=4
-      set shiftwidth=4
-      set expandtab
+	  set number relativenumber       " set line-numbers to be relative
+	  set nohlsearch                  " no highlight search
+      syntax enable                   " enable syntax highlighting
+      set mouse=a                     " recognize and enable mouse
 
-      let g:airline_powerlin_fonts=1
-      set termguicolors
-      syntax enable
-      colorscheme tender
-      let g:airline_theme = 'tender'
+      filetype plugin indent on       " automatic indention from file recognition
+      set tabstop=4                   " show existing tab with 4 spaces width
+      set shiftwidth=4                " when indenting with '>', use 4 spaces width
+      set expandtab                   " on pressing tab, insert 4 spaces
+
+      set termguicolors               " use terminal colors
+      let g:airline_powerlin_fonts=1  " set airline theme
+      colorscheme tender              " change the colorscheme
+      let g:airline_theme = 'tender'  " change the colorscheme used by airline
     '';
   };
-  
+
   programs.zsh = {
     enable = true;
     oh-my-zsh.enable = true;
@@ -63,7 +72,6 @@
     EDITOR = "nvim";
     VISUAL = "nvim";
   };
-  
   
   programs.home-manager.enable = true;
 }

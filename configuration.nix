@@ -46,8 +46,19 @@ in
   systemd.enableEmergencyMode = false;
 	
   ##########################
+  nix = {
+    package = pkgs.nixFlakes;
+    extraOptions = ''
+      experimental-features = nix-command flakes
+      keep-outputs = true
+      keep-derivations = true
+    '';
+  };
   time.timeZone = "US/Eastern";
   i18n.defaultLocale = "en_US.UTF-8";
+  environment.variables.LANGUAGE = "en_US.UTF-8";
+  environment.variables.LANG = "en_US.UTF-8";
+  environment.variables.LC_ALL = "en_US.UTF-8";
   programs.zsh.enable = true;
   environment.pathsToLink = ["/share/zsh"];
 }
