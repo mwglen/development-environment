@@ -54,6 +54,8 @@ in
       keep-derivations = true
     '';
   };
+  hardware.opengl.enable = true;
+  hardware.opengl.setLdLibraryPath = true;
   time.timeZone = "US/Eastern";
   i18n.defaultLocale = "en_US.UTF-8";
   environment.variables.LANGUAGE = "en_US.UTF-8";
@@ -61,4 +63,6 @@ in
   environment.variables.LC_ALL = "en_US.UTF-8";
   programs.zsh.enable = true;
   environment.pathsToLink = ["/share/zsh"];
+  virtualisation.docker.enable = true;
+  users.users.mwglen.extraGroups = ["docker"];
 }

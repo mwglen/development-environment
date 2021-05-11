@@ -1,6 +1,9 @@
 { pkgs, lib, ... }:
 
-{
+let
+  new-sh = pkgs.callPackage ./new-sh {};
+in {
+  home.packages = [ new-sh ];
 
   programs.direnv  = {
     enable = true;
@@ -71,6 +74,7 @@
   home.sessionVariables = {
     EDITOR = "nvim";
     VISUAL = "nvim";
+    NIXPKGS_ALLOW_UNFREE = 1;
   };
   
   programs.home-manager.enable = true;
