@@ -3,7 +3,7 @@
 let
   new-sh = pkgs.callPackage ./new-sh {};
 in {
-  home.packages = [ new-sh ];
+  home.packages = [ new-sh pkgs.pipenv ];
 
   programs.direnv  = {
     enable = true;
@@ -13,7 +13,7 @@ in {
   programs.git = {
     enable = true;
     userEmail = "mwg2202@yahoo.com";
-    userName = "mwg2202";
+    userName = "mwglen";
   };
 
   programs.neovim = {
@@ -30,10 +30,11 @@ in {
       vim-commentary
       vim-nix
       rust-vim
+      emmet-vim
     ];
     extraConfig = ''
-	  set number relativenumber       " set line-numbers to be relative
-	  set nohlsearch                  " no highlight search
+      set number relativenumber       " set line-numbers to be relative
+      set nohlsearch                  " no highlight search
       syntax enable                   " enable syntax highlighting
       set mouse=a                     " recognize and enable mouse
 
@@ -67,7 +68,10 @@ in {
     ];
     initExtra = ''
       unsetopt BEEP
-      export DISPLAY=$(cat /etc/resolv.conf | awk '/nameserver/ {print $2}'):0
+      source $HOME/.profile
+      eval "$(/home/mwglen/anaconda3/bin/conda shell.zsh hook)"
+      export LLVMENV_RUST_BINDING=1
+      source <(llvmenv zsh)
     '';
   };
 
