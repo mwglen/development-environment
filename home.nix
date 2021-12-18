@@ -2,8 +2,60 @@
 
 let
   new-sh = pkgs.callPackage ./new-sh {};
+  
+  # Used to link with drivers
+  # drivers = [
+    # pkgs.linuxKernel.packages.linux_zen.nvidia_x11_beta
+    # pkgs.linuxKernel.packages.linux_zen.nvidia_x11_vulkan_beta
+  # ];
 in {
-  home.packages = [ new-sh pkgs.pipenv ];
+  home.packages = with pkgs; [ 
+    new-sh 
+    pipenv
+    # swaylock
+    # swayidle
+    # wl-clipboard
+    # mako
+    # alacritty
+    # dmenu
+    # mpv
+    # pipewire
+    # ncpamixer
+    # alsaPlugins
+    # ecdsautils
+  ];
+  
+  home.sessionVariables = {
+    EDITOR = "nvim";
+    VISUAL = "nvim";
+    NIXPKGS_ALLOW_UNFREE = 1;
+
+    # OpenGL support
+    # LIBGL_DRIVERS_PATH = lib.makeSearchPathOutput "lib" "lib/dri" drivers;
+    # LD_LIBRARY_PATH = lib.makeLibraryPath drivers;
+    # LOCALE_ARCHIVE = "/usr/lib/locale/locale-archive";
+  };
+  
+  # Audio Support
+  # home.file.".asoundrc".text = ''
+  #   pcm_type.pulse {
+      # libs.native = "${pkgs.alsaPlugins}/lib/alsa-lib/libasound_module_pcm_pulse.so";
+      # libs.32Bit = "${pkgs.pkgsi686Linux.alsaPlugins}/lib/alsa-lib/libasound_module_pcm_pulse.so";
+    # }
+    
+    # ctl_type.pulse {
+      # libs.native = "${pkgs.alsaPlugins}/lib/alsa-lib/libasound_module_ctl_pulse.so";
+      # libs.32Bit = "${pkgs.pkgsi686Linux.alsaPlugins}/lib/alsa-lib/libasound_module_ctl_pulse.so";
+    # }
+    
+    # pcm_type.jack {
+      # libs.native = "${pkgs.alsaPlugins}/lib/alsa-lib/libasound_module_pcm_jack.so";
+      # libs.32Bit = "${pkgs.pkgsi686Linux.alsaPlugins}/lib/alsa-lib/libasound_module_pcm_jack.so";
+    # }
+  # '';
+
+  
+  # Applications
 
   programs.direnv  = {
     enable = true;
@@ -67,19 +119,26 @@ in {
       }
     ];
     initExtra = ''
+      if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi
+
+      # if [[ -z $DISPLAY ]] && [[ $(tty) = /dev/tty1 ]]; then
+      #  	exec sway --my-next-gpu-wont-be-nvidia
+      # fi
+
       unsetopt BEEP
-      source $HOME/.profile
-      eval "$(/home/mwglen/anaconda3/bin/conda shell.zsh hook)"
-      export LLVMENV_RUST_BINDING=1
-      source <(llvmenv zsh)
+
+      # eval "$(/home/mwglen/anaconda3/bin/conda shell.zsh hook)"
+      
+      # export LLVMENV_RUST_BINDING=1
+      # source <(llvmenv zsh)
+
     '';
   };
 
-  home.sessionVariables = {
-    EDITOR = "nvim";
-    VISUAL = "nvim";
-    NIXPKGS_ALLOW_UNFREE = 1;
-  };
-  
+  # wayland.windowManager.sway = {
+  #   enable = true;
+  #   wrapperFeatures.gtk = true;
+  # };
+
   programs.home-manager.enable = true;
 }
