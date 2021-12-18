@@ -4,9 +4,9 @@ echo $DISTRO
 
 # Set OS specific variables
 if [ "$DISTRO" = "\"Arch Linux\"" ]; then 
-    export PM_ADD="sudo yay -Syu"
-    export PM_RMV="sudo yay -Rns"
-    export PM_UPDATE="sudo yay -Syu"
+    export PM_ADD="sudo pacman -Syu"
+    export PM_RMV="sudo pacman -Rns"
+    export PM_UPDATE="sudo pacman -Syu"
 fi
 
 if [ "$DISTRO" = "Ubuntu" ]; then 
@@ -20,6 +20,7 @@ $PM_UPDATE
 
 # Install Nix
 sudo curl -L https://nixos.org/nix/install | sh
+. ~/.nix-profile/etc/profile.d/nix.sh
 
 # Enable flakes
 nix-env -iA nixpkgs.nixUnstable
