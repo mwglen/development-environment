@@ -36,10 +36,22 @@ cat <<EOT > $HOME/.zshrc
 # zsh config
 fpath+=$HOME/.zsh/pure
 autoload -U promptinit; promptinit
-zstyle :prompt:pure:path color white
-zstyle :prompt:pure:prompt:success color cyan
-zstyle :prompt:pure:prompt:error color cyan
+zstyle :prompt:pure:prompt:success color green
+zstyle :prompt:pure:prompt:error color red
+zstyle :prompt:pure:prompt:continuation color white
+zstyle :prompt:pure:virtualenv color white
+zstyle :prompt:pure:execution_time color white
 zstyle :prompt:pure:git:stash show yes
+zstyle :prompt:pure:git:stash color white
+zstyle :prompt:pure:git:arrow color white
+zstyle :prompt:pure:git:action color white
+zstyle :prompt:pure:git:dirty color white
+zstyle :prompt:pure:git:branch color white
+zstyle :prompt:pure:git:branch:cached color red
+zstyle :prompt:pure:path color white
+zstyle :prompt:pure:host color white
+zstyle :prompt:pure:user color white
+zstyle :prompt:pure:user:root color magenta
 prompt pure
 
 # misc config
