@@ -29,13 +29,17 @@ git config user.email "mwg2202@yahoo.com"
 
 # Setup ZSH (with Pure theme)
 $INSTALL zsh
+rm -rf "$HOME/.zsh/pure"
 mkdir -p "$HOME/.zsh"
 git clone https://github.com/sindresorhus/pure.git "$HOME/.zsh/pure"  
-chsh -s /usr/bin/zsh
-cat <<EOT >> $HOME/.zshrc
+cat <<EOT > $HOME/.zshrc
 # zsh config
 fpath+=$HOME/.zsh/pure
 autoload -U promptinit; promptinit
+zstyle :prompt:pure:path color white
+zstyle :prompt:pure:prompt:success color cyan
+zstyle :prompt:pure:prompt:error color cyan
+zstyle :prompt:pure:git:stash show yes
 prompt pure
 
 # misc config
@@ -52,16 +56,25 @@ HISTFILE="$HOME/.zsh_history"
 mkdir -p "$(dirname "$HISTFILE")"
 EOT
 
-# Install neovim
-$INSTALL neovim neovim-airline neovim-airline-themes vim-rust-git \
-    vim-commentary vim-tender-git vim-nix-git vim-gitgutter-git \
-    neovim-surround neovim-fugitive
+# Setup neovim
+$INSTALL neovim
+sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
 cat <<EOT > $HOME/.config/nvim/init.vim
+call plug#begin('~/.config/nvim/plugged')
+Plug 'jacoborus/tender.vim'
+Plug 'LnL7/vim-nix'
+Plug 'rust-lang/rust.vim'
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+Plug 'airblade/vim-gitgutter'
+Plug 'tpope/vim-surround'
+Plug 'tpope/vim-fugitive'
+Plug 'tpope/vim-commentary'
+call plug#end()
+
 set number relativenumber       " set line-numbers to be relative
 set nohlsearch                  " no highlight search
-syntax enable                   " enable syntax highlighting
 set mouse=a                     " recognize and enable mouse
-filetype plugin indent on       " automatic indention using filetype
 set tabstop=4                   " show existing tab as 4 spaces
 set shiftwidth=4                " use 4 spaces when indenting with '>'
 set expandtab                   " on pressing tab, insert 4 spaces
@@ -91,3 +104,5 @@ if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc
 export NIXPKGS_ALLOW_UNFREE=1
 
 EOT
+
+chsh -s /usr/bin/zsh
