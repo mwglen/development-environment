@@ -6,27 +6,47 @@ set -v
 export DISTRO=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
 
 # Set OS specific variables
-if [ "$DISTRO" = "\"Arch Linux\"" ]; then 
+if [ "$DISTRO" = "\"Arch Linux\"" ] \
+    || [ "$DISTRO" = "\"Arch Linux ARM\"" ]; then 
+
     # Get yay (can't use --noconfirm if fakeroot-tcp is installed)
-    if pacman -Qs fakeroot-tcp > /dev/null; then
-        sudo pacman -Syyu --needed git base-devel \
-            && git clone https://aur.archlinux.org/yay.git \
-            && cd yay && yes | makepkg -si
-    else
-        sudo pacman -Syyu --needed --noconfirm git base-devel \
-            && git clone https://aur.archlinux.org/yay.git \
-            && cd yay && yes | makepkg -si
+    if ! (pacman -Qs yay > /dev/null); then
+        if (pacman -Qs fakeroot-tcp > /dev/null); then
+            sudo pacman -Syyu --needed git base-devel \
+                && git clone https://aur.archlinux.org/yay.git \
+                && cd yay && yes | makepkg -si
+        else
+            sudo pacman -Syyu --needed --noconfirm git base-devel \
+                && git clone https://aur.archlinux.org/yay.git \
+                && cd yay && yes | makepkg -si
+        fi
+        rm -rf yay
     fi
-    rm -rf yay
 
     # Setup shortcuts
     export INSTALL="sudo yay -Syu --noconfirm --needed"
+    export INSTALL_LOCAL="sudo yay -U --noconfirm --needed"
     export REMOVE="sudo yay -Rns --noconfirm --needed"
     export UPDATE="sudo yay -Syu --noconfirm --needed"
+    export SEARCH="sudo yay -Qs"
+
+else
+    echo "Unsupported Platform"
+    echo "Currently only Arch Linux is supported"
+    return 1
 fi
 
 # Update packages
 $UPDATE
+
+# Install basic packages
+$INSTALL wget man-db man-pages
+
+# Setup wslu (WSL utilties)
+if (grep -qi microsoft /proc/version) && ! ($SEARCH wslu); then
+    wget https://github.com/wslutilities/wslu/releases/download/v3.2.3/wslu-3.2.3-0-any.pkg.tar.zst
+    $INSTALL_LOCAL *.zst
+fi
 
 # Setup git
 $INSTALL git openssh
@@ -114,6 +134,23 @@ EOT
 
 # Setup emacs
 $INSTALL emacs
+cat <<EOT > $HOME/.emacs
+(setq inhibit-startup-message t)
+(scroll-bar-mode -1)    ; Disable visible scrollbar
+(tool-bar-mode -1)      ; Disable the toolbar
+(tooltip-mode -1)       ; Disable tooltips
+(set-fringe-mode 10)    ; Give some breathing room
+(menu-bar-mode -1)      ; Disable the menu bar
+
+; (set-face-attribute 'default nil :font "Fira Code Retina" :height 280)
+
+(load-theme 'tango-dark)
+
+; Load org mode
+; (require 'package)
+; (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+; (package-initialize)
+EOT
 
 # Setup podman
 $INSTALL podman
