@@ -24,11 +24,11 @@ if [ "$DISTRO" = "\"Arch Linux\"" ] \
     fi
 
     # Setup shortcuts
-    export INSTALL="sudo yay -Syu --noconfirm --needed"
-    export INSTALL_LOCAL="sudo yay -U --noconfirm --needed"
-    export REMOVE="sudo yay -Rns --noconfirm --needed"
-    export UPDATE="sudo yay -Syu --noconfirm --needed"
-    export SEARCH="sudo yay -Qs"
+    export INSTALL="yay -Syu --noconfirm --needed"
+    export INSTALL_LOCAL="yay -U --noconfirm --needed"
+    export REMOVE="yay -Rns --noconfirm --needed"
+    export UPDATE="yay -Syu --noconfirm --needed"
+    export SEARCH="yay -Qs"
 
 else
     echo "Unsupported Platform"
@@ -43,7 +43,7 @@ $UPDATE
 $INSTALL wget man-db man-pages
 
 # Setup wslu (WSL utilties)
-if (grep -qi microsoft /proc/version) && ! ($SEARCH wslu); then
+if (grep -qi microsoft /proc/version) && ! ($SEARCH wslu > /dev/null); then
     wget https://github.com/wslutilities/wslu/releases/download/v3.2.3/wslu-3.2.3-0-any.pkg.tar.zst
     $INSTALL_LOCAL *.zst
     rm *.zst
