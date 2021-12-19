@@ -46,6 +46,7 @@ $INSTALL wget man-db man-pages
 if (grep -qi microsoft /proc/version) && ! ($SEARCH wslu); then
     wget https://github.com/wslutilities/wslu/releases/download/v3.2.3/wslu-3.2.3-0-any.pkg.tar.zst
     $INSTALL_LOCAL *.zst
+    rm *.zst
 fi
 
 # Setup git
