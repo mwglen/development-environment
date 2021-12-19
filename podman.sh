@@ -26,6 +26,8 @@ args=(
     # --ipc host
 )
 
-image=$(sudo podman build -q . --build-arg username=${username})
+image=$(sudo podman build . -q \
+    --log-level info \
+    --build-arg username=${username})
 
 sudo podman run ${args[@]} ${image}

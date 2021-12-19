@@ -14,3 +14,4 @@
     3. Run `echo "LANG=en_US.UTF-8" > /etc/locale.conf`
 - When `setup.sh` is installing base-devel, make sure to not install fakeroot if it is in IgnorePkg or IgnoreGroup
 - After running `setup.sh` make sure to run :PlugInstall in neovim
+- If you reach a "unable to lock database" error when the script runs pacman, run `sudo rm /var/lib/pacman/db.lck` and try the script again

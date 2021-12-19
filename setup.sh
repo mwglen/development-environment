@@ -7,16 +7,22 @@ export DISTRO=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
 
 # Set OS specific variables
 if [ "$DISTRO" = "\"Arch Linux\"" ]; then 
-    # Get yay
-    sudo pacman -S --needed git base-devel \
-        && git clone https://aur.archlinux.org/yay.git \
-        && cd yay && makepkg -si
+    # Get yay (can't use --noconfirm if fakeroot-tcp is installed)
+    if pacman -Qs fakeroot-tcp > /dev/null; then
+        sudo pacman -Syyu --needed git base-devel \
+            && git clone https://aur.archlinux.org/yay.git \
+            && cd yay && yes | makepkg -si
+    else
+        sudo pacman -Syyu --needed --noconfirm git base-devel \
+            && git clone https://aur.archlinux.org/yay.git \
+            && cd yay && yes | makepkg -si
+    fi
     rm -rf yay
 
     # Setup shortcuts
-    export INSTALL="sudo yay -Syu --noconfirm"
-    export REMOVE="sudo yay -Rns --noconfirm"
-    export UPDATE="sudo yay -Syu --noconfirm"
+    export INSTALL="sudo yay -Syu --noconfirm --needed"
+    export REMOVE="sudo yay -Rns --noconfirm --needed"
+    export UPDATE="sudo yay -Syu --noconfirm --needed"
 fi
 
 # Update packages
@@ -71,6 +77,7 @@ EOT
 # Setup neovim
 $INSTALL neovim
 sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+mkdir -p $HOME/.config/nvim/
 cat <<EOT > $HOME/.config/nvim/init.vim
 call plug#begin('~/.config/nvim/plugged')
 Plug 'jacoborus/tender.vim'
@@ -105,16 +112,12 @@ export VISUAL=nvim
 
 EOT
 
-# Setup nix
-$INSTALL nix
-nix-channel --add https://nixos.org/channels/nixpkgs-unstable
-nix-channel --update
-nix-env -iA nixpkgs.nixUnstable
-cat <<EOT >> $HOME/.zshrc
-# nix config
-if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi
-export NIXPKGS_ALLOW_UNFREE=1
+# Setup emacs
+$INSTALL emacs
 
-EOT
+# Setup podman
+$INSTALL podman
+echo "unqualified-search-registries = ['docker.io']" \
+    | sudo tee /etc/containers/registries.conf
 
-chsh -s /usr/bin/zsh
+sudo chsh -s /usr/bin/zsh $(whoami)
