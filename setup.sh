@@ -135,23 +135,7 @@ EOT
 
 # Setup emacs
 $INSTALL emacs
-cat <<EOT > $HOME/.emacs
-(setq inhibit-startup-message t)
-(scroll-bar-mode -1)    ; Disable visible scrollbar
-(tool-bar-mode -1)      ; Disable the toolbar
-(tooltip-mode -1)       ; Disable tooltips
-(set-fringe-mode 10)    ; Give some breathing room
-(menu-bar-mode -1)      ; Disable the menu bar
-
-; (set-face-attribute 'default nil :font "Fira Code Retina" :height 280)
-
-(load-theme 'tango-dark)
-
-; Load org mode
-; (require 'package)
-; (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
-; (package-initialize)
-EOT
+cp ./dotfiles/emacs ~/.emacs
 
 # Setup podman
 $INSTALL podman
