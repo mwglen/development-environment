@@ -1,3 +1,6 @@
+;; Change garbage collection threshold
+(setq gc-cons-threshold (* 50 1000 1000))
+
 ;; Remove default UI
 (setq inhibit-startup-message t)
 (scroll-bar-mode -1)
@@ -10,11 +13,19 @@
 ;(set-face-attribue 'default nil
 ;    :font "Fira Code Retina" :height 280)
 
-;; Setup themes
-(load-theme 'tango-dark)
+;; Setup line numbers
+(column-number-mode)
+(global-display-line-numbers-mode t)
+(setq display-line-numbers-type 'relative)
+
+;; Disable line numbers for some modes
+(dolist (mode '(org-mode-hook
+                 term-mode-hook
+                 eshell-mode-hook))
+  (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 ;; Make ESC quit prompts (Might not need due to evil mode)
-;(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
 ;; Initialize package sources
 (require 'package)
@@ -30,6 +41,7 @@
   (package-install 'use-package))
 (require 'use-package)
 (setq use-package-always-ensure t)
+;(setq use-package-always-defer t)
 
 ;; Setup Doom Modeline
 (use-package all-the-icons
@@ -38,7 +50,14 @@
 (use-package doom-modeline
   :ensure t
   :init (doom-modeline-mode 1)
-  :custom (doom-modeline-height 15))
+  :custom (doom-modeline-height 30))
+
+(use-package doom-themes)
+(load-theme 'doom-tomorrow-night t)
+
+;; Setup Rainbow Delimeters
+;(use-package rainbow-delimiters
+;  :hook (prog-mode . rainbow-delimiters-mode))
 
 ;; Completion Frameworks (Helm and Ivy)
 ;; Setup Ivy
@@ -60,6 +79,37 @@
   :config
   (ivy-mode 1))
 
+;; Setup counsel
+(use-package counsel
+  :bind (("M-x" . counsel-M-x)
+	 ("C-x b" . counsel-ibuffer)
+	 ("C-x C-f" . counsel-find-file)
+	 :map minibuffer-local-map
+	 ("C-r" . 'counsel-minibuffer-history))
+  :config
+  (setq ivy-initial-inputs-alist nil))
+
+;; Setup Ivy-Rich (requires counsel)
+(use-package ivy-rich
+  :init
+  (ivy-rich-mode 1))
+
+;; Setup Which-Key (doesn't work)
+(use-package which-key
+  :init (which-key-mode)
+  :diminish which-key-mode
+  :config
+  (setq which-key-idle-delay 0.3))
+
+(use-package helpful
+ :custom
+ (counsel-describe-function-function #'helpful-callable)
+ (counsel-describe-variable-function #'helpful-variable)
+ :bind
+ ([remap describe-function] . counsel-describe-function)
+ ([remap describe-command] . helpful-command)
+ ([remap describe-variable] . counsel-describe-variable)
+ ([remap describe-key] . helpful-key))
 
 ;; Setup Evil
 (unless (package-installed-p 'evil)
@@ -72,7 +122,9 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages '(use-package evil)))
+ '(custom-safe-themes
+   '("4b0e826f58b39e2ce2829fab8ca999bcdc076dec35187bf4e9a4b938cb5771dc" "f7fed1aadf1967523c120c4c82ea48442a51ac65074ba544a5aefc5af490893b" default))
+ '(package-selected-packages '(doom-themes use-package evil)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

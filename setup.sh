@@ -136,6 +136,10 @@ EOT
 # Setup emacs
 $INSTALL emacs
 cp ./dotfiles/emacs ~/.emacs
+if ! (grep -qi microsoft /proc/version); then
+    systemctl enable --user emacs
+    systemctl start --user emacs
+fi
 
 # Setup podman
 $INSTALL podman
