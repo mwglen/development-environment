@@ -49,14 +49,6 @@ if (grep -qi microsoft /proc/version) && ! ($SEARCH wslu > /dev/null); then
     rm *.zst
 fi
 
-if (grep -qi microsoft /proc/version); then
-cat <<EOT > $HOME/.zshrc
-# WSL aliases
-alias shutdown="shutdown.exe /s"
-
-EOT
-fi
-
 # Setup git
 $INSTALL git openssh
 git config user.name "Matt Glen"
@@ -144,6 +136,7 @@ EOT
 # Setup emacs
 $INSTALL emacs noto-fonts 
 cp ./dotfiles/emacs ~/.emacs
+cp -r ./OrgFiles ~/OrgFiles
 if (pidof systemd) || (pidof distrod-exec); then
 cat <<EOT >> $HOME/.zshrc
 # emacs config
@@ -153,10 +146,18 @@ alias emacs="emacsclient -c -a"
 EOT
 fi
 
-
 # Setup podman
 $INSTALL podman
 echo "unqualified-search-registries = ['docker.io']" \
     | sudo tee /etc/containers/registries.conf
+
+# Setup for WSL
+if (grep -qi microsoft /proc/version); then
+cat <<EOT >> $HOME/.zshrc
+# WSL aliases
+alias shutdown="shutdown.exe /s"
+
+EOT
+fi
 
 sudo chsh -s /usr/bin/zsh $(whoami)
