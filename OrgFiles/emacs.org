@@ -5,7 +5,8 @@
 
 #+begin_src emacs-lisp
 
-;; NOTE: This file is generated from ~/OrgFiles/emacs.org.  Edit that file instead.
+;; NOTE: This file is generated from ~/OrgFiles/emacs.org.
+;; NOTE: To avoid breaking your config, edit that file instead.
 
 #+end_src
 

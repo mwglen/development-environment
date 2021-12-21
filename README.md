@@ -1,4 +1,4 @@
-#nix-configuration
+#development-environment
 ## Complete configuration and setup scripts for my current linux environment.
 
 ## Scripts: 
