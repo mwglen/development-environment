@@ -49,6 +49,14 @@ if (grep -qi microsoft /proc/version) && ! ($SEARCH wslu > /dev/null); then
     rm *.zst
 fi
 
+if (grep -qi microsoft /proc/version); then
+cat <<EOT > $HOME/.zshrc
+# WSL aliases
+alias shutdown="shutdown.exe /s"
+
+EOT
+fi
+
 # Setup git
 $INSTALL git openssh
 git config user.name "Matt Glen"
@@ -134,12 +142,17 @@ export VISUAL=nvim
 EOT
 
 # Setup emacs
-$INSTALL emacs
+$INSTALL emacs noto-fonts 
 cp ./dotfiles/emacs ~/.emacs
-if ! (grep -qi microsoft /proc/version); then
-    systemctl enable --user emacs
-    systemctl start --user emacs
+if (pidof systemd) || (pidof distrod-exec); then
+cat <<EOT >> $HOME/.zshrc
+# emacs config
+emacs --daemon
+alias emacs="emacsclient -c -a"
+
+EOT
 fi
+
 
 # Setup podman
 $INSTALL podman
