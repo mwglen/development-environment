@@ -40,7 +40,7 @@ fi
 $UPDATE
 
 # Install basic packages
-$INSTALL wget man-db man-pages
+$INSTALL wget man-db man-pages cmake
 
 # Setup wslu (WSL utilties)
 if (grep -qi microsoft /proc/version) && ! ($SEARCH wslu > /dev/null); then
@@ -134,14 +134,22 @@ export VISUAL=nvim
 EOT
 
 # Setup emacs
-$INSTALL emacs noto-fonts 
+$INSTALL emacs noto-fonts #xorg-xinit
 cp ./dotfiles/emacs ~/.emacs
-cp -r ./OrgFiles ~/OrgFiles
+cp ./dotfiles/emacs.org ~/.emacs.org
 if (pidof systemd) || (pidof distrod-exec); then
 cat <<EOT >> $HOME/.zshrc
 # emacs config
-emacs --daemon
-alias emacs="emacsclient -c -a"
+vterm_printf(){
+    if [ -n "$TMUX" ] && ([ "${TERM%%-*}" = "tmux" ] \
+       || [ "${TERM%%-*}" = "screen" ] ); then
+        printf "\ePtmux;\e\e]%s\007\e\\" "$1"
+    elif [ "${TERM%%-*}" = "screen" ]; then
+        printf "\eP\e]%s\007\e\\" "$1"
+    else
+        printf "\e]%s\e\\" "$1"
+    fi
+}
 
 EOT
 fi
