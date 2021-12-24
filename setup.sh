@@ -153,7 +153,7 @@ vterm_printf(){
 EOT
 
 # Setup EXWM (Emacs X Window Manager)
-$INSTALL xorg xorg-server-xephyr
+$INSTALL xorg xorg-server-xephyr xorg-xinit
 cat <<EOT > $HOME/.xinitrc
 # Disable access control for the current user.
 xhost +SI:localuser:$USER
@@ -183,6 +183,9 @@ EOT
 $INSTALL podman
 echo "unqualified-search-registries = ['docker.io']" \
     | sudo tee /etc/containers/registries.conf
+
+# Install other applications
+$INSTALL firefox
 
 # Setup for WSL
 if (grep -qi microsoft /proc/version); then
