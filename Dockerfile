@@ -16,9 +16,11 @@ USER $username
 WORKDIR /home/$username
 
 # Run the setup script
-ADD ./setup.sh /home/"$username"/setup.sh
-RUN sudo chmod +x /home/${USERNAME}/setup.sh
-RUN . /home/${USERNAME}/setup.sh
+ADD . ./development-environment
+RUN sudo chown -R $username ./development-environment
+WORKDIR ./development-environment
+RUN sudo chmod +x setup.sh
+RUN ./setup.sh
 
 # Open zsh on startup
 CMD ["/usr/sbin/zsh"]

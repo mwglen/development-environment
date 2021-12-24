@@ -386,7 +386,10 @@
   (evil-collection-define-key 'normal 'dired-mode-map
     "H" 'dired-hide-dotfiles-mode))
 
-(use-package exwm)
+(use-package exwm
+  :config
+  (require 'exwm-config)
+  (exwm-config-example))
 
 (defun wsl-copy (start end)
   (interactive "r")

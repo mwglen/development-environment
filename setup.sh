@@ -24,10 +24,10 @@ if [ "$DISTRO" = "\"Arch Linux\"" ] \
     fi
 
     # Setup shortcuts
-    export INSTALL="yay -Syu --noconfirm --needed"
+    export INSTALL="yay -S --noconfirm --needed"
     export INSTALL_LOCAL="yay -U --noconfirm --needed"
     export REMOVE="yay -Rns --noconfirm --needed"
-    export UPDATE="yay -Syu --noconfirm --needed"
+    export UPDATE="yay -Syyu --noconfirm --needed"
     export SEARCH="yay -Qs"
 
 else
@@ -134,25 +134,50 @@ export VISUAL=nvim
 EOT
 
 # Setup emacs
-$INSTALL emacs noto-fonts #xorg-xinit
-cp ./dotfiles/emacs ~/.emacs
-cp ./dotfiles/emacs.org ~/.emacs.org
-if (pidof systemd) || (pidof distrod-exec); then
+$INSTALL emacs cantarell-fonts ttf-fira-code
+cp ../dotfiles/emacs $HOME/.emacs
+cp ../dotfiles/emacs.org $HOME/.emacs.org
 cat <<EOT >> $HOME/.zshrc
 # emacs config
 vterm_printf(){
-    if [ -n "$TMUX" ] && ([ "${TERM%%-*}" = "tmux" ] \
-       || [ "${TERM%%-*}" = "screen" ] ); then
-        printf "\ePtmux;\e\e]%s\007\e\\" "$1"
-    elif [ "${TERM%%-*}" = "screen" ]; then
-        printf "\eP\e]%s\007\e\\" "$1"
+    if [ -n "\$TMUX" ] && ([ "\${TERM%%-*}" = "tmux" ] \
+       || [ "\${TERM%%-*}" = "screen" ] ); then
+        printf "\ePtmux;\e\e]%s\007\e\\\" "\$1"
+    elif [ "\${TERM%%-*}" = "screen" ]; then
+        printf "\eP\e]%s\007\e\\\" "\$1"
     else
-        printf "\e]%s\e\\" "$1"
+        printf "\e]%s\e\\\" "\$1"
     fi
 }
 
 EOT
-fi
+
+# Setup EXWM (Emacs X Window Manager)
+$INSTALL xorg xorg-server-xephyr
+cat <<EOT > $HOME/.xinitrc
+# Disable access control for the current user.
+xhost +SI:localuser:$USER
+
+# Make Java applications aware this is a non-reparenting window manager.
+export _JAVA_AWT_WM_NONREPARENTING=1
+
+# Set default cursor.
+xsetroot -cursor_name left_ptr
+
+# Set keyboard repeat rate.
+xset r rate 200 60
+
+# Uncomment the following block to use the exwm-xim module.
+#export XMODIFIERS=@im=exwm-xim
+#export GTK_IM_MODULE=xim
+#export QT_IM_MODULE=xim
+#export CLUTTER_IM_MODULE=xim
+
+# Finally start Emacs
+exec emacs
+
+EOT
+
 
 # Setup podman
 $INSTALL podman

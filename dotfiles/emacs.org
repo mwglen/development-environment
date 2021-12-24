@@ -30,9 +30,7 @@
   (setq gc-cons-threshold (* 50 1000 1000))
 
 #+end_src
-
 * Package Management
-
 ** Setup Package Sources
 
 #+begin_src emacs-lisp
@@ -128,13 +126,12 @@
     
 #+end_src emacs-lisp
 
-** Start Emacs Maximized and in Full-Screen Mode
+** Start Emacs Maximized
    
 #+begin_src emacs-lisp
 
   (set-frame-parameter (selected-frame) 'fullscreen 'maximized)
   (add-to-list 'default-frame-alist '(fullscreen . maximized))
-  (toggle-full-screen)
 
 #+end_src emacs-lisp
    
@@ -789,7 +786,10 @@ You can use the pyvenv package to use =virtualenv= environments in Emacs.  The =
 
 #+begin_src emacs-lisp
 
-  (use-package exwm)
+(use-package exwm
+    :config
+    (require 'exwm-config)
+    (exwm-config-example))
 
 #+end_src
 
