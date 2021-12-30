@@ -2,39 +2,47 @@
 set -e
 set -v
 
-# Determine OS platform
+# Make sure OS is supported
 export DISTRO=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
-
-# Set OS specific variables
-if [ "$DISTRO" = "\"Arch Linux\"" ] \
-    || [ "$DISTRO" = "\"Arch Linux ARM\"" ]; then 
-
-    # Get yay (can't use --noconfirm if fakeroot-tcp is installed)
-    if ! (pacman -Qs yay > /dev/null); then
-        if (pacman -Qs fakeroot-tcp > /dev/null); then
-            sudo pacman -Syyu --needed git base-devel \
-                && git clone https://aur.archlinux.org/yay.git \
-                && cd yay && yes | makepkg -si
-        else
-            sudo pacman -Syyu --needed --noconfirm git base-devel \
-                && git clone https://aur.archlinux.org/yay.git \
-                && cd yay && yes | makepkg -si
-        fi
-        rm -rf yay
-    fi
-
-    # Setup shortcuts
-    export INSTALL="yay -S --noconfirm --needed"
-    export INSTALL_LOCAL="yay -U --noconfirm --needed"
-    export REMOVE="yay -Rns --noconfirm --needed"
-    export UPDATE="yay -Syyu --noconfirm --needed"
-    export SEARCH="yay -Qs"
-
-else
+if ![ "$DISTRO" = "\"Arch Linux\"" ] \
+    && ![ "$DISTRO" = "\"Arch Linux ARM\"" ]; then 
     echo "Unsupported Platform"
     echo "Currently only Arch Linux is supported"
     return 1
 fi
+
+# Setup a folder to hold config files
+mkdir -p .config
+export CONFIG=$(realpath .config)
+
+# Setup a folder to hold dotfiles
+mkdir -p .dotfiles
+export DOTFILES=$(realpath .dotfiles)
+
+# Set XDG_CONFIG_HOME
+export XDG_CONFIG_HOME=$CONFIG
+echo "export XDG_CONFIG_HOME=$XDG_CONFIG_HOME" > $DOTFILES/zshrc
+
+# Get yay (can't use --noconfirm if fakeroot-tcp is installed)
+if ! (pacman -Qs yay > /dev/null); then
+    if (pacman -Qs fakeroot-tcp > /dev/null); then
+        sudo pacman -Syyu --needed git base-devel \
+            && git clone https://aur.archlinux.org/yay.git \
+            && cd yay && yes | makepkg -si
+    else
+        sudo pacman -Syyu --needed --noconfirm git base-devel \
+            && git clone https://aur.archlinux.org/yay.git \
+            && cd yay && yes | makepkg -si
+    fi
+    rm -rf yay
+fi
+
+# Setup shortcuts
+export INSTALL="yay -S --noconfirm --needed"
+export INSTALL_LOCAL="yay -U --noconfirm --needed"
+export REMOVE="yay -Rns --noconfirm --needed"
+export UPDATE="yay -Syyu --noconfirm --needed"
+export SEARCH="yay -Qs"
 
 # Update packages
 $UPDATE
@@ -51,17 +59,20 @@ fi
 
 # Setup git
 $INSTALL git openssh
-git config user.name "Matt Glen"
-git config user.email "mwg2202@yahoo.com"
+git config --global user.name "Matt Glen"
+git config --global user.email "mwg2202@yahoo.com"
+
+# Setup Git Annex
+$INSTALL git-annex
 
 # Setup ZSH (with Pure theme)
 $INSTALL zsh
-rm -rf "$HOME/.zsh/pure"
-mkdir -p "$HOME/.zsh"
-git clone https://github.com/sindresorhus/pure.git "$HOME/.zsh/pure"  
-cat <<EOT > $HOME/.zshrc
+mkdir -p "$CONFIG/zsh"
+rm -rf "$CONFIG/zsh/pure"
+git clone https://github.com/sindresorhus/pure.git "$CONFIG/zsh/pure" 
+cat <<EOT >> $DOTFILES/zshrc
 # zsh config
-fpath+=$HOME/.zsh/pure
+fpath+=$CONFIG/zsh/pure
 autoload -U promptinit; promptinit
 zstyle :prompt:pure:prompt:success color green
 zstyle :prompt:pure:prompt:error color red
@@ -97,10 +108,10 @@ EOT
 
 # Setup neovim
 $INSTALL neovim
+mkdir -p $CONFIG/nvim
 sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
-mkdir -p $HOME/.config/nvim/
-cat <<EOT > $HOME/.config/nvim/init.vim
-call plug#begin('~/.config/nvim/plugged')
+cat <<EOT > $CONFIG/nvim/init.vim
+call plug#begin('$CONFIG/nvim/plugged')
 Plug 'jacoborus/tender.vim'
 Plug 'LnL7/vim-nix'
 Plug 'rust-lang/rust.vim'
@@ -124,7 +135,7 @@ colorscheme tender              " change the colorscheme
 let g:airline_theme = 'tender'  " change airline colorscheme
 
 EOT
-cat <<EOT >> $HOME/.zshrc
+cat <<EOT >> $DOTFILES/zshrc
 # neovim config
 alias vi=nvim
 alias vim=nvim
@@ -135,9 +146,7 @@ EOT
 
 # Setup emacs
 $INSTALL emacs cantarell-fonts ttf-fira-code
-cp ../dotfiles/emacs $HOME/.emacs
-cp ../dotfiles/emacs.org $HOME/.emacs.org
-cat <<EOT >> $HOME/.zshrc
+cat <<EOT >> $DOTFILES/zshrc
 # emacs config
 vterm_printf(){
     if [ -n "\$TMUX" ] && ([ "\${TERM%%-*}" = "tmux" ] \
@@ -152,32 +161,13 @@ vterm_printf(){
 
 EOT
 
+# Tangle emacs config
+$INSTALL nim nimble
+nimble install -y ntangle
+~/.nimble/bin/ntangle emacs.org
+
 # Setup EXWM (Emacs X Window Manager)
-$INSTALL xorg xorg-server-xephyr xorg-xinit
-cat <<EOT > $HOME/.xinitrc
-# Disable access control for the current user.
-xhost +SI:localuser:$USER
-
-# Make Java applications aware this is a non-reparenting window manager.
-export _JAVA_AWT_WM_NONREPARENTING=1
-
-# Set default cursor.
-xsetroot -cursor_name left_ptr
-
-# Set keyboard repeat rate.
-xset r rate 200 60
-
-# Uncomment the following block to use the exwm-xim module.
-#export XMODIFIERS=@im=exwm-xim
-#export GTK_IM_MODULE=xim
-#export QT_IM_MODULE=xim
-#export CLUTTER_IM_MODULE=xim
-
-# Finally start Emacs
-exec emacs
-
-EOT
-
+$INSTALL xorg xorg-server-xephyr
 
 # Setup podman
 $INSTALL podman
@@ -189,11 +179,15 @@ $INSTALL firefox
 
 # Setup for WSL
 if (grep -qi microsoft /proc/version); then
-cat <<EOT >> $HOME/.zshrc
+cat <<EOT >> $DOTFILES/zshrc
 # WSL aliases
 alias shutdown="shutdown.exe /s"
+alias emacs="DISPLAY=:1 emacs"
+alias xephyr="Xephyr -br -ac -noreset -fullscreen :1"
 
 EOT
 fi
 
+# Link dotfiles and change shell
+ln $DOTFILES/zshrc ~/.zshrc
 sudo chsh -s /usr/bin/zsh $(whoami)
