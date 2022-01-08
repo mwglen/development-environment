@@ -1,3 +1,5 @@
 .tmp/
 .config/
 .dotfiles/
+.cache/
+.local/

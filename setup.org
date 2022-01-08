@@ -1,11 +1,27 @@
+#+title: Setup Development Environment Script
+* Script Headers
+** Use Bash
+#+begin_src bash :tangle ./setup.sh
 #!/bin/bash
+#+end_src
 
+** Stop  Script on Error
+#+begin_src bash :tangle ./setup.sh
 set -e
+#+end_src
 
+** Start
+#+begin_src bash :tangle ./setup.sh
 set -v
+#+end_src
 
+**  Warning
+#+begin_src bash :tangle ./setup.sh
 # NOTE: This file is generated from setup.org
+#+end_src
 
+* Make sure OS is supported
+#+begin_src bash :tangle ./setup.sh
 export DISTRO=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
 if ! [ "$DISTRO" = "\"Arch Linux\"" ] \
     && ! [ "$DISTRO" = "\"Arch Linux ARM\"" ]; then 
@@ -13,7 +29,11 @@ if ! [ "$DISTRO" = "\"Arch Linux\"" ] \
     echo "Currently only Arch Linux is supported"
     return 1
 fi
+#+end_src
 
+* Setup XDG Base Directories
+** Export Environment Variables
+#+begin_src bash :tangle ./setup.sh
 cat <<EOT > $HOME/.profile
 export XDG_CONFIG_HOME=$(realpath .)/.config
 export XDG_CACHE_HOME=$(realpath .)/.cache
@@ -21,17 +41,27 @@ export XDG_DATA_HOME=$(realpath .)/.local/share
 export XDG_STATE_HOME=$(realpath .)/.local/state
 EOT
 source $HOME/.profile
+#+end_src
 
+** Clean Directories
+#+begin_src bash :tangle ./setup.sh
 #rm -rf $XDG_CONFIG_HOME
 #rm -rf $XDG_CACHE_HOME
 #rm -rf $XDG_DATA_HOME
 #rm -rf $XDG_STATE_HOME
+#+end_src
 
+** Make Directories
+#+begin_src bash :tangle ./setup.sh
 mkdir -p $XDG_CONFIG_HOME
 mkdir -p $XDG_CACHE_HOME
 mkdir -p $XDG_DATA_HOME
 mkdir -p $XDG_STATE_HOME
+#+end_src
 
+* Setup Yay
+** Install Yay
+#+begin_src bash :tangle ./setup.sh
 if ! (pacman -Qs yay > /dev/null); then
     if (pacman -Qs fakeroot-tcp > /dev/null); then
         sudo pacman -Syyu --needed git base-devel \ && git clone https://aur.archlinux.org/yay.git \ && cd yay && yes | makepkg -si
@@ -42,45 +72,91 @@ if ! (pacman -Qs yay > /dev/null); then
     fi
     rm -rf yay
 fi
+#+end_src
 
+** Setup Shortcuts
+#+begin_src bash :tangle ./setup.sh
 export INSTALL="yay -S --noconfirm --needed"
 export INSTALL_LOCAL="yay -U --noconfirm --needed"
 export REMOVE="yay -Rns --noconfirm --needed"
 export UPDATE="yay -Syyu --noconfirm --needed"
 export SEARCH="yay -Qs"
+#+end_src
 
+** Update Packages
+#+begin_src bash :tangle ./setup.sh
 $UPDATE
+#+end_src
 
+* Install Build System Packages
+** Install man pages
+#+begin_src bash :tangle ./setup.sh
 $INSTALL man-db man-pages
+#+end_src
 
+** Install cmake
+#+begin_src bash :tangle ./setup.sh
 $INSTALL cmake
+#+end_src
 
+** Install rsync
+#+begin_src bash :tangle ./setup.sh
 $INSTALL rsync
+#+end_src
 
+** Install wget
+#+begin_src bash :tangle ./setup.sh
 $INSTALL wget
 echo hsts-file \= "$XDG_CACHE_HOME"/wget-hsts >> "$XDG_CONFIG_HOME/wgetrc"
+#+end_src
 
+* File System Compatability
+** exFAT Support
+#+begin_src bash :tangle ./setup.sh
 $INSTALL exfatprogs
+#+end_src
 
+** NTFS Support
+#+begin_src bash :tangle ./setup.sh
 $INSTALL ntfs-3g
+#+end_src
 
+** VHD and VHDX Support
+#+begin_src bash :tangle ./setup.sh
 $INSTALL libguestfs
+#+end_src
 
+* Setup USB
+#+begin_src bash :tangle ./setup.sh
 $INSTALL usbutils usbip
+#+end_src
 
+* Setup Bluetooth
+#+begin_src bash :tangle ./setup.sh
 $INSTALL bluez bluez-utils
 sudo systemctl enable bluetooth
 sudo systemctl start bluetooth
+#+end_src
 
+* Setup Core Packages
+** Install git
+#+begin_src bash :tangle ./setup.sh
 $INSTALL git openssh
 mkdir -p "$XDG_CONFIG_HOME"/git
 touch "$XDG_CONFIG_HOME"/git/config
 git config --global user.name "Matt Glen"
 git config --global user.email "mwg2202@yahoo.com"
 git config --global init.defaultBranch master
+#+end_src
 
+** Install git-annex
+#+begin_src bash :tangle ./setup.sh
 $INSTALL git-annex
+#+end_src
 
+** Setup Interactive Shell
+*** Install ZSH
+#+begin_src bash :tangle ./setup.sh
 $INSTALL zsh
 cat <<EOT > $HOME/.zshenv
 source $HOME/.profile
@@ -107,7 +183,10 @@ HISTFILE="$XDG_STATE_HOME/zsh/history"
 mkdir -p "$(dirname "$HISTFILE")"
 
 EOT
+#+end_src
 
+*** Setup Pure (ZSH Theme)
+#+begin_src bash :tangle ./setup.sh
 if (mkdir "$XDG_CONFIG_HOME"/zsh/pure); then
     git clone https://github.com/sindresorhus/pure.git "$XDG_CONFIG_HOME"/zsh/pure
 fi
@@ -134,7 +213,10 @@ zstyle :prompt:pure:user:root color magenta
 prompt pure
 
 EOT
+#+end_src
 
+** Setup Neovim
+#+begin_src bash :tangle ./setup.sh
 $INSTALL neovim
 mkdir -p $XDG_CONFIG_HOME/nvim
 curl -fLo $XDG_DATA_HOME/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
@@ -171,11 +253,21 @@ export EDITOR=nvim
 export VISUAL=nvim
 
 EOT
+#+end_src
 
+** Setup Emacs
+*** Install Emacs
+#+begin_src bash :tangle ./setup.sh
 $INSTALL emacs
+#+end_src
 
+*** Install Fonts
+#+begin_src bash :tangle ./setup.sh
 $INSTALL cantarell-fonts ttf-fira-code
+#+end_src
 
+*** Additional vterm configuration
+#+begin_src bash :tangle ./setup.sh
 cat <<EOT >> $ZDOTDIR/.zshrc
 # emacs config
 vterm_printf(){
@@ -190,7 +282,11 @@ vterm_printf(){
 }
 
 EOT
+#+end_src
 
+*** Tangle Emacs Config
+**** Setup Nim and Nimble
+#+begin_src bash :tangle ./setup.sh
 $INSTALL nim nimble
 mkdir -p "$XDG_CONFIG_HOME"/nimble
 mkdir -p "$XDG_DATA_HOME"/nimble
@@ -198,17 +294,26 @@ cat <<EOT > "$XDG_CONFIG_HOME"/nimble/nimble.ini
 nimbleDir = "$XDG_DATA_HOME/nimble"
 
 EOT
+#+end_src
 
+**** Setup ntangle
+#+begin_src bash :tangle ./setup.sh
 nimble install -y ntangle
 cat <<EOT >> $ZDOTDIR/.zshrc
 # ntangle config
 alias ntangle="$XDG_DATA_HOME"/nimble/bin/ntangle
 
 EOT
+#+end_src
 
+**** Tangle Config
+#+begin_src bash :tangle ./setup.sh
 mkdir -p .config/emacs
 "$XDG_DATA_HOME"/nimble/bin/ntangle emacs.org
+#+end_src
 
+*** Enable Emacs Daemon
+#+begin_src bash :tangle ./setup.sh
 mkdir -p "$XDG_CONFIG_HOME"/systemd/user/
 cat <<EOT > "$XDG_CONFIG_HOME"/systemd/user/emacs.service
 [Unit]
@@ -232,13 +337,22 @@ ln -s $XDG_CONFIG_HOME/emacs ~/.emacs.d
 
 systemctl enable --user emacs
 systemctl start --user emacs
+#+end_src
 
+** Setup Podman
+#+begin_src bash :tangle ./setup.sh
 $INSTALL podman
 echo "unqualified-search-registries = ['docker.io']" \
     | sudo tee /etc/containers/registries.conf
+#+end_src
 
+** Install Other Applications
+#+begin_src bash :tangle ./setup.sh
 $INSTALL firefox
+#+end_src
 
+* Systemwide Hotkeys
+#+begin_src bash :tangle ./setup.sh
 $INSTALL sxhkd brightnessctl pulsemixer
 mkdir -p $XDG_CONFIG_HOME/autostart
 cat <<EOT >> $XDG_CONFIG_HOME/autostart/sxhkd.desktop
@@ -264,13 +378,26 @@ XF86AudioMute
 
 EOT
 
+#+end_src
+
+* Display Managers
+
+** Configure X11
+#+begin_src bash :tangle ./setup.sh
 # mkdir -p $XDG_CONFIG_HOME/X11
 # echo "Xft.dpi: 282" > $XDG_CONFIG_HOME/X11/xresources
 echo "Xft.dpi: 200" > ~/.Xresources
+#+end_src
 
+** LightDM
+*** Install LightDM
+#+begin_src bash :tangle ./setup.sh
 $INSTALL lightdm
 systemctl enable lightdm
+#+end_src
 
+*** Install LightDM Theme
+#+begin_src bash :tangle ./setup.sh
 $INSTALL lightdm-webkit2-greeter lightdm-webkit-theme-litarvan
 sudo tee "/etc/lightdm/lightdm.conf" > /dev/null <<'EOF'
 #
@@ -477,7 +604,12 @@ user_image        = /usr/share/pixmaps/archlinux-user.svg
 
 
 EOF
+#+end_src
 
+* Window Manager
+** Setup EXWM
+
+#+begin_src bash :tangle ./setup.sh
 $INSTALL xorg dbus xorg-xrdb
 sudo mkdir -p /usr/share/xsessions/
 sudo tee "/usr/share/xsessions/exwm.desktop" > /dev/null <<'EOF'
@@ -487,13 +619,22 @@ Type=Application
 Icon=exwm
 Comment=The Emacs X Window Manager
 TryExec=emacs
-Exec=emacs
+Exec=emacs -fg --debug-init
 EOF
 
+#+end_src
+
+** Background Image
+#+begin_src bash :tangle ./setup.sh
 $INSTALL picom feh
+#+end_src
 
+** Polybar
+#+begin_src bash :tangle ./setup.sh
 $INSTALL polybar
+#+end_src
 
+#+begin_src bash :tangle ./setup.sh
 mkdir -p $XDG_CONFIG_HOME/polybar
 cat <<EOT > $XDG_CONFIG_HOME/polybar/config
 [settings]
@@ -622,5 +763,10 @@ label-warn = %temperature-c%!
 label-warn-foreground = \${colors.secondary}
 
 EOT
+#+end_src
 
+* Change Shell
+
+#+begin_src bash :tangle ./setup.sh
 sudo chsh -s /usr/bin/zsh $(whoami)
+#+end_src
