@@ -305,7 +305,7 @@
 
 ;; Good Light Themes: doom-solarized-light doom-tomorrow-day doom-homage-white doom-acario-light doom-opera-light doom-nord-light modus-operandi doom-one-light doom-earl-grey adwaita doom-vivendi doom-monokai-pro
 (use-package doom-themes
-  :init (load-theme 'doom-new-moonless t))
+  :init (load-theme 'doom-moonless t))
 #+end_src
 
 ** All The Icons
