@@ -41,6 +41,7 @@ export XDG_CONFIG_HOME=$(realpath .)/.config
 export XDG_CACHE_HOME=$(realpath .)/.cache
 export XDG_DATA_HOME=$(realpath .)/.local/share
 export XDG_STATE_HOME=$(realpath .)/.local/state
+export BACKGROUNDS=$(realpath .)/backgrounds
 EOT
 source $HOME/.profile
 #+end_src
@@ -679,8 +680,7 @@ EOT
 #+begin_src bash :tangle no
 cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
 [colors]
-; background = #0f1011
-background = #1d1f21
+background = #aa1d1f21
 background-alt = #161719
 foreground = #c5c8c6
 foreground-alt = #767876

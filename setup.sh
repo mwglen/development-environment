@@ -19,6 +19,7 @@ export XDG_CONFIG_HOME=$(realpath .)/.config
 export XDG_CACHE_HOME=$(realpath .)/.cache
 export XDG_DATA_HOME=$(realpath .)/.local/share
 export XDG_STATE_HOME=$(realpath .)/.local/state
+export BACKGROUNDS=$(realpath .)/backgrounds
 EOT
 source $HOME/.profile
 

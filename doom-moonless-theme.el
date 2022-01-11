@@ -1,5 +1,4 @@
 ;;; doom-moonless-theme.el -*- lexical-binding: t; no-byte-compile: t; -*-
-
 (require 'doom-themes)
 
 (defgroup doom-moonless-theme nil
@@ -53,7 +52,7 @@ determine the exact padding."
    ;; "universal syntax classes"; *mandatory*
    (highlight      blue)
    (vertical-bar   base0)
-   (selection      `(,(car (doom-lighten bg 0.1)) ,@(cdr base4)))
+   (selection      (doom-darken blue 0.5))
    (builtin        blue)
    (comments       grey)
    (doc-comments   (doom-lighten grey 0.14))
@@ -70,9 +69,10 @@ determine the exact padding."
    (error          red)
    (warning        yellow)
    (success        green)
-   (vc-modified    fg-alt)
+   (vc-modified    green)
    (vc-added       green)
    (vc-deleted     red)
+   (vc-conflict    magenta)
 
    ;; custom categories
    (modeline-bg     `(,(doom-darken (car bg-alt) 0.3) ,@(cdr base3)))
@@ -152,6 +152,10 @@ determine the exact padding."
    (which-key-group-description-face :foreground base5)
    (which-key-command-description-face :foreground fg :weight 'bold)
    (which-key-local-map-description-face :foreground fg)
+
+   ;;;; treemacs
+   (treemacs-git-conflict-face :foreground vc-conflict)
+   (treemacs-git-modified-face :foreground vc-modified)
 
    ))
 ;;; doom-moonless-theme.el ends here

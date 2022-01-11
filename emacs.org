@@ -2,40 +2,38 @@
 #+PROPERTY: header-args:emacs-lisp :tangle ./.config/emacs/init.el :results none
 
 * Early Init
-
 ** Warning
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/early-init.el
 ;;; early-init.el -*- lexical-binding: t; -*-
 ;; NOTE: This file is generated from emacs.org
 #+end_src
 
 ** Increase Garbage Collection Threshold
-
-   The default is 800 kilobytes. The threshold is measured in bytes.
-
+*NOTE:* The default is 800 kilobytes. The threshold is measured in bytes.
 #+begin_src emacs-lisp :tangle ./.config/emacs/early-init.el
 (setq gc-cons-threshold (* 1 1000 1000 1000))
 #+end_src
 
 ** Startup Performance
+#+begin_src emacs-lisp :tangle ./.config/emacs/early-init.el
+(defvar file-name-handler-alist-original file-name-handler-alist)
+(setq file-name-handler-alist nil)
+#+end_src
 
+** Start Native Compilation
 #+begin_src emacs-lisp :tangle ./.config/emacs/early-init.el
 (defvar file-name-handler-alist-original file-name-handler-alist)
 (setq file-name-handler-alist nil)
 #+end_src
 
 * Intit
-
 ** Warning
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 ;;; init.el
 ;; NOTE: This file is generated from emacs.org
 #+end_src
 
 * Package Management
-
 ** Enable AOT Compilation of External Packages
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (setq package-native-compile t)
@@ -55,7 +53,6 @@
 #+end_src
 
 ** Setup Use-Package
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
   (unless (package-installed-p 'use-package)
     (package-install 'use-package))
@@ -65,7 +62,6 @@
 #+end_src
 
 ** Automatic Package Updates
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
   (use-package auto-package-update
     :custom
@@ -78,7 +74,6 @@
 #+end_src
 
 ** No Littering
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (use-package no-littering)
 (setq auto-save-file-name-transforms
@@ -89,14 +84,12 @@
 #+end_src
 
 ** Restart Emacs
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
   (use-package restart-emacs
     :commands (restart-emacs))
 #+end_src
 
 * Performance Improvements
-
 ** Asynchronous Processes
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
   (use-package async
@@ -104,9 +97,7 @@
 #+end_src
 
 * User Interface
-
 ** Clear Default UI
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (setq inhibit-startup-message t)
 (scroll-bar-mode -1)
@@ -116,31 +107,26 @@
 #+end_src
 
 ** Set Fringe Mode Size
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (set-fringe-mode 10)
 #+end_src
 
 ** Disable Cursor Blinking
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (blink-cursor-mode -1)
 #+end_src
 
 ** Disable Bell
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (setq ring-bell-function 'ignore)
 #+end_src
 
 ** Enable "y/n" Answers
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (fset 'yes-or-no-p 'y-or-n-p)
 #+end_src
 
 ** Set UTF-8 Encoding
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (setq locale-coding-system 'utf-8)
 (set-terminal-coding-system 'utf-8)
@@ -150,13 +136,11 @@
 #+end_src
 
 ** Highlight Current Line
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (when window-system (add-hook 'prog-mode-hook 'hl-line-mode))
 #+end_src
 
 ** Line Numbers
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
   (column-number-mode)
   (global-display-line-numbers-mode t)
@@ -172,30 +156,25 @@
 #+end_src
 
 ** Good Scrolling
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (use-package good-scroll
   :config
   (good-scroll-mode 1))
 #+end_src
 
-
 ** Start Emacs Maximized
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
   ;;(set-frame-parameter (selected-frame) 'fullscreen 'maximized)
   ;;(add-to-list 'default-frame-alist '(fullscreen . maximized))
 #+end_src
 
 ** Use Transparent Frames
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(set-frame-parameter (selected-frame) 'alpha '(60 . 60))
-(add-to-list 'default-frame-alist '(alpha . (90 . 90)))
+(set-frame-parameter (selected-frame) 'alpha '(80 . 80))
+(add-to-list 'default-frame-alist '(alpha . (80 . 80)))
 #+end_src
 
 ** Font Configuration
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (set-face-attribute 'default nil
   :family "Fira Code Retina"
@@ -215,91 +194,8 @@
   :hook (text-mode . mixed-pitch-mode))
 #+end_src
 
-** Emacs Dashboard
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-    (use-package dashboard
-      :config
-      (dashboard-setup-startup-hook)
-      (setq initial-buffer-choice
-        (lambda () (get-buffer "*dashboard*")))
-      (setq dashboard-set-init-info t))
-#+end_src
-
-* Keybinding Configuration
-
-** Evil Mode
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(use-package evil
-  :init
-  (setq evil-want-integration t)
-  (setq evil-want-keybinding nil)
-  (setq evil-want-C-u-scroll t)
-  (setq evil-want-C-i-jump nil)
-  :config
-  (evil-mode 1)
-  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
-  (define-key evil-insert-state-map (kbd "C-h")
-    'evil-delete-backward-char-and-join)
-
-  (define-key evil-motion-state-map
-    (kbd "<remap> <evil-next-line>") #'evil-next-visual-line)
-  (define-key evil-motion-state-map
-    (kbd "<remap> <evil-previous-line>") #'evil-previous-visual-line)
-  (define-key evil-operator-state-map
-    (kbd "<remap> <evil-next-line>") #'evil-next-line)
-  (define-key evil-operator-state-map
-    (kbd "<remap> <evil-previous-line>") #'evil-previous-line)
-
-  (define-key evil-operator-state-map
-    (kbd "<remap> <evil-previous-line>") #'evil-previous-line)
-
-  (define-key evil-normal-state-map
-    (kbd "<remap> <evil-quit>") #'mwg/exit-to-dashboard)
-  (evil-define-command exit () (interactive) (save-buffers-kill-terminal)))
-
-(defun mwg/exit-to-dashboard () (interactive)
-  (if (eq (count-windows) 1) (switch-to-buffer "*dashboard*") (delete-window)))
-#+end_src
-
-*** Evil Collection
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(use-package evil-collection
-  :after evil
-  :config
-  (evil-collection-init))
-#+end_src
-
-** General
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(use-package general
-  :after evil
-  :config
-  (general-create-definer mwg/leader-keys
-    :keymaps '(normal insert visual emacs)
-    :prefix "SPC"
-    :global-prefix "C-SPC")
-
-  (mwg/leader-keys
-    "t"  '(:ignore t :which-key "toggles")
-    "tt" '(counsel-load-theme :which-key "choose theme")
-    "fde" '(lambda () (interactive)
-             (find-file (expand-file-name "~/.emacs.d/Emacs.org")))))
-#+end_src
-
-** Extra Keybindings
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
-#+end_src
-
 * Theme Configuration
-
 ** Setup Theme
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 ;; Good Dark Themes: doom-meltbus doom-tomorrow-night
 
@@ -308,14 +204,22 @@
   :init (load-theme 'doom-moonless t))
 #+end_src
 
-** All The Icons
+** Emacs Dashboard
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+  (use-package dashboard
+    :config
+    (dashboard-setup-startup-hook)
+    (setq initial-buffer-choice
+    (lambda () (get-buffer "*dashboard*")))
+    (setq dashboard-set-init-info t))
+#+end_src
 
+** All The Icons
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (use-package all-the-icons)
 #+end_src
 
 ** Doom Modeline
-
 *NOTE:* The first time you load your configuration on a new machine, you'll need to run `M-x all-the-icons-install-fonts` so that mode line icons display correctly.
 
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
@@ -355,7 +259,6 @@
 #+end_src
 
 ** Display Time in Modeline
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (use-package time
   :defer 10
@@ -373,361 +276,19 @@
   (setq display-time-format "| %H:%M | %m/%d/%y |"))
 #+end_src
 
-
 ** Battery Indicator
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 ;;(use-package fancy-battery :config (display-battery-mode))
 ;;(display-battery-mode)
 #+end_src
 
-
 ** System Monitor
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (use-package symon :bind ("s-h" . symon-mode))
 #+end_src
 
-* Autocomplete Modes
-
-** Which Key
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(use-package which-key
-  :defer 0
-  :diminish which-key-mode
-  :config
-  (which-key-mode)
-  (setq which-key-idle-delay 1))
-#+end_src
-
-** Ivy
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(use-package ivy
-  :diminish
-  :bind (("C-s" . swiper)
-         :map ivy-minibuffer-map
-         ("TAB" . ivy-alt-done)
-         ("C-l" . ivy-alt-done)
-         ("C-j" . ivy-next-line)
-         ("C-k" . ivy-previous-line)
-         :map ivy-switch-buffer-map
-         ("C-k" . ivy-previous-line)
-         ("C-l" . ivy-done)
-         ("C-d" . ivy-switch-buffer-kill)
-         :map ivy-reverse-i-search-map
-         ("C-k" . ivy-previous-line)
-         ("C-d" . ivy-reverse-i-search-kill))
-  :config (ivy-mode 1))
-#+end_src
-
-*** Ivy-Rich
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(use-package ivy-rich
-  :after ivy
-  :init (ivy-rich-mode 1))
-#+end_src
-
-*** Ivy-Prescient
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(use-package ivy-prescient
-  :after counsel
-  :custom
-  (ivy-prescient-enable-filtering nil)
-  :config
-  (prescient-persist-mode 1)
-  (ivy-prescient-mode 1))
-
-#+end_src
-
-** Counsel
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(use-package counsel
-  :bind (("C-M-j" . 'counsel-switch-buffer)
-         :map minibuffer-local-map
-         ("C-r" . 'counsel-minibuffer-history))
-  :custom
-  (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
-  :config
-  (counsel-mode 1))
-#+end_src
-
-* Other Modes
-
-** Makefile Mode
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(use-package make-mode
-  :mode (("Makefile" . makefile-gmake-mode)))
-#+end_src
-   
-** Helpful
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(use-package helpful
-  :commands (helpful-callable helpful-variable helpful-command helpful-key)
-  :custom
-  (counsel-describe-function-function #'helpful-callable)
-  (counsel-describe-variable-function #'helpful-variable)
-  :bind
-  ([remap describe-function] . counsel-describe-function)
-  ([remap describe-command] . helpful-command)
-  ([remap describe-variable] . counsel-describe-variable)
-  ([remap describe-key] . helpful-key))
-#+end_src
-
-** Focus Mode
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(use-package focus)
-#+end_src
-
-** Solaire Mode
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(use-package solaire-mode
-  :config
-  (solaire-global-mode +1))
-#+end_src
-
-** Treemacs
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(use-package treemacs
-  :after general
-  :config
-  (mwg/leader-keys
-    "C-d" 'treemacs))
-
-(use-package treemacs-evil
-  :after (treemacs evil))
-
-(use-package treemacs-projectile
-  :after (treemacs projectile))
-
-;; (use-package treemacs-icons-dired
-;; :hook (dired-mode . treemacs-icons-dired-enable-once))
-
-(use-package treemacs-magit
-  :after (treemacs magit))
-
-(use-package treemacs-persp
-  :after (treemacs persp-mode))
-#+end_src
-
-* Org Mode
-
-** Better Font Faces
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(defun mwg/org-font-setup ()
-  ;; Replace list hyphen with dot
-  (font-lock-add-keywords 'org-mode '(("^ *\\([-]\\) "
-                                       (0 (prog1 () (compose-region
-                                                     (match-beginning 1)
-                                                     (match-end 1) "•")))))))
-#+end_src
-
-** Basic Config
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(setq-default indent-tabs-mode nil)
-(defun mwg/org-mode-setup ()
-  (org-indent-mode 1)
-  (visual-line-mode 1))
-
-(use-package org
-  :pin org
-  :commands (org-capture org-agenda)
-  :hook (org-mode . mwg/org-mode-setup)
-  :config
-  (mwg/org-font-setup)
-  (setq-default org-ellipsis " ▾"
-                org-pretty-entities t
-                org-hide-emphasis-markers t
-                org-edit-src-content-indentation 0))
-#+end_src
-
-*** Nicer Heading Bullets
-
-[[https://github.com/sabof/org-bullets][org-bullets]] replaces the heading stars in =org-mode= buffers with nicer looking characters that you can control.  Another option for this is [[https://github.com/integral-dw/org-superstar-mode][org-superstar-mode]] which we may cover in a later video.
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(use-package org-bullets
-  :hook (org-mode . org-bullets-mode)
-  :custom
-  (org-bullets-bullet-list
-   '("◉" "○" "●" "○" "●" "○" "●")))
-#+end_src
-
-*** Center Org Buffers
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(setq-default fill-column 80)
-(use-package olivetti
-  :hook (org-mode . olivetti-mode))
-#+end_src
-
-** Configure Babel Languages
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(with-eval-after-load 'org
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((emacs-lisp . t)
-     (python . t)
-     (shell . t)))
-
-  (push '("conf-unix" . conf-unix) org-src-lang-modes))
-#+end_src
-
-** Structure Templates
-
-Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure templates]] feature enables you to quickly insert code blocks into your Org files in combination with =org-tempo= by typing =<= followed by the template name like =el= or =py= and then press =TAB=.
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(with-eval-after-load 'org (require 'org-tempo)
-                      (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
-                      (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-                      (add-to-list 'org-structure-template-alist '("py" . "src python")))
-#+end_src
-
-** Auto-tangle Configuration Files
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(defun mwg/org-babel-tangle-config ()
-  (when (member (file-name-nondirectory (buffer-file-name))
-                '("emacs.org"
-                  "setup.org"))
-    (let ((org-confirm-babel-evaluate nil)) (org-babel-tangle)))) 
-
-(add-hook 'org-mode-hook (lambda ()
-                           (add-hook 'after-save-hook #'mwg/org-babel-tangle-config)))
-#+end_src
-
-* Development
-
-** Projectile
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(use-package projectile
-  :diminish projectile-mode
-  :config (projectile-mode)
-  :custom ((projectile-completion-system 'ivy))
-  :bind-keymap
-  ("C-c p" . projectile-command-map)
-  :init
-  ;; NOTE: Set this to the folder where you keep your Git repos!
-  (when (file-directory-p "~/")
-    (setq projectile-project-search-path '("~/")))
-  (setq projectile-switch-project-action #'projectile-dired))
-
-(use-package counsel-projectile
-  :after projectile
-  :config (counsel-projectile-mode))
-#+end_src
-
-** Magit
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(use-package magit
-  :commands magit-status
-  :custom
-  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
-
-;; (use-package forge
-;;  :after magit)
-#+end_src
-
-** Evil Commentary
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(use-package evil-commentary
-  :config (evil-commentary-mode))
-;; :bind ("M-/" . evilnc-comment-or-uncomment-lines))
-#+end_src
-
-** Rainbow Delimiters
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(use-package rainbow-delimiters
-  :hook (prog-mode . rainbow-delimiters-mode)
-  :config (show-paren-mode 1))
-#+end_src
-
-* Terminals
-
-** Term Mode
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(use-package term
-  :commands term
-  :config
-  (setq explicit-shell-file-name "zsh"))
-#+end_src
-
-*** Better term-mode colors
-
-*NOTE:* This package requires =ncurses= to be installed on your machine.
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(use-package eterm-256color
-  :hook (term-mode . eterm-256color-mode))
-#+end_src
-
-** vterm
-
-*NOTE:* Make sure that you have the [[https://github.com/akermu/emacs-libvterm/#requirements][necessary dependencies]] installed before trying to use =vterm=.
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(use-package vterm
-  :commands vterm
-  :config
-  (setq vterm-shell "zsh")
-  (setq vterm-max-scrollback 10000))
-#+end_src
-
-* File Management
-
-** Dired
-
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(use-package dired
-  :ensure nil
-  :bind (("C-x C-j" . dired-jump))
-  :custom ((dired-listing-switches "-alh --group-directories-first"))
-  :config
-  (evil-collection-define-key 'normal 'dired-mode-map
-    "h" 'dired-single-up-directory
-    "l" 'dired-single-buffer))
-
-(use-package dired-single
-  :after 'dired)
-
-(use-package all-the-icons-dired
-  :hook (dired-mode . all-the-icons-dired-mode))
-
-(use-package dired-open
-  :after 'dired
-  :config
-  (setq dired-open-extensions '(("png" . "feh")
-                                ("mkv" . "mpv"))))
-
-(use-package dired-hide-dotfiles
-  :hook (dired-mode . dired-hide-dotfiles-mode)
-  :config
-  (evil-collection-define-key 'normal 'dired-mode-map
-    "H" 'dired-hide-dotfiles-mode))
-#+end_src
-
 * Desktop Environment
-
 ** Polybar
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
   (defvar efs/polybar-process nil
     "Holds the process of the running Polybar instance, if any")
@@ -746,16 +307,13 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
                                "polybar" nil "polybar panel")))
 #+end_src
   
-
 ** Setup EXWM
-
 *** Set Wallpaper
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (defun efs/set-wallpaper ()
   (interactive)
   (start-process-shell-command
-   "feh" nil "feh --bg-scale /usr/share/backgrounds/gnome/VNC.png"))
+   "feh" nil "feh --bg-scale $BACKGROUNDS/2001_A_Space_Odyssey.jpg"))
 #+end_src
 
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
@@ -774,6 +332,7 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
   (exwm-randr-enable)
   (start-process-shell-command "xrandr" nil "xrandr --output eDP-1 --primary --mode 3840x2160 --pos 0x0 --rotate normal --output DP-1 --off --output HDMI-1 --off")
 
+  (start-process-shell-command "picom" nil "picom")
   (efs/set-wallpaper)
   
   ;; Set the default number of workspaces
@@ -788,6 +347,7 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
           ?\C-u
           ?\C-h
           ?\C-w
+          ?\C-c
           ?\M-x
           ?\M-`
           ?\M-&
@@ -864,7 +424,6 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
 #+end_src
 
 ** exwm-evil-firefox
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (use-package exwm-firefox-evil
   :after exwm
@@ -872,7 +431,6 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
 #+end_src
 
 ** Audio Support
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (with-eval-after-load 'exwm
     (defconst volumeModifier "4")
@@ -897,7 +455,6 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
 #+end_src
 
 ** Backlight Support
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (with-eval-after-load 'exwm
   
@@ -920,10 +477,382 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
 (use-package bluetooth)
 #+end_src
 
+* Keybinding Configuration
+** Evil Mode
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package evil
+  :init
+  (setq evil-want-integration t)
+  (setq evil-want-keybinding nil)
+  (setq evil-want-C-u-scroll t)
+  (setq evil-want-C-i-jump nil)
+  :config
+  (evil-mode 1)
+  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+  (define-key evil-insert-state-map (kbd "C-h")
+    'evil-delete-backward-char-and-join)
+
+  (define-key evil-motion-state-map
+    (kbd "<remap> <evil-next-line>") #'evil-next-visual-line)
+  (define-key evil-motion-state-map
+    (kbd "<remap> <evil-previous-line>") #'evil-previous-visual-line)
+  (define-key evil-operator-state-map
+    (kbd "<remap> <evil-next-line>") #'evil-next-line)
+  (define-key evil-operator-state-map
+    (kbd "<remap> <evil-previous-line>") #'evil-previous-line)
+
+  (define-key evil-operator-state-map
+    (kbd "<remap> <evil-previous-line>") #'evil-previous-line)
+
+  (define-key evil-normal-state-map
+    (kbd "<remap> <evil-quit>") #'mwg/exit-to-dashboard)
+  (evil-define-command exit () (interactive) (save-buffers-kill-terminal)))
+
+(defun mwg/exit-to-dashboard () (interactive)
+  (if (eq (count-windows) 1) (switch-to-buffer "*dashboard*") (delete-window)))
+#+end_src
+
+*** Evil Collection
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package evil-collection
+  :after evil
+  :config
+  (evil-collection-init))
+#+end_src
+
+** General
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package general
+  :after evil
+  :config
+  (general-create-definer mwg/leader-keys
+    :keymaps '(normal insert visual emacs)
+    :prefix "SPC"
+    :global-prefix "C-SPC")
+
+  (mwg/leader-keys
+    "t"  '(:ignore t :which-key "toggles")
+    "tt" '(counsel-load-theme :which-key "choose theme")
+    "fde" '(lambda () (interactive)
+             (find-file (expand-file-name "~/.emacs.d/Emacs.org")))))
+#+end_src
+
+** Extra Keybindings
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+#+end_src
+
+* Autocomplete Modes
+** Which Key
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package which-key
+  :defer 0
+  :diminish which-key-mode
+  :config
+  (which-key-mode)
+  (setq which-key-idle-delay 1))
+#+end_src
+
+** Ivy
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package ivy
+  :diminish
+  :bind (("C-s" . swiper)
+         :map ivy-minibuffer-map
+         ("TAB" . ivy-alt-done)
+         ("C-l" . ivy-alt-done)
+         ("C-j" . ivy-next-line)
+         ("C-k" . ivy-previous-line)
+         :map ivy-switch-buffer-map
+         ("C-k" . ivy-previous-line)
+         ("C-l" . ivy-done)
+         ("C-d" . ivy-switch-buffer-kill)
+         :map ivy-reverse-i-search-map
+         ("C-k" . ivy-previous-line)
+         ("C-d" . ivy-reverse-i-search-kill))
+  :config (ivy-mode 1))
+#+end_src
+
+*** Ivy-Rich
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package ivy-rich
+  :after ivy
+  :init (ivy-rich-mode 1))
+#+end_src
+
+*** Ivy-Prescient
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package ivy-prescient
+  :after counsel
+  :custom
+  (ivy-prescient-enable-filtering nil)
+  :config
+  (prescient-persist-mode 1)
+  (ivy-prescient-mode 1))
+#+end_src
+
+** Counsel
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package counsel
+  :bind (("C-M-j" . 'counsel-switch-buffer)
+         :map minibuffer-local-map
+         ("C-r" . 'counsel-minibuffer-history))
+  :custom
+  (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
+  :config
+  (counsel-mode 1))
+#+end_src
+
+* Other Modes
+** Makefile Mode
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package make-mode
+  :mode (("Makefile" . makefile-gmake-mode)))
+#+end_src
+   
+** Helpful
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package helpful
+  :commands (helpful-callable helpful-variable helpful-command helpful-key)
+  :custom
+  (counsel-describe-function-function #'helpful-callable)
+  (counsel-describe-variable-function #'helpful-variable)
+  :bind
+  ([remap describe-function] . counsel-describe-function)
+  ([remap describe-command] . helpful-command)
+  ([remap describe-variable] . counsel-describe-variable)
+  ([remap describe-key] . helpful-key))
+#+end_src
+
+** Focus Mode
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package focus)
+#+end_src
+
+** Solaire Mode
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package solaire-mode
+  :config
+  (solaire-global-mode +1))
+#+end_src
+
+** Treemacs
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package treemacs
+  :after general
+  :config
+  (mwg/leader-keys
+    "C-d" 'treemacs))
+
+(use-package treemacs-evil
+  :after (treemacs evil))
+
+(use-package treemacs-projectile
+  :after (treemacs projectile))
+
+;; (use-package treemacs-icons-dired
+;; :hook (dired-mode . treemacs-icons-dired-enable-once))
+
+(use-package treemacs-magit
+  :after (treemacs magit))
+
+(use-package treemacs-persp
+  :after (treemacs persp-mode))
+#+end_src
+
+* Org Mode
+** Better Font Faces
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(defun mwg/org-font-setup ()
+  ;; Replace list hyphen with dot
+  (font-lock-add-keywords 'org-mode '(("^ *\\([-]\\) "
+                                       (0 (prog1 () (compose-region
+                                                     (match-beginning 1)
+                                                     (match-end 1) "•")))))))
+#+end_src
+
+** Basic Config
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(setq-default indent-tabs-mode nil)
+(defun mwg/org-mode-setup ()
+  (org-indent-mode 1)
+  (visual-line-mode 1))
+
+(use-package org
+  :pin org
+  :commands (org-capture org-agenda)
+  :hook (org-mode . mwg/org-mode-setup)
+  :config
+  (mwg/org-font-setup)
+  (setq-default org-ellipsis " ▾"
+                org-pretty-entities t
+                org-hide-emphasis-markers t
+                org-edit-src-content-indentation 0))
+#+end_src
+
+*** Nicer Heading Bullets
+[[https://github.com/sabof/org-bullets][org-bullets]] replaces the heading stars in =org-mode= buffers with nicer looking characters that you can control.  Another option for this is [[https://github.com/integral-dw/org-superstar-mode][org-superstar-mode]] which we may cover in a later video.
+
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package org-bullets
+  :hook (org-mode . org-bullets-mode)
+  :custom
+  (org-bullets-bullet-list
+   '("◉" "○" "●" "○" "●" "○" "●")))
+#+end_src
+
+*** Center Org Buffers
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(setq-default fill-column 80)
+(use-package olivetti
+  :hook (org-mode . olivetti-mode))
+#+end_src
+
+*** Drag and Drop Images
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package org-download
+  :after org
+  :config
+  (org-download-enable))
+#+end_src
+
+** Configure Babel Languages
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(with-eval-after-load 'org
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (python . t)
+     (shell . t)))
+  (push '("conf-unix" . conf-unix) org-src-lang-modes))
+#+end_src
+
+** Structure Templates
+Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure templates]] feature enables you to quickly insert code blocks into your Org files in combination with =org-tempo= by typing =<= followed by the template name like =el= or =py= and then press =TAB=.
+
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(with-eval-after-load 'org (require 'org-tempo)
+                      (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+                      (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+                      (add-to-list 'org-structure-template-alist '("py" . "src python")))
+#+end_src
+
+** Auto-tangle Configuration Files
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(defun mwg/org-babel-tangle-config ()
+  (when (member (file-name-nondirectory (buffer-file-name))
+                '("emacs.org"
+                  "setup.org"))
+    (let ((org-confirm-babel-evaluate nil)) (org-babel-tangle)))) 
+
+(add-hook 'org-mode-hook (lambda ()
+                           (add-hook 'after-save-hook #'mwg/org-babel-tangle-config)))
+#+end_src
+
+* Development
+** Projectile
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package projectile
+  :diminish projectile-mode
+  :config (projectile-mode)
+  :custom ((projectile-completion-system 'ivy))
+  :bind-keymap
+  ("C-c p" . projectile-command-map)
+  :init
+  ;; NOTE: Set this to the folder where you keep your Git repos!
+  (when (file-directory-p "~/")
+    (setq projectile-project-search-path '("~/")))
+  (setq projectile-switch-project-action #'projectile-dired))
+
+(use-package counsel-projectile
+  :after projectile
+  :config (counsel-projectile-mode))
+#+end_src
+
+** Magit
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package magit
+  :commands magit-status
+  :custom
+  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+
+;; (use-package forge
+;;  :after magit)
+#+end_src
+
+** Evil Commentary
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package evil-commentary
+  :config (evil-commentary-mode))
+;; :bind ("M-/" . evilnc-comment-or-uncomment-lines))
+#+end_src
+
+** Rainbow Delimiters
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package rainbow-delimiters
+  :hook (prog-mode . rainbow-delimiters-mode)
+  :config (show-paren-mode 1))
+#+end_src
+
+* File Management
+** Dired
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package dired
+  :ensure nil
+  :bind (("C-x C-j" . dired-jump))
+  :custom ((dired-listing-switches "-alh --group-directories-first"))
+  :config
+  (evil-collection-define-key 'normal 'dired-mode-map
+    "h" 'dired-single-up-directory
+    "l" 'dired-single-buffer))
+
+(use-package dired-single
+  :after 'dired)
+
+(use-package all-the-icons-dired
+  :hook (dired-mode . all-the-icons-dired-mode))
+
+(use-package dired-open
+  :after 'dired
+  :config
+  (setq dired-open-extensions '(("png" . "feh")
+                                ("mkv" . "mpv"))))
+
+(use-package dired-hide-dotfiles
+  :hook (dired-mode . dired-hide-dotfiles-mode)
+  :config
+  (evil-collection-define-key 'normal 'dired-mode-map
+    "H" 'dired-hide-dotfiles-mode))
+#+end_src
+
+* Terminals
+** Term Mode
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package term
+  :commands term
+  :config
+  (setq explicit-shell-file-name "zsh"))
+#+end_src
+
+*** Better term-mode colors
+*NOTE:* This package requires =ncurses= to be installed on your machine.
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package eterm-256color
+  :hook (term-mode . eterm-256color-mode))
+#+end_src
+
+** vterm
+*NOTE:* Make sure that you have the [[https://github.com/akermu/emacs-libvterm/#requirements][necessary dependencies]] installed before trying to use =vterm=.
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package vterm
+  :commands vterm
+  :config
+  (setq vterm-shell "zsh")
+  (setq vterm-max-scrollback 10000))
+#+end_src
+
 * WSL Specific
-
 ** Copy and Paste
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (defun wsl-copy (start end)
   (interactive "r")
@@ -944,22 +873,18 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
 #+end_src
 
 * Closing Configuration
-
 ** Reduce Garbage Collector Threshold
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (setq gc-cons-threshold (* 1 1000 1000 1000))
 (setq garbage-collection-messages t)
 #+end_src
 
 ** Enable File Name Handler
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (setq file-name-handler-alist file-name-handler-alist-original)
 #+end_src
 
 ** Enable Garbage Collector Magic Hack
-
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (use-package gcmh
   :config
