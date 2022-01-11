@@ -1,4 +1,5 @@
 #+title: Emacs Configuration
+#+PROPERTY: header-args:emacs-lisp :tangle ./.config/emacs/init.el :results none
 
 * Early Init
 
@@ -34,6 +35,11 @@
 #+end_src
 
 * Package Management
+
+** Enable AOT Compilation of External Packages
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(setq package-native-compile t)
+#+end_src
 
 ** Setup Package Sources
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
@@ -213,7 +219,6 @@
 
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
     (use-package dashboard
-      :ensure t
       :config
       (dashboard-setup-startup-hook)
       (setq initial-buffer-choice
@@ -283,7 +288,6 @@
     "tt" '(counsel-load-theme :which-key "choose theme")
     "fde" '(lambda () (interactive)
              (find-file (expand-file-name "~/.emacs.d/Emacs.org")))))
-
 #+end_src
 
 ** Extra Keybindings
@@ -301,7 +305,7 @@
 
 ;; Good Light Themes: doom-solarized-light doom-tomorrow-day doom-homage-white doom-acario-light doom-opera-light doom-nord-light modus-operandi doom-one-light doom-earl-grey adwaita doom-vivendi doom-monokai-pro
 (use-package doom-themes
-  :init (load-theme 'doom-tomorrow-night t))
+  :init (load-theme 'doom-new-moonless t))
 #+end_src
 
 ** All The Icons
@@ -318,7 +322,6 @@
 (use-package doom-modeline
   :init (doom-modeline-mode 1)
   :custom
-  
   (doom-modeline-height 1)
   (doom-modeline-bar-width 2)
   (defcustom doom-modeline-hud nil)
@@ -367,9 +370,7 @@
           ("America/New_York" "New York")
           ("Australia/Sydney" "Sydney")))
   (setq display-time-24hr-format t)
-  (setq display-time-format "| 🕒 %H:%M | 🗓 %m/%d/%y |")
-  ;; Show time in modeline
-  (display-time-mode))
+  (setq display-time-format "| %H:%M | %m/%d/%y |"))
 #+end_src
 
 
@@ -377,7 +378,7 @@
 
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 ;;(use-package fancy-battery :config (display-battery-mode))
-(display-battery-mode)
+;;(display-battery-mode)
 #+end_src
 
 
@@ -578,7 +579,8 @@
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((emacs-lisp . t)
-     (python . t)))
+     (python . t)
+     (shell . t)))
 
   (push '("conf-unix" . conf-unix) org-src-lang-modes))
 #+end_src
@@ -785,6 +787,7 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
         '(?\C-x
           ?\C-u
           ?\C-h
+          ?\C-w
           ?\M-x
           ?\M-`
           ?\M-&
@@ -910,6 +913,11 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
 
     (global-set-key (kbd "<XF86MonBrightnessUp>") 'backlight/raise-brightness)
     (global-set-key (kbd "<XF86MonBrightnessDown>") 'backlight/lower-brightness))
+#+end_src
+
+** Bluetooth Support
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package bluetooth)
 #+end_src
 
 * WSL Specific

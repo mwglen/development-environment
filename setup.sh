@@ -72,6 +72,18 @@ $INSTALL bluez bluez-utils
 sudo systemctl enable bluetooth
 sudo systemctl start bluetooth
 
+# sudo tee "/etc/bluetooth/main.conf" > /dev/null <<'EOF'
+# [Policy]
+# AutoEnable=true
+
+# [General]
+# DiscoverableTimeout = 0
+# EOF
+
+$INSTALL networkmanager network-manager-applet
+sudo systemctl enable NetworkManager
+sudo systemctl start NetworkManager
+
 $INSTALL git openssh
 mkdir -p "$XDG_CONFIG_HOME"/git
 touch "$XDG_CONFIG_HOME"/git/config
@@ -176,6 +188,9 @@ $INSTALL emacs
 
 $INSTALL cantarell-fonts ttf-fira-code
 
+mkdir -p .config/emacs
+ln ./doom-moonless-theme.el .config/emacs/doom-moonless-theme.el
+
 cat <<EOT >> $ZDOTDIR/.zshrc
 # emacs config
 vterm_printf(){
@@ -263,6 +278,8 @@ XF86AudioMute
     pulsemixer --toggle-mute
 
 EOT
+
+$INSTALL redshift
 
 # mkdir -p $XDG_CONFIG_HOME/X11
 # echo "Xft.dpi: 282" > $XDG_CONFIG_HOME/X11/xresources
@@ -487,14 +504,14 @@ Type=Application
 Icon=exwm
 Comment=The Emacs X Window Manager
 TryExec=emacs
-Exec=emacs
+Exec=emacs -fg --debug-init
 EOF
 
 $INSTALL picom feh
 
 $INSTALL polybar
-
 mkdir -p $XDG_CONFIG_HOME/polybar
+
 cat <<EOT > $XDG_CONFIG_HOME/polybar/config
 [settings]
 screenchange-reload = true
@@ -502,20 +519,23 @@ screenchange-reload = true
 [global/wm]
 margin-top = 0
 margin-bottom = 0
+EOT
 
+cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
 [colors]
-background = #f0232635
-background-alt = #576075
-foreground = #A6Accd
-foreground-alt = #555
-primary = #ffb52a
+background = #000000
+background-alt = #161719
+foreground = #c5c8c6
+foreground-alt = #767876
+primary = #1d1f21
 secondary = #e60053
 alert = #bd2c40
-underline-1 = #c792ea
+EOT
 
+cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
 [bar/panel]
 width = 100%
-height = 35
+height = 80
 offset-x = 0
 offset-y = 0
 fixed-center = true
@@ -524,22 +544,23 @@ enable-ipc = true
 background = \${colors.background}
 foreground = \${colors.foreground}
 
-line-size = 2
+line-size = 3
 line-color = #f00
 
 border-size = 0
 border-color = #00000000 padding-top = 5
-padding-left = 1
-padding-right = 1
+padding-left = 2
+padding-right = 2
 
 module-margin = 1
 
-font-0 = "Noto Sans:size=18:weight=bold;2"
-font-1 = "Font Awesome:size=14;2"
-font-2 = "Material Icons:size=20;5"
-font-3 = "Fira Mono:size=13;-3"
+font-0 = "Noto Sans:size=25:weight=bold"
+font-1 = "Material Icons:size=35;5"
+font-2 = "Font Awesome:size=35;5"
 
-modules-right = cpu temperature battery date
+modules-right = pulseaudio backlight wireless-network cpu temperature memory battery
+modules-left = date
+modules-center =
 
 tray-position = right
 tray-padding = 2
@@ -547,39 +568,31 @@ tray-maxsize = 28
 
 cursor-click = pointer
 cursor-scroll = ns-resize
+EOT
 
+cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
 [module/cpu]
 type = internal/cpu
 interval = 2
-format = <label> <ramp-coreload>
-format-underline = \${colors.underline-1}
+format = CPU <label>
 click-left = emacsclient -e "(proced)"
 label = %percentage:2%%
-ramp-coreload-spacing = 0
-ramp-coreload-0 = ▁
-ramp-coreload-0-foreground = \${colors.foreground-alt}
-ramp-coreload-1 = ▂
-ramp-coreload-2 = ▃
-ramp-coreload-3 = ▄
-ramp-coreload-4 = ▅
-ramp-coreload-5 = ▆
-ramp-coreload-6 = ▇
+EOT
 
+cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
 [module/date]
 type = internal/date
 interval = 5
-
-date = "%a %b %e"
-date-alt = "%A %B %d %Y"
-
+date = "%B %d, %Y"
+date-alt = "%A %B %d, %Y"
 time = %l:%M %p
 time-alt = %H:%M:%S
 
 format-prefix-foreground = \${colors.foreground-alt}
-format-underline = \${colors.underline-1}
-
 label = %date% %time%
+EOT
 
+cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
 [module/battery]
 type = internal/battery
 battery = BAT0
@@ -587,12 +600,12 @@ adapter = ADP1
 full-at = 98
 time-format = %-l:%M
 
-label-charging = %percentage%% / %time%
-format-charging = <animation-charging> <label-charging> format-charging-underline = \${colors.underline-1} label-discharging = %percentage%% / %time% format-discharging = <ramp-capacity> <label-discharging>
-format-discharging-underline = \${self.format-charging-underline}
+label-charging = %percentage%%
+format-charging = <animation-charging> <label-charging>
+label-discharging = %percentage%%
+format-discharging = <ramp-capacity> <label-discharging>
 
 format-full = <ramp-capacity> <label-full>
-format-full-underline = \${self.format-charging-underline}
 
 ramp-capacity-0 = 
 ramp-capacity-1 = 
@@ -606,21 +619,96 @@ animation-charging-2 = 
 animation-charging-3 = 
 animation-charging-4 = 
 animation-charging-framerate = 750
+EOT
 
+cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
 [module/temperature]
 type = internal/temperature
 thermal-zone = 0
 warn-temperature = 60
 
-format = <label>
-format-underline = \${colors.underline-1}
-format-warn = <label-warn>
-format-warn-underline = \${self.format-underline}
+format = TEMP <label>
+format-warn = TEMP <label-warn>
 
 label = %temperature-c%
 label-warn = %temperature-c%!
 label-warn-foreground = \${colors.secondary}
-
 EOT
+
+cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
+[module/pulseaudio]
+type = internal/pulseaudio
+format-volume = <ramp-volume> <label-volume>
+interval = 5
+label-muted =  muted
+label-muted-foreground = #66
+
+ramp-volume-0 = 
+ramp-volume-1 = 
+ramp-volume-2 =  
+ramp-volume-3 =   
+
+;click-right = pavucontrol
+; click-middle = 
+EOT
+
+cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
+[module/wireless-network]
+type = internal/network
+interface = wlan0
+
+format-connected =  <label-connected>
+format-connected-alt = 
+format-disconnected = <label-disconnected>
+format-packetloss = <animation-packetloss label-connected>
+
+label-connected = %essid% %downspeed:9%
+label-connected-alt = 
+label-connected-foreground = #eefafafa
+
+label-disconnected = not connected
+label-disconnected-foreground = #66ffffff
+EOT
+
+cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
+[module/memory]
+type = internal/memory
+interval = 3
+format = <label>
+label = MEM %percentage_used:2%%
+EOT
+
+cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
+[module/backlight]
+type = internal/backlight
+card = intel_backlight
+format = <ramp> <label>
+label = %percentage%%
+ramp-0 = 
+ramp-1 = 
+EOT
+
+cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
+[module/redshift]
+        type = custom/script
+        format-prefix = "Redshift: "
+        exec = source ~/development-environment/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh temperature
+        click-left = source ~/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh toggle
+        scroll-up = source ~/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh increase
+        scroll-down = source ~/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh decrease
+        interval=0.5
+EOT
+cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
+[module/redshift]
+        type = custom/script
+        format-prefix = "Redshift: "
+        exec = source ~/development-environment/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh temperature
+        click-left = source ~/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh toggle
+        scroll-up = source ~/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh increase
+        scroll-down = source ~/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh decrease
+        interval=0.5
+EOT
+
+sudo chsh -s /usr/bin/zsh $(whoami)
 
 sudo chsh -s /usr/bin/zsh $(whoami)

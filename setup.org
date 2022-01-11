@@ -1,27 +1,29 @@
 #+title: Setup Development Environment Script
+#+PROPERTY: header-args:bash :tangle ./setup.sh :results none
+
 * Script Headers
 ** Use Bash
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 #!/bin/bash
 #+end_src
 
 ** Stop  Script on Error
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 set -e
 #+end_src
 
 ** Start
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 set -v
 #+end_src
 
 **  Warning
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 # NOTE: This file is generated from setup.org
 #+end_src
 
 * Make sure OS is supported
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 export DISTRO=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
 if ! [ "$DISTRO" = "\"Arch Linux\"" ] \
     && ! [ "$DISTRO" = "\"Arch Linux ARM\"" ]; then 
@@ -33,7 +35,7 @@ fi
 
 * Setup XDG Base Directories
 ** Export Environment Variables
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 cat <<EOT > $HOME/.profile
 export XDG_CONFIG_HOME=$(realpath .)/.config
 export XDG_CACHE_HOME=$(realpath .)/.cache
@@ -44,7 +46,7 @@ source $HOME/.profile
 #+end_src
 
 ** Clean Directories
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 #rm -rf $XDG_CONFIG_HOME
 #rm -rf $XDG_CACHE_HOME
 #rm -rf $XDG_DATA_HOME
@@ -52,7 +54,7 @@ source $HOME/.profile
 #+end_src
 
 ** Make Directories
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 mkdir -p $XDG_CONFIG_HOME
 mkdir -p $XDG_CACHE_HOME
 mkdir -p $XDG_DATA_HOME
@@ -61,7 +63,7 @@ mkdir -p $XDG_STATE_HOME
 
 * Setup Yay
 ** Install Yay
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 if ! (pacman -Qs yay > /dev/null); then
     if (pacman -Qs fakeroot-tcp > /dev/null); then
         sudo pacman -Syyu --needed git base-devel \ && git clone https://aur.archlinux.org/yay.git \ && cd yay && yes | makepkg -si
@@ -75,7 +77,7 @@ fi
 #+end_src
 
 ** Setup Shortcuts
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 export INSTALL="yay -S --noconfirm --needed"
 export INSTALL_LOCAL="yay -U --noconfirm --needed"
 export REMOVE="yay -Rns --noconfirm --needed"
@@ -84,63 +86,77 @@ export SEARCH="yay -Qs"
 #+end_src
 
 ** Update Packages
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 $UPDATE
 #+end_src
 
 * Install Build System Packages
 ** Install man pages
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 $INSTALL man-db man-pages
 #+end_src
 
 ** Install cmake
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 $INSTALL cmake
 #+end_src
 
 ** Install rsync
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 $INSTALL rsync
 #+end_src
 
 ** Install wget
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 $INSTALL wget
 echo hsts-file \= "$XDG_CACHE_HOME"/wget-hsts >> "$XDG_CONFIG_HOME/wgetrc"
 #+end_src
 
 * File System Compatability
 ** exFAT Support
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 $INSTALL exfatprogs
 #+end_src
 
 ** NTFS Support
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 $INSTALL ntfs-3g
 #+end_src
 
 ** VHD and VHDX Support
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 $INSTALL libguestfs
 #+end_src
 
 * Setup USB
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 $INSTALL usbutils usbip
 #+end_src
 
 * Setup Bluetooth
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 $INSTALL bluez bluez-utils
 sudo systemctl enable bluetooth
 sudo systemctl start bluetooth
+
+# sudo tee "/etc/bluetooth/main.conf" > /dev/null <<'EOF'
+# [Policy]
+# AutoEnable=true
+
+# [General]
+# DiscoverableTimeout = 0
+# EOF
 #+end_src
 
+* Setup Wifi
+#+begin_src bash
+$INSTALL networkmanager network-manager-applet
+sudo systemctl enable NetworkManager
+sudo systemctl start NetworkManager
+#+end_src
 * Setup Core Packages
 ** Install git
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 $INSTALL git openssh
 mkdir -p "$XDG_CONFIG_HOME"/git
 touch "$XDG_CONFIG_HOME"/git/config
@@ -150,13 +166,13 @@ git config --global init.defaultBranch master
 #+end_src
 
 ** Install git-annex
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 $INSTALL git-annex
 #+end_src
 
 ** Setup Interactive Shell
 *** Install ZSH
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 $INSTALL zsh
 cat <<EOT > $HOME/.zshenv
 source $HOME/.profile
@@ -186,7 +202,7 @@ EOT
 #+end_src
 
 *** Setup Pure (ZSH Theme)
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 if (mkdir "$XDG_CONFIG_HOME"/zsh/pure); then
     git clone https://github.com/sindresorhus/pure.git "$XDG_CONFIG_HOME"/zsh/pure
 fi
@@ -216,7 +232,7 @@ EOT
 #+end_src
 
 ** Setup Neovim
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 $INSTALL neovim
 mkdir -p $XDG_CONFIG_HOME/nvim
 curl -fLo $XDG_DATA_HOME/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
@@ -257,17 +273,23 @@ EOT
 
 ** Setup Emacs
 *** Install Emacs
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 $INSTALL emacs
 #+end_src
 
 *** Install Fonts
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 $INSTALL cantarell-fonts ttf-fira-code
 #+end_src
 
+*** Apply Theme
+#+begin_src bash
+mkdir -p .config/emacs
+ln ./doom-moonless-theme.el .config/emacs/doom-moonless-theme.el
+#+end_src
+
 *** Additional vterm configuration
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 cat <<EOT >> $ZDOTDIR/.zshrc
 # emacs config
 vterm_printf(){
@@ -286,7 +308,7 @@ EOT
 
 *** Tangle Emacs Config
 **** Setup Nim and Nimble
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 $INSTALL nim nimble
 mkdir -p "$XDG_CONFIG_HOME"/nimble
 mkdir -p "$XDG_DATA_HOME"/nimble
@@ -297,7 +319,7 @@ EOT
 #+end_src
 
 **** Setup ntangle
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 nimble install -y ntangle
 cat <<EOT >> $ZDOTDIR/.zshrc
 # ntangle config
@@ -307,13 +329,13 @@ EOT
 #+end_src
 
 **** Tangle Config
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 mkdir -p .config/emacs
 "$XDG_DATA_HOME"/nimble/bin/ntangle emacs.org
 #+end_src
 
 *** Enable Emacs Daemon
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 mkdir -p "$XDG_CONFIG_HOME"/systemd/user/
 cat <<EOT > "$XDG_CONFIG_HOME"/systemd/user/emacs.service
 [Unit]
@@ -340,19 +362,19 @@ systemctl start --user emacs
 #+end_src
 
 ** Setup Podman
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 $INSTALL podman
 echo "unqualified-search-registries = ['docker.io']" \
     | sudo tee /etc/containers/registries.conf
 #+end_src
 
 ** Install Other Applications
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 $INSTALL firefox
 #+end_src
 
 * Systemwide Hotkeys
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 $INSTALL sxhkd brightnessctl pulsemixer
 mkdir -p $XDG_CONFIG_HOME/autostart
 cat <<EOT >> $XDG_CONFIG_HOME/autostart/sxhkd.desktop
@@ -380,10 +402,15 @@ EOT
 
 #+end_src
 
-* Display Managers
+* Redshift
+#+begin_src bash
+$INSTALL redshift
 
+#+end_src
+
+* Display Managers
 ** Configure X11
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 # mkdir -p $XDG_CONFIG_HOME/X11
 # echo "Xft.dpi: 282" > $XDG_CONFIG_HOME/X11/xresources
 echo "Xft.dpi: 200" > ~/.Xresources
@@ -391,13 +418,13 @@ echo "Xft.dpi: 200" > ~/.Xresources
 
 ** LightDM
 *** Install LightDM
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 $INSTALL lightdm
 systemctl enable lightdm
 #+end_src
 
 *** Install LightDM Theme
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 $INSTALL lightdm-webkit2-greeter lightdm-webkit-theme-litarvan
 sudo tee "/etc/lightdm/lightdm.conf" > /dev/null <<'EOF'
 #
@@ -609,7 +636,7 @@ EOF
 * Window Manager
 ** Setup EXWM
 
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 $INSTALL xorg dbus xorg-xrdb
 sudo mkdir -p /usr/share/xsessions/
 sudo tee "/usr/share/xsessions/exwm.desktop" > /dev/null <<'EOF'
@@ -625,17 +652,18 @@ EOF
 #+end_src
 
 ** Background Image
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 $INSTALL picom feh
 #+end_src
 
 ** Polybar
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
 $INSTALL polybar
+mkdir -p $XDG_CONFIG_HOME/polybar
 #+end_src
 
-#+begin_src bash :tangle ./setup.sh
-mkdir -p $XDG_CONFIG_HOME/polybar
+*** Global Settings
+#+begin_src bash
 cat <<EOT > $XDG_CONFIG_HOME/polybar/config
 [settings]
 screenchange-reload = true
@@ -643,20 +671,45 @@ screenchange-reload = true
 [global/wm]
 margin-top = 0
 margin-bottom = 0
+EOT
+#+end_src
 
+*** Themes
+**** Doom Tomorrow Night Theme
+#+begin_src bash :tangle no
+cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
 [colors]
-background = #f0232635
-background-alt = #576075
-foreground = #A6Accd
-foreground-alt = #555
-primary = #ffb52a
+; background = #0f1011
+background = #1d1f21
+background-alt = #161719
+foreground = #c5c8c6
+foreground-alt = #767876
+primary = #1d1f21
 secondary = #e60053
 alert = #bd2c40
-underline-1 = #c792ea
+EOT
+#+end_src
 
+**** Doom Moonless Theme
+#+begin_src bash
+cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
+[colors]
+background = #000000
+background-alt = #161719
+foreground = #c5c8c6
+foreground-alt = #767876
+primary = #1d1f21
+secondary = #e60053
+alert = #bd2c40
+EOT
+#+end_src
+
+*** Panel
+#+begin_src bash
+cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
 [bar/panel]
 width = 100%
-height = 35
+height = 80
 offset-x = 0
 offset-y = 0
 fixed-center = true
@@ -665,22 +718,23 @@ enable-ipc = true
 background = \${colors.background}
 foreground = \${colors.foreground}
 
-line-size = 2
+line-size = 3
 line-color = #f00
 
 border-size = 0
 border-color = #00000000 padding-top = 5
-padding-left = 1
-padding-right = 1
+padding-left = 2
+padding-right = 2
 
 module-margin = 1
 
-font-0 = "Noto Sans:size=18:weight=bold;2"
-font-1 = "Font Awesome:size=14;2"
-font-2 = "Material Icons:size=20;5"
-font-3 = "Fira Mono:size=13;-3"
+font-0 = "Noto Sans:size=25:weight=bold"
+font-1 = "Material Icons:size=35;5"
+font-2 = "Font Awesome:size=35;5"
 
-modules-right = cpu temperature battery date
+modules-right = pulseaudio backlight wireless-network cpu temperature memory battery
+modules-left = date
+modules-center =
 
 tray-position = right
 tray-padding = 2
@@ -688,39 +742,40 @@ tray-maxsize = 28
 
 cursor-click = pointer
 cursor-scroll = ns-resize
+EOT
+#+end_src
 
+*** CPU Utilization
+#+begin_src bash
+cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
 [module/cpu]
 type = internal/cpu
 interval = 2
-format = <label> <ramp-coreload>
-format-underline = \${colors.underline-1}
+format = CPU <label>
 click-left = emacsclient -e "(proced)"
 label = %percentage:2%%
-ramp-coreload-spacing = 0
-ramp-coreload-0 = ▁
-ramp-coreload-0-foreground = \${colors.foreground-alt}
-ramp-coreload-1 = ▂
-ramp-coreload-2 = ▃
-ramp-coreload-3 = ▄
-ramp-coreload-4 = ▅
-ramp-coreload-5 = ▆
-ramp-coreload-6 = ▇
+EOT
+#+end_src
 
+*** Date and Time
+#+begin_src bash
+cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
 [module/date]
 type = internal/date
 interval = 5
-
-date = "%a %b %e"
-date-alt = "%A %B %d %Y"
-
+date = "%B %d, %Y"
+date-alt = "%A %B %d, %Y"
 time = %l:%M %p
 time-alt = %H:%M:%S
 
 format-prefix-foreground = \${colors.foreground-alt}
-format-underline = \${colors.underline-1}
-
 label = %date% %time%
+EOT
+#+end_src
 
+*** Battery
+#+begin_src bash
+cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
 [module/battery]
 type = internal/battery
 battery = BAT0
@@ -728,12 +783,12 @@ adapter = ADP1
 full-at = 98
 time-format = %-l:%M
 
-label-charging = %percentage%% / %time%
-format-charging = <animation-charging> <label-charging> format-charging-underline = \${colors.underline-1} label-discharging = %percentage%% / %time% format-discharging = <ramp-capacity> <label-discharging>
-format-discharging-underline = \${self.format-charging-underline}
+label-charging = %percentage%%
+format-charging = <animation-charging> <label-charging>
+label-discharging = %percentage%%
+format-discharging = <ramp-capacity> <label-discharging>
 
 format-full = <ramp-capacity> <label-full>
-format-full-underline = \${self.format-charging-underline}
 
 ramp-capacity-0 = 
 ramp-capacity-1 = 
@@ -747,26 +802,124 @@ animation-charging-2 = 
 animation-charging-3 = 
 animation-charging-4 = 
 animation-charging-framerate = 750
+EOT
+#+end_src
 
+*** Temperature
+#+begin_src bash
+cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
 [module/temperature]
 type = internal/temperature
 thermal-zone = 0
 warn-temperature = 60
 
-format = <label>
-format-underline = \${colors.underline-1}
-format-warn = <label-warn>
-format-warn-underline = \${self.format-underline}
+format = TEMP <label>
+format-warn = TEMP <label-warn>
 
 label = %temperature-c%
 label-warn = %temperature-c%!
 label-warn-foreground = \${colors.secondary}
+EOT
+#+end_src
 
+*** Pulse Audio
+#+begin_src bash
+cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
+[module/pulseaudio]
+type = internal/pulseaudio
+format-volume = <ramp-volume> <label-volume>
+interval = 5
+label-muted =  muted
+label-muted-foreground = #66
+
+ramp-volume-0 = 
+ramp-volume-1 = 
+ramp-volume-2 =  
+ramp-volume-3 =   
+
+;click-right = pavucontrol
+; click-middle = 
+EOT
+#+end_src
+
+*** Wireless Network
+#+begin_src bash
+cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
+[module/wireless-network]
+type = internal/network
+interface = wlan0
+
+format-connected =  <label-connected>
+format-connected-alt = 
+format-disconnected = <label-disconnected>
+format-packetloss = <animation-packetloss label-connected>
+
+label-connected = %essid% %downspeed:9%
+label-connected-alt = 
+label-connected-foreground = #eefafafa
+
+label-disconnected = not connected
+label-disconnected-foreground = #66ffffff
+EOT
+#+end_src
+
+*** Memory                              
+#+begin_src bash
+cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
+[module/memory]
+type = internal/memory
+interval = 3
+format = <label>
+label = MEM %percentage_used:2%%
+EOT
+#+end_src
+
+*** Backlight
+#+begin_src bash
+cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
+[module/backlight]
+type = internal/backlight
+card = intel_backlight
+format = <ramp> <label>
+label = %percentage%%
+ramp-0 = 
+ramp-1 = 
+EOT
+#+end_src
+
+*** Redshift
+#+begin_src bash
+cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
+[module/redshift]
+        type = custom/script
+        format-prefix = "Redshift: "
+        exec = source ~/development-environment/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh temperature
+        click-left = source ~/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh toggle
+        scroll-up = source ~/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh increase
+        scroll-down = source ~/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh decrease
+        interval=0.5
+EOT
+cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
+[module/redshift]
+        type = custom/script
+        format-prefix = "Redshift: "
+        exec = source ~/development-environment/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh temperature
+        click-left = source ~/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh toggle
+        scroll-up = source ~/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh increase
+        scroll-down = source ~/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh decrease
+        interval=0.5
 EOT
 #+end_src
 
 * Change Shell
 
-#+begin_src bash :tangle ./setup.sh
+#+begin_src bash
+sudo chsh -s /usr/bin/zsh $(whoami)
+#+end_src
+#+end_src
+
+* Change Shell
+
+#+begin_src bash
 sudo chsh -s /usr/bin/zsh $(whoami)
 #+end_src
