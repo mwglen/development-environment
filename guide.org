@@ -1,0 +1,24 @@
+#+title: Setup Guide
+* Set GRUB to Remember Last Selection
+1. Put the following in ~/etc/default/grub~
+   #+begin_src
+   GRUB_DEFAULT=saved
+   GRUB_SAVEDEFAULT=true
+   #+end_src
+
+* Enable Hibernation
+1. To enable hibernation, make sure that you have a swap partition. It is best to make the partition larger than the total amount of RAM on your system.
+2. In ~/etc/default/grub~, add ~resume=/dev/nvme0n1p2~ to =GRUB_CMDLINE_LINUX=. Make sure to change "nvme0n1p2" with the name of your swap partition
+3. Rebuild grub using the new config by running ~sudo grub-mkconfig -o ~/boot/grub/grub.cfg~
+4. Reset your computer to complete the process
+
+Now you can use ~sudo systemctl hibernate~ to hibernate and ~sudo systmectl hybrid-sleep~ to sleep. I recommend aliasing these to ~hibernate~ and ~hybrid-sleep~.
+
+I also recommend changing the behavior of the system keys to all hibernate the computer
+
+* Change Behavior of System Keys
+1. In ~/etc/systemd/logind.conf~, edit =HandleSuspendKey=, =HandleHibernateKey=, =HandlePowerKey=, and =HandleLidSwitch=
+2. Reset your computer to complete the process
+   
+* Other Recommendations
+- Add a Grub Theme
