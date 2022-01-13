@@ -54,23 +54,23 @@
 
 ** Setup Use-Package
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-  (unless (package-installed-p 'use-package)
-    (package-install 'use-package))
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))
 
-  (require 'use-package)
-  (setq use-package-always-ensure t)
+(require 'use-package)
+(setq use-package-always-ensure t)
 #+end_src
 
 ** Automatic Package Updates
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-  (use-package auto-package-update
-    :custom
-    (auto-package-update-interval 7)
-    (auto-package-update-prompt-before-update t)
-    (auto-package-update-hide-results t)
-    :config
-    (auto-package-update-maybe)
-    (auto-package-update-at-time "09:00"))
+(use-package auto-package-update
+  :custom
+  (auto-package-update-interval 7)
+  (auto-package-update-prompt-before-update t)
+  (auto-package-update-hide-results t)
+  :config
+  (auto-package-update-maybe)
+  (auto-package-update-at-time "09:00"))
 #+end_src
 
 ** No Littering
@@ -85,15 +85,15 @@
 
 ** Restart Emacs
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-  (use-package restart-emacs
-    :commands (restart-emacs))
+(use-package restart-emacs
+  :commands (restart-emacs))
 #+end_src
 
 * Performance Improvements
 ** Asynchronous Processes
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-  (use-package async
-    :init (dired-async-mode 1))
+(use-package async
+  :init (dired-async-mode 1))
 #+end_src
 
 * User Interface
@@ -352,6 +352,7 @@
           ?\M-`
           ?\M-&
           ?\M-:
+          ?\:
           [escape]
           (kbd "<XF86AudioMute>")
           (kbd "<XF86AudioRaiseVolume>")
@@ -716,6 +717,26 @@
   (org-download-enable))
 #+end_src
 
+** Latex Support
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package auctex
+  :defer t
+  :config
+  (setq TeX-auto-save t)
+  (setq TeX-parse-self t))
+  ;(setq org-format-latex-options
+  ;      (plist-put org-format-latex-options :scale 4.0))
+
+;(require 'quelpa)
+;(quelpa '(calctex :fetcher url
+;                  :url            "https://raw.githubusercontent.com/johnbcoughlin/calctex/master/calctex/calctex.el"))
+;(quelpa '(org-calctex :fetcher url
+;                      :url            "https://raw.githubusercontent.com/johnbcoughlin/calctex/master/org-calctex/org-calctex.el"))
+  ;:config
+  ;(setq org-format-latex-options
+  ;      (plist-put org-format-latex-options :scale 4.0)))
+#+end_src
+
 ** Configure Babel Languages
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (with-eval-after-load 'org
@@ -851,7 +872,7 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
   (setq vterm-max-scrollback 10000))
 #+end_src
 
-* WSL Specific
+* WSL Config
 ** Copy and Paste
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (defun wsl-copy (start end)

@@ -94,6 +94,11 @@ git config --global init.defaultBranch master
 
 $INSTALL git-annex
 
+$INSTALL tex-live-core tllocalmgr-git
+tllocalmgr update
+tllocalmgr install dvipng l3packages xcolor soul adjustbox collectbox amsmath amssymb siunitx
+sudo texhash
+
 $INSTALL zsh
 cat <<EOT > $HOME/.zshenv
 source $HOME/.profile
@@ -280,7 +285,44 @@ XF86AudioMute
 
 EOT
 
+$INSTALL libvert qemu
+
+# Network Connectivity with Virtual Machine #
+$INSTALL iptables-nft \  # NAT/DHCP Netowrking (iptables!=iptables-nft)
+         dnsmasq \       # NAT/DHCP Netowrking
+         bridge-utils \  # Bridged Networking
+         openbsd-netcat  # Remote Management over SSH
+
+# Client Software #
+$INSTALL virsh \         # Managing and configuring domains
+         virt-manager    # Graphically manage KVM, Xen or LXC
+
+# Other Software #
+$INSTALL libguestfs \  # Access and modify virtual machine disk images
+         edk2-ovmf     # UEFI Support
+         
+# Members of the libvirt group have passwordless access to the RW daemon socket by default.
+sudo usermod -aG libvirt ${whoami}
+sudo usermod -aG kvm ${whoami}
+
+sudo systemctl enable libvirtd # Also enables virtlogd and virtlockd
+sudo systemctl start virtlogd
+sudo systemctl start libvirtd
+
+# Make sure to set user = /etc/libvirt/qemu.conf
+
+$INSTALL wine wine-mono wine-gecko
+
+#git clone --depth 1 --recursive https://github.com/kholia/OSX-KVM.git
+#cd OSX-KVM && (echo "4" > ./fetch-macOS-v2.py)
+#cd OSX-KVM && qemu-img convert BaseSystem.dmg -O raw BaseSystem.img
+#cd OSX-KVM && qemu-img create -f qcow2 mac_hdd_ng.img 128G
+#Installation
+#cd OSX-KVM && ./OpenCore-Boot.sh
+
 $INSTALL redshift
+
+$INSTALL obs-studio
 
 # mkdir -p $XDG_CONFIG_HOME/X11
 # echo "Xft.dpi: 282" > $XDG_CONFIG_HOME/X11/xresources
@@ -626,7 +668,7 @@ cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
 [module/temperature]
 type = internal/temperature
 thermal-zone = 0
-warn-temperature = 60
+warn-temperature = 70
 
 format = TEMP <label>
 format-warn = TEMP <label-warn>
@@ -699,17 +741,5 @@ cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
         scroll-down = source ~/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh decrease
         interval=0.5
 EOT
-cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
-[module/redshift]
-        type = custom/script
-        format-prefix = "Redshift: "
-        exec = source ~/development-environment/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh temperature
-        click-left = source ~/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh toggle
-        scroll-up = source ~/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh increase
-        scroll-down = source ~/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh decrease
-        interval=0.5
-EOT
-
-sudo chsh -s /usr/bin/zsh $(whoami)
 
 sudo chsh -s /usr/bin/zsh $(whoami)

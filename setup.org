@@ -149,6 +149,11 @@ sudo systemctl start bluetooth
 # EOF
 #+end_src
 
+* Audio Support
+#+begin_src bash
+$INSTALL pulseaudio-bluetooth alsa-utils pavucontrol
+#+end_src bash
+
 * Setup Wifi
 #+begin_src bash
 $INSTALL networkmanager network-manager-applet
@@ -169,6 +174,14 @@ git config --global init.defaultBranch master
 ** Install git-annex
 #+begin_src bash
 $INSTALL git-annex
+#+end_src
+
+** Latex
+#+begin_src bash
+$INSTALL tex-live-core tllocalmgr-git
+tllocalmgr update
+tllocalmgr install dvipng l3packages xcolor soul adjustbox collectbox amsmath amssymb siunitx
+sudo texhash
 #+end_src
 
 ** Setup Interactive Shell
@@ -403,10 +416,91 @@ EOT
 
 #+end_src
 
-* Redshift
+* Virtualization
+** Notes
+[[https://wiki.archlinux.org/title/libvirt]]
+[[https://serverfault.com/questions/208693/difference-between-kvm-and-qemu]]
+*** Basics
+- *KVM* stands for *Kernel-Based Virtual Machine*.
+- *Libvirt* provides a daemon and client to manipulate VMs for convenience
+- *QEMU* is the hypervisor. QEMU also includes a long list of peripheral emulators
+- *KQEMU* is a kernel module based off of QEMu that has optimizations for converting between a physical and virtual CPU of the same architecture (It can't just directly pass the code to the physical CPU, as it needs to replace privileged instructions with context switches). This served as a software-only "accelerator" and was made obsolete by KVM.
+- A *guest domain* is the same as a *virtual machine* when talking about OS Virtualization. You will see this term be brought up in ~virsh~ documentation
+- A *pool* is a location where storage volumes can be kept. *Volumes* are another name for *virtual disks* or *virtual machine images*. Pool locations can be a directory, network filesystem, or partition.
+- On the system-level, ~/var/lib/libvirt/images/~ will be activated by default. On a user session, ~virt-manager~ creates ~$HOME/VirtualMachines~
+- ~virsh~ and ~virt-manager~ can be used to manage pools, volumes, and domains
+- ~virt-install~ and ~virt-manager~ can be used to create new domains
+- ~virsh~ can be used to start, shutdown, destory (forceful shutdown), and autostart domains
+- ~virsh~ can also be used to quickly edit a domain's XML configuration
+*** Libvirt Networking
+- Four network types that can be created to connect a domain to:
+  1. *Bridge*: A virtual device. Shares data directly with a physical device
+  2. *Network*: A virtual network. Can share with other domains. Libvirt offers manyy virtual network modes, such as NAT mode, routed mode, and isolated mode.
+  3. *Macvtap*: Connect directly to a host physical interface
+  4. *User*: Local ability networking. use this only for a user-session
+- Libvirt handles DHCP and DNS with ~dnsmasq~, launching a separate instance for every virtual network. It also adds ~iptables~ rules for proper routing. Running ~dnsmasq~ on the host sytem could interfere with libvirts version.
+*** KVM vs QEMU Notes
+[[https://cloudbuilder.in/blogs/2014/03/09/kvm-and-qemu/]]
+- Modern processors support *virtualization extensions*. Intel uses VT-x and AMD uses AMD-V. These technologies directly map physical CPU instructions to virtual CPU instructions.
+- KVM is a kernel module that adds VT-x and AMD-V support.
+- QEMU can be configured to either use KVM for hardware acceleration, otherwise it will use TCG (Tiny Code Generate) to translate instructions
+- QEMU is a type-2 hypervisor but when paired with KVM it can act as a type-1 hypervisor
+*** 9P Protocol
+File system directories can be shared using the 9P protocol. See [[https://wiki.archlinux.org/title/libvirt#9p]] for more information.
+
+** Setup Virtualization
+#+begin_src bash
+$INSTALL libvert qemu
+
+# Network Connectivity with Virtual Machine #
+$INSTALL iptables-nft \  # NAT/DHCP Netowrking (iptables!=iptables-nft)
+         dnsmasq \       # NAT/DHCP Netowrking
+         bridge-utils \  # Bridged Networking
+         openbsd-netcat  # Remote Management over SSH
+
+# Client Software #
+$INSTALL virsh \         # Managing and configuring domains
+         virt-manager    # Graphically manage KVM, Xen or LXC
+
+# Other Software #
+$INSTALL libguestfs \  # Access and modify virtual machine disk images
+         edk2-ovmf     # UEFI Support
+         
+# Members of the libvirt group have passwordless access to the RW daemon socket by default.
+sudo usermod -aG libvirt ${whoami}
+sudo usermod -aG kvm ${whoami}
+
+sudo systemctl enable libvirtd # Also enables virtlogd and virtlockd
+sudo systemctl start virtlogd
+sudo systemctl start libvirtd
+
+# Make sure to set user = /etc/libvirt/qemu.conf
+#+end_src
+
+** Wine
+#+begin_src bash
+$INSTALL wine wine-mono wine-gecko
+#+end_src
+
+** OSX Machine
+#+begin_src bash
+#git clone --depth 1 --recursive https://github.com/kholia/OSX-KVM.git
+#cd OSX-KVM && (echo "4" > ./fetch-macOS-v2.py)
+#cd OSX-KVM && qemu-img convert BaseSystem.dmg -O raw BaseSystem.img
+#cd OSX-KVM && qemu-img create -f qcow2 mac_hdd_ng.img 128G
+#Installation
+#cd OSX-KVM && ./OpenCore-Boot.sh
+#+end_src
+
+* Other Applications
+** Redshift
 #+begin_src bash
 $INSTALL redshift
+#+end_src
 
+** OBS Studio
+#+begin_src bash
+$INSTALL obs-studio
 #+end_src
 
 * Display Managers
@@ -811,7 +905,7 @@ cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
 [module/temperature]
 type = internal/temperature
 thermal-zone = 0
-warn-temperature = 60
+warn-temperature = 70
 
 format = TEMP <label>
 format-warn = TEMP <label-warn>
@@ -899,23 +993,6 @@ cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
         scroll-down = source ~/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh decrease
         interval=0.5
 EOT
-cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
-[module/redshift]
-        type = custom/script
-        format-prefix = "Redshift: "
-        exec = source ~/development-environment/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh temperature
-        click-left = source ~/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh toggle
-        scroll-up = source ~/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh increase
-        scroll-down = source ~/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh decrease
-        interval=0.5
-EOT
-#+end_src
-
-* Change Shell
-
-#+begin_src bash
-sudo chsh -s /usr/bin/zsh $(whoami)
-#+end_src
 #+end_src
 
 * Change Shell
