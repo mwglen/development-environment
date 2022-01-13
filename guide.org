@@ -1,7 +1,7 @@
 #+title: Setup Guide
 * Set GRUB to Remember Last Selection
 1. Put the following in ~/etc/default/grub~
-   #+begin_src
+   #+begin_src bash
    GRUB_DEFAULT=saved
    GRUB_SAVEDEFAULT=true
    #+end_src
@@ -19,6 +19,24 @@ I also recommend changing the behavior of the system keys to all hibernate the c
 * Change Behavior of System Keys
 1. In ~/etc/systemd/logind.conf~, edit =HandleSuspendKey=, =HandleHibernateKey=, =HandlePowerKey=, and =HandleLidSwitch=
 2. Reset your computer to complete the process
+
+* Power Saving Mode using TLP
+1. Run the following commands to start using TLP:
+   #+begin_src bash
+   sudo pacman -S tlp
+   sudo systemctl enable tlp
+   sudo systemctl start tlp
+   #+end_src
+
+* Enable SSD Trim
+Trim is a feature supported by most SSDs that prevents unnecessary writes and erases to lengthen your SSD's lifespan. It also increases the performance of your SSD. SSDs can only erase blocks not pages, so before it can delete a page it must save a backup of the rest of the block and then rewrite the backup after the erase. This sequence required to erase a page is known as *write amplification*. This feature allows the OS to tell the SSD what it can write over so that it doesn't have to use the erase function to begin with.
+1. Make sure that your SSD supports TRIM before using the feature by running ~lsblk --discard~ and finding non-zero values for =DISC-GRAN= and =DISC-MAX=.
+2. Run the following commands to enable trim:
+   #+begin_src bash
+   sudo systemctl enable fstrim.timer
+   #+end_src
+
+   You should now find that fstrim set up a weekly timer in ~systemctl list-timers~.
    
 * Other Recommendations
 - Add a Grub Theme
