@@ -619,7 +619,6 @@ cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
 type = internal/cpu
 interval = 2
 format = CPU <label>
-click-left = emacsclient -e "(proced)"
 label = %percentage:2%%
 EOT
 
