@@ -290,27 +290,27 @@
 * Desktop Environment
 ** Polybar
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-  (defvar efs/polybar-process nil
+  (defvar my/polybar-process nil
     "Holds the process of the running Polybar instance, if any")
 
-  (defun efs/kill-panel ()
+  (defun my/kill-panel ()
     (interactive)
-    (when efs/polybar-process
+    (when my/polybar-process
       (ignore-errors
-        (kill-process efs/polybar-process)))
-    (setq efs/polybar-process nil))
+        (kill-process my/polybar-process)))
+    (setq my/polybar-process nil))
 
-  (defun efs/start-panel ()
+  (defun my/start-panel ()
     (interactive)
-    (efs/kill-panel)
-    (setq efs/polybar-process (start-process-shell-command
+    (my/kill-panel)
+    (setq my/polybar-process (start-process-shell-command
                                "polybar" nil "polybar panel")))
 #+end_src
   
 ** Setup EXWM
 *** Set Wallpaper
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(defun efs/set-wallpaper ()
+(defun my/set-wallpaper ()
   (interactive)
   (start-process-shell-command
    "feh" nil "feh --bg-scale $BACKGROUNDS/2001_A_Space_Odyssey.jpg"))
@@ -318,11 +318,11 @@
 
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 
-(defun efs/run-in-background (command)
+(defun my/run-in-background (command)
   (let ((command-parts (split-string command "[ ]+")))
     (apply #'call-process `(,(car command-parts) nil 0 nil ,@(cdr command-parts)))))
 
-(defun efs/exwm-update-class ()
+(defun my/exwm-update-class ()
   (exwm-workspace-rename-buffer exwm-class-name))
 
 (use-package exwm
@@ -333,13 +333,13 @@
   (start-process-shell-command "xrandr" nil "xrandr --output eDP-1 --primary --mode 3840x2160 --pos 0x0 --rotate normal --output DP-1 --off --output HDMI-1 --off")
 
   (start-process-shell-command "picom" nil "picom")
-  (efs/set-wallpaper)
+  (my/set-wallpaper)
   
   ;; Set the default number of workspaces
   (setq exwm-workspace-number 5)
 
   ;; When window "class" updates, use it to set the buffer name
-  (add-hook 'exwm-update-class-hook #'efs/exwm-update-class)
+  (add-hook 'exwm-update-class-hook #'my/exwm-update-class)
 
   ;; These keys should always pass through to Emacs
   (setq exwm-input-prefix-keys
@@ -353,12 +353,12 @@
           ?\M-&
           ?\M-:
           ?\:
-          [escape]
-          (kbd "<XF86AudioMute>")
-          (kbd "<XF86AudioRaiseVolume>")
-          (kbd "<XF86AudioLowerVolume>")
-          (kbd "<XF86MonBrightnessUp>")
-          (kbd "<XF86MonBrightnessDown>")
+          escape
+          XF86AudioMute
+          XF86AudioRaiseVolume
+          XF86AudioLowerVolume
+          XF86MonBrightnessUp
+          XF86MonBrightnessDown
           ?\C-\M-j
           ?\C-\ ))
 
@@ -401,26 +401,30 @@
   (server-start)
   
   ;; Start the Polybar panel
-  (efs/start-panel)
+  (my/start-panel)
+
+  (defun my/send-polybar-hook (module-name hook-index)
+    (start-process-shell-command
+     "polybar-msg" nil
+     (format "polybar-msg hook %s %s" module-name hook-index)))
+
+  (defun my/send-polybar-exwm-workspace ()
+    (my/send-polybar-hook "exwm-workspace" 1))
+  
+  ;; Update panel indicator when workspace changes
+  (add-hook 'exwm-workspace-switch-hook
+            #'my/send-polybar-exwm-workspace)
   
   ;; Let emacs handle queries for gpg passwords
   (setf epg-pinentry-mode 'loopback)
   (defun pinentry-emacs (desc prompt ok error)
-    (let ((str (read-passwd (concat (replace-regexp-in-string
-                                     "%22" "\""
-                                     (replace-regexp-in-string
-                                      "%OA" "\n" desc)) prompt ": "))))
+    (let ((str (read-passwd
+                (concat (replace-regexp-in-string
+                         "%22" "\"" (replace-regexp-in-string
+                                     "%OA" "\n" desc)) prompt ": "))))
       str))
 
-  
-  
   (exwm-enable))
-
-  
-  ;;(defun my/exwm-escape ()
-  ;;  (interactive)
-  ;;  (exwm-input--fake-key 'escape))
-  ;;(add-to-list 'exwm-input-global-keys '([?\s-;] . my/exwm-escape))
 
 #+end_src
 
@@ -506,10 +510,10 @@
     (kbd "<remap> <evil-previous-line>") #'evil-previous-line)
 
   (define-key evil-normal-state-map
-    (kbd "<remap> <evil-quit>") #'mwg/exit-to-dashboard)
+    (kbd "<remap> <evil-quit>") #'my/exit-to-dashboard)
   (evil-define-command exit () (interactive) (save-buffers-kill-terminal)))
 
-(defun mwg/exit-to-dashboard () (interactive)
+(defun my/exit-to-dashboard () (interactive)
   (if (eq (count-windows) 1) (switch-to-buffer "*dashboard*") (delete-window)))
 #+end_src
 
@@ -526,12 +530,12 @@
 (use-package general
   :after evil
   :config
-  (general-create-definer mwg/leader-keys
+  (general-create-definer my/leader-keys
     :keymaps '(normal insert visual emacs)
     :prefix "SPC"
     :global-prefix "C-SPC")
 
-  (mwg/leader-keys
+  (my/leader-keys
     "t"  '(:ignore t :which-key "toggles")
     "tt" '(counsel-load-theme :which-key "choose theme")
     "fde" '(lambda () (interactive)
@@ -642,7 +646,7 @@
 (use-package treemacs
   :after general
   :config
-  (mwg/leader-keys
+  (my/leader-keys
     "C-d" 'treemacs))
 
 (use-package treemacs-evil
@@ -664,7 +668,7 @@
 * Org Mode
 ** Better Font Faces
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(defun mwg/org-font-setup ()
+(defun my/org-font-setup ()
   ;; Replace list hyphen with dot
   (font-lock-add-keywords 'org-mode '(("^ *\\([-]\\) "
                                        (0 (prog1 () (compose-region
@@ -675,16 +679,16 @@
 ** Basic Config
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (setq-default indent-tabs-mode nil)
-(defun mwg/org-mode-setup ()
+(defun my/org-mode-setup ()
   (org-indent-mode 1)
   (visual-line-mode 1))
 
 (use-package org
   :pin org
   :commands (org-capture org-agenda)
-  :hook (org-mode . mwg/org-mode-setup)
+  :hook (org-mode . my/org-mode-setup)
   :config
-  (mwg/org-font-setup)
+  (my/org-font-setup)
   (setq-default org-ellipsis " ▾"
                 org-pretty-entities t
                 org-hide-emphasis-markers t
@@ -760,14 +764,14 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
 
 ** Auto-tangle Configuration Files
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(defun mwg/org-babel-tangle-config ()
+(defun my/org-babel-tangle-config ()
   (when (member (file-name-nondirectory (buffer-file-name))
                 '("emacs.org"
                   "setup.org"))
     (let ((org-confirm-babel-evaluate nil)) (org-babel-tangle)))) 
 
 (add-hook 'org-mode-hook (lambda ()
-                           (add-hook 'after-save-hook #'mwg/org-babel-tangle-config)))
+                           (add-hook 'after-save-hook #'my/org-babel-tangle-config)))
 #+end_src
 
 * Development
@@ -888,7 +892,7 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
     (setq clipboard (substring clipboard 0 -1))
     (insert clipboard)))
 
-(mwg/leader-keys
+(my/leader-keys
   "C-c" 'wsl-copy
   "C-v" 'wsl-paste)
 #+end_src

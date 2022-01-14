@@ -258,11 +258,11 @@ $INSTALL podman
 echo "unqualified-search-registries = ['docker.io']" \
     | sudo tee /etc/containers/registries.conf
 
-$INSTALL firefox
+$INSTALL firefox bitwarden bitwarden-cli
 
 $INSTALL sxhkd brightnessctl pulsemixer
 mkdir -p $XDG_CONFIG_HOME/autostart
-cat <<EOT >> $XDG_CONFIG_HOME/autostart/sxhkd.desktop
+cat <<EOT > $XDG_CONFIG_HOME/autostart/sxhkd.desktop
 [Desktop Entry]
 Name=sxhkd
 Comment=Simple X hotkey daemon
@@ -272,7 +272,7 @@ Type=Application
 
 EOT
 mkdir -p $XDG_CONFIG_HOME/sxhkd
-cat <<EOT >> $XDG_CONFIG_HOME/sxhkd/sxhkdrc
+cat <<EOT > $XDG_CONFIG_HOME/sxhkd/sxhkdrc
 # Brightness Keys
 XF86MonBrightness{Up,Down}
     brightnessctl s 10{+,-}
@@ -498,6 +498,7 @@ session-wrapper=/etc/lightdm/Xsession
 #depth=8
 
 EOF
+
 sudo tee "/etc/lightdm/lightdm-webkit2-greeter.conf" > /dev/null <<'EOF'
 #
 # [greeter]
@@ -601,9 +602,9 @@ font-0 = "Noto Sans:size=25:weight=bold"
 font-1 = "Material Icons:size=35;5"
 font-2 = "Font Awesome:size=35;5"
 
-modules-right = pulseaudio backlight wireless-network cpu temperature memory battery
 modules-left = date
-modules-center =
+modules-center = cpu temperature memory
+modules-right = wireless-network pulseaudio backlight redshift battery
 
 tray-position = right
 tray-padding = 2
@@ -678,21 +679,21 @@ label-warn = %temperature-c%!
 label-warn-foreground = \${colors.secondary}
 EOT
 
+$INSTALL pulseaudio-control
+
 cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
 [module/pulseaudio]
-type = internal/pulseaudio
-format-volume = <ramp-volume> <label-volume>
-interval = 5
-label-muted =  muted
-label-muted-foreground = #66
+type = custom/script
+tail = true
+label-padding = 2
+label-foreground = $\{colors.foreground}
 
-ramp-volume-0 = 
-ramp-volume-1 = 
-ramp-volume-2 =  
-ramp-volume-3 =   
-
-;click-right = pavucontrol
-; click-middle = 
+exec = pulseaudio-control --icons-volume " , " --icon-muted " " --sink-nicknames-from "device.description" --sink-nickname "alsa_output.pci-0000_00_1f.3.analog-stereo: Built In Speakers" listen
+click-right = pavucontrol
+click-left = pulseaudio-control togmute
+click-middle = pulseaudio-control --sink-blacklist "alsa_output.pci-0000_01_00.1.hdmi-stereo-extra2" next-sink
+scroll-up = pulseaudio-control up
+scroll-down = pulseaudio-control down
 EOT
 
 cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
@@ -705,8 +706,7 @@ format-connected-alt = 
 format-disconnected = <label-disconnected>
 format-packetloss = <animation-packetloss label-connected>
 
-label-connected = %essid% %downspeed:9%
-label-connected-alt = 
+label-connected = %essid%: %downspeed:2%
 label-connected-foreground = #eefafafa
 
 label-disconnected = not connected
@@ -731,15 +731,81 @@ ramp-0 = 
 ramp-1 = 
 EOT
 
+mkdir -p $XDG_CONFIG_HOME/polybar/scripts
+cat <<EOT > $XDG_CONFIG_HOME/polybar/scripts/env.sh
+export REDSHIFT=on
+export REDSHIFT_TEMP=5600
+EOT
+
+cat <<EOT > $XDG_CONFIG_HOME/polybar/scripts/redshift.sh
+#!/bin/sh
+
+envFile=$XDG_CONFIG_HOME/polybar/scripts/env.sh
+changeValue=300
+
+changeMode() {
+  sed -i "s/REDSHIFT=\$1/REDSHIFT=\$2/g" \$envFile 
+  REDSHIFT=\$2
+  echo \$REDSHIFT
+}
+
+changeTemp() {
+  if [ "\$2" -gt 1000 ] && [ "\$2" -lt 25000 ]
+  then
+    sed -i "s/REDSHIFT_TEMP=\$1/REDSHIFT_TEMP=\$2/g" \$envFile 
+    redshift -P -O \$((REDSHIFT_TEMP+changeValue))
+  fi
+}
+
+case \$1 in 
+  toggle) 
+    if [ "\$REDSHIFT" = on ];
+    then
+      changeMode "\$REDSHIFT" off
+      redshift -x
+    else
+      changeMode "\$REDSHIFT" on
+      redshift -O "\$REDSHIFT_TEMP"
+    fi
+    ;;
+  increase)
+    changeTemp \$((REDSHIFT_TEMP)) \$((REDSHIFT_TEMP+changeValue))
+    ;;
+  decrease)
+    changeTemp \$((REDSHIFT_TEMP)) \$((REDSHIFT_TEMP-changeValue));
+    ;;
+  temperature)
+    case \$REDSHIFT in
+      on)
+        printf "%dK" "\$REDSHIFT_TEMP"
+        ;;
+      off)
+        printf "off"
+        ;;
+    esac
+    ;;
+esac
+EOT
+chmod +x $XDG_CONFIG_HOME/polybar/scripts/redshift.sh
+chmod +x $XDG_CONFIG_HOME/polybar/scripts/env.sh
+
 cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
 [module/redshift]
-        type = custom/script
-        format-prefix = "Redshift: "
-        exec = source ~/development-environment/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh temperature
-        click-left = source ~/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh toggle
-        scroll-up = source ~/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh increase
-        scroll-down = source ~/.config/polybar/scripts/env.sh && ~/.config/polybar/scripts/redshift.sh decrease
-        interval=0.5
+type = custom/script
+format-prefix = "Redshift: "
+exec = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh temperature
+click-left = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh toggle
+scroll-up = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh increase
+scroll-down = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh decrease
+interval=0.5
+EOT
+
+cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
+[module/exwm-workspace]
+type = custom/ipc
+hook-0 = emacsclient -e "exwm-workspace-current-index" | sed -e 's/^"//' -e 's/"$//'
+initial = 1
+format-padding = 1
 EOT
 
 sudo chsh -s /usr/bin/zsh $(whoami)
