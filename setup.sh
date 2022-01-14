@@ -69,9 +69,13 @@ $INSTALL libguestfs
 
 $INSTALL usbutils usbip
 
-$INSTALL bluez bluez-utils
+$INSTALL bluez bluez-utils bluetooth-autoconnect
 sudo systemctl enable bluetooth
 sudo systemctl start bluetooth
+sudo systemctl enable bluetooth-autoconnect
+sudo systemctl start bluetooth-autoconnect
+sudo systemctl enable pulseaudio-bluetooth-autoconnect
+sudo systemctl start pulseaudio-bluetooth-autoconnect
 
 # sudo tee "/etc/bluetooth/main.conf" > /dev/null <<'EOF'
 # [Policy]
@@ -701,7 +705,6 @@ type = internal/network
 interface = wlan0
 
 format-connected =  <label-connected>
-format-connected-alt = 
 format-disconnected = <label-disconnected>
 format-packetloss = <animation-packetloss label-connected>
 
@@ -720,9 +723,16 @@ format = <label>
 label = MEM %percentage_used:2%%
 EOT
 
+sudo makedir -p /etc/udev/rules.d
+groupadd -r video
+sudo usermod -a -G video $USER
+sudo chgrp video /sys/class/backlight/intel_backlight/brightness"
+sudo chmod g+w /sys/class/backlight/intel_backlight/brightness
+
 cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
 [module/backlight]
 type = internal/backlight
+enable-scroll = true
 card = intel_backlight
 format = <ramp> <label>
 label = %percentage%%
@@ -791,7 +801,7 @@ chmod +x $XDG_CONFIG_HOME/polybar/scripts/env.sh
 cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
 [module/redshift]
 type = custom/script
-format-prefix = "Redshift: "
+format-prefix = ""
 exec = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh temperature
 click-left = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh toggle
 scroll-up = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh increase
