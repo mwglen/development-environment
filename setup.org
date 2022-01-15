@@ -197,6 +197,7 @@ export ZDOTDIR=$XDG_CONFIG_HOME/zsh
 alias ls="ls --color=auto -h"
 alias grep="grep --color=auto"
 alias ip="ip -color=auto"
+alias spotify="spotify --force-device-scale-factor=2"
 
 EOT
 source $HOME/.zshenv
@@ -387,7 +388,7 @@ echo "unqualified-search-registries = ['docker.io']" \
 
 ** Install Other Applications
 #+begin_src bash
-$INSTALL firefox bitwarden bitwarden-cli
+$INSTALL firefox bitwarden bitwarden-cli spotify
 #+end_src
 
 * Systemwide Hotkeys

@@ -110,6 +110,7 @@ export ZDOTDIR=$XDG_CONFIG_HOME/zsh
 alias ls="ls --color=auto -h"
 alias grep="grep --color=auto"
 alias ip="ip -color=auto"
+alias spotify="spotify --force-device-scale-factor=2"
 
 EOT
 source $HOME/.zshenv
@@ -262,7 +263,7 @@ $INSTALL podman
 echo "unqualified-search-registries = ['docker.io']" \
     | sudo tee /etc/containers/registries.conf
 
-$INSTALL firefox bitwarden bitwarden-cli
+$INSTALL firefox bitwarden bitwarden-cli spotify
 
 $INSTALL sxhkd brightnessctl pulsemixer
 mkdir -p $XDG_CONFIG_HOME/autostart
