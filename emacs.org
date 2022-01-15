@@ -354,6 +354,10 @@
           ?\M-:
           ?\:
           escape
+          XF86AudioPrev
+          XF86AudioNext
+          XF86AudioPlay
+          XF86AudioStop
           XF86AudioMute
           XF86AudioRaiseVolume
           XF86AudioLowerVolume
@@ -443,20 +447,38 @@
     (defun audio/mute ()
         (interactive)
         (start-process "audio-mute" nil "pulsemixer" "--toggle-mute"))
-
     (defun audio/raise-volume ()
         (interactive)
         (start-process "raise-volume" nil
                        "pulsemixer" "--change-volume" (concat "+" volumeModifier)))
-
     (defun audio/lower-volume ()
         (interactive)
         (start-process "lower-volume" nil
                        "pulsemixer" "--change-volume" (concat "-" volumeModifier)))
 
+    (defun audio/prev ()
+        (interactive)
+        (start-process "audio-prev" nil "playerctl" "previous"))
+    (defun audio/next ()
+        (interactive)
+        (start-process "audio-next" nil "playerctl" "next"))
+    (defun audio/play ()
+        (interactive)
+        (start-process "audio-play" nil "playerctl" "play"))
+    (defun audio/stop ()
+        (interactive)
+        (start-process "audio-stop" nil "playerctl" "stop"))
+    (defun audio/play-pause ()
+        (interactive)
+        (start-process "audio-play-pause" nil "playerctl" "play-pause"))
+
     (global-set-key (kbd "<XF86AudioMute>") 'audio/mute)
     (global-set-key (kbd "<XF86AudioRaiseVolume>") 'audio/raise-volume)
-    (global-set-key (kbd "<XF86AudioLowerVolume>") 'audio/lower-volume))
+    (global-set-key (kbd "<XF86AudioLowerVolume>") 'audio/lower-volume)
+    (global-set-key (kbd "<XF86AudioPrev>") 'audio/prev)
+    (global-set-key (kbd "<XF86AudioNext>") 'audio/next)
+    (global-set-key (kbd "<XF86AudioPlay>") 'audio/play-pause)
+    (global-set-key (kbd "<XF86AudioStop>") 'audio/stop))
 #+end_src
 
 ** Backlight Support

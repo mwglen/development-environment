@@ -153,7 +153,10 @@ sudo systemctl start pulseaudio-bluetooth-autoconnect
 
 * Audio Support
 #+begin_src bash
-$INSTALL pulseaudio-bluetooth alsa-utils pavucontrol
+$INSTALL pulseaudio-bluetooth alsa-utils pavucontrol playerctl
+cat <<EOT >> $ZDOTDIR/.zshrc
+playerctld daemon
+EOT
 #+end_src bash
 
 * Setup Wifi
