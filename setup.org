@@ -471,7 +471,8 @@ $INSTALL virsh \         # Managing and configuring domains
 
 # Other Software #
 $INSTALL libguestfs \  # Access and modify virtual machine disk images
-         edk2-ovmf     # UEFI Support
+         edk2-ovmf \   # UEFI Emulation
+         swtpm         # TPM Emulation
          
 # Members of the libvirt group have passwordless access to the RW daemon socket by default.
 sudo usermod -aG libvirt ${whoami}
