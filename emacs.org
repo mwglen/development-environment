@@ -316,6 +316,21 @@
    "feh" nil "feh --bg-scale $BACKGROUNDS/2001_A_Space_Odyssey.jpg"))
 #+end_src
 
+*** Add Transparency
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(defconst transsetDefault ".6")
+(defun transset/set ()
+  (interactive)
+  (dolist (id (butlast
+               (split-string
+                (shell-command-to-string
+                 "wmctrl -l | cut -f -1 -d ' '")
+                "\n")))
+    (start-process "transset" nil
+                   "transset" "-i" id transsetDefault)))
+#+end_src
+
+***  Setup EXWM
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 
 (defun my/run-in-background (command)
