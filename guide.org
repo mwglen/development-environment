@@ -110,5 +110,20 @@ gpg --output private.pgp --armor --export-secret-key username@email
 gpg --output backupkeys.pgp --armor --export-secret-keys --export-options export-backup user@email
 #+end_src
 
+* Setup a Software Access Point
+** Linux-Wifi-Hotspot
+~linux-wifi-hotspot~ is an AUR package that allows you to easily create a wifi-hotspot without needing to mess around with ~hostapd~, ~dnsmasq~, and ~iptables~. It includes both a gui and cli interface.
+#+begin_src bash :dir /sudo:://
+$INSTALL linux-wifi-hotspot
+#+end_src
+*** Use CLI
+#+begin_src bash
+create_ap wlan0 eth0 MyAccessPoint MyPassPhrase
+#+end_src
+*** Use GUI
+#+begin_src bash
+wihotspot
+#+end_src
+
 * Other Recommendations
 - Add a Grub Theme
