@@ -21,6 +21,19 @@ I also recommend changing the behavior of the system keys to all hibernate the c
 1. In ~/etc/systemd/logind.conf~, edit =HandleSuspendKey=, =HandleHibernateKey=, =HandlePowerKey=, and =HandleLidSwitch=
 2. Reset your computer to complete the process
 
+* Installing NVIDIA Drivers
+#+begin_src bash
+sudo pacman -S nvidia
+#+end_src
+
+** NVIDIA Optimus
+#+begin_src bash
+sudo pacman -S nvidia-prime
+sudo yay -S optimus-manager
+#+end_src
+
+Use the ~prime-run~ command to run a program using dedicated graphics.
+
 * Power Saving Mode using TLP
 1. Run the following commands to start using TLP:
    #+begin_src bash
@@ -116,10 +129,12 @@ gpg --output backupkeys.pgp --armor --export-secret-keys --export-options export
 #+begin_src bash :dir /sudo:://
 $INSTALL linux-wifi-hotspot
 #+end_src
+
 *** Use CLI
 #+begin_src bash
 create_ap wlan0 eth0 MyAccessPoint MyPassPhrase
 #+end_src
+
 *** Use GUI
 #+begin_src bash
 wihotspot

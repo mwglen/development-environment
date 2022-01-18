@@ -168,12 +168,6 @@
   ;;(add-to-list 'default-frame-alist '(fullscreen . maximized))
 #+end_src
 
-** Use Transparent Frames
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(set-frame-parameter (selected-frame) 'alpha '(80 . 80))
-(add-to-list 'default-frame-alist '(alpha . (80 . 80)))
-#+end_src
-
 ** Font Configuration
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (set-face-attribute 'default nil
@@ -203,6 +197,22 @@
 (use-package doom-themes
   :init (load-theme 'doom-moonless t))
 #+end_src
+
+** Use Transparent Frames
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(defun transparency/on ()
+    (interactive)
+    (set-frame-parameter (selected-frame) 'alpha '(80 . 80))
+    (add-to-list 'default-frame-alist '(alpha . (80 . 80))))
+
+(defun transparency/off ()
+    (interactive)
+    (set-frame-parameter (selected-frame) 'alpha '(100 . 100))
+    (add-to-list 'default-frame-alist '(alpha . (100 . 100))))
+
+(transparency/on)
+#+end_src
+
 
 ** Emacs Dashboard
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
@@ -319,7 +329,7 @@
 *** Add Transparency
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (defconst transsetDefault ".6")
-(defun transset/set ()
+(defun transset/on ()
   (interactive)
   (dolist (id (butlast
                (split-string
@@ -328,6 +338,18 @@
                 "\n")))
     (start-process "transset" nil
                    "transset" "-i" id transsetDefault)))
+
+(defun transset/off ()
+  (interactive)
+  (dolist (id (butlast
+               (split-string
+                (shell-command-to-string
+                 "wmctrl -l | cut -f -1 -d ' '")
+                "\n")))
+    (start-process "transset" nil
+                   "transset" "-i" id "1")))
+#+end_src
+
 #+end_src
 
 ***  Setup EXWM

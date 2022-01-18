@@ -8,8 +8,7 @@ set -v
 
 export DISTRO=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
 if ! [ "$DISTRO" = "\"Arch Linux\"" ] \
-    && ! [ "$DISTRO" = "\"Arch Linux ARM\"" ]; then 
-    echo "Unsupported Platform"
+    && ! [ "$DISTRO" = "\"Arch Linux ARM\"" ]; then echo "Unsupported Platform"
     echo "Currently only Arch Linux is supported"
     return 1
 fi
@@ -263,7 +262,7 @@ $INSTALL podman
 echo "unqualified-search-registries = ['docker.io']" \
     | sudo tee /etc/containers/registries.conf
 
-$INSTALL firefox bitwarden bitwarden-cli spotify
+$INSTALL firefox bitwarden bitwarden-cli spotify discord
 
 $INSTALL sxhkd brightnessctl pulsemixer
 mkdir -p $XDG_CONFIG_HOME/autostart
@@ -545,7 +544,7 @@ user_image        = /usr/share/pixmaps/archlinux-user.svg
 
 EOF
 
-$INSTALL xorg dbus xorg-xrdb
+$INSTALL xorg dbus xorg-xrdb xorg-transset wmctrl
 sudo mkdir -p /usr/share/xsessions/
 sudo tee "/usr/share/xsessions/exwm.desktop" > /dev/null <<'EOF'
 [Desktop Entry]
