@@ -140,5 +140,19 @@ create_ap wlan0 eth0 MyAccessPoint MyPassPhrase
 wihotspot
 #+end_src
 
+* Converting ICS format to Org
+See [[https://tero.hasu.is/blog/org-icalendar-import/]] for more information.
+** Installing
+#+begin_src bash :dir /sudo:://
+$INSTALL ruby
+gem install date icalendar optparse tzinfo
+git clone https://tero.hasu.is/repo/icalendar-to-org.git
+#+end_src
+
+**  To Use
+#+begin_src bash :dir /sudo:://
+ics-to-org input.ics > output.org
+#+end_src
+
 * Other Recommendations
 - Add a Grub Theme
