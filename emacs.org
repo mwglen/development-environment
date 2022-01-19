@@ -1,6 +1,5 @@
 #+title: Emacs Configuration
 #+PROPERTY: header-args:emacs-lisp :tangle ./.config/emacs/init.el :results none
-
 * Early Init
 ** Warning
 #+begin_src emacs-lisp :tangle ./.config/emacs/early-init.el
@@ -135,24 +134,19 @@
 (prefer-coding-system 'utf-8)
 #+end_src
 
-** Highlight Current Line
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(when window-system (add-hook 'prog-mode-hook 'hl-line-mode))
-#+end_src
-
 ** Line Numbers
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-  (column-number-mode)
-  (global-display-line-numbers-mode t)
-  (setq display-line-numbers-type 'relative)
+(column-number-mode)
+(global-display-line-numbers-mode t)
+(setq display-line-numbers-type 'relative)
 
-  ;; Disable line numbers for some modes
-  (dolist (mode '(term-mode-hook
-                  org-mode-hook
-                  shell-mode-hook
-                  treemacs-mode-hook
-                  eshell-mode-hook))
-    (add-hook mode (lambda () (display-line-numbers-mode 0))))
+;; Disable line numbers for some modes
+(dolist (mode '(term-mode-hook
+                org-mode-hook
+                shell-mode-hook
+                treemacs-mode-hook
+                eshell-mode-hook))
+  (add-hook mode (lambda () (display-line-numbers-mode 0))))
 #+end_src
 
 ** Good Scrolling
@@ -160,12 +154,6 @@
 (use-package good-scroll
   :config
   (good-scroll-mode 1))
-#+end_src
-
-** Start Emacs Maximized
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-  ;;(set-frame-parameter (selected-frame) 'fullscreen 'maximized)
-  ;;(add-to-list 'default-frame-alist '(fullscreen . maximized))
 #+end_src
 
 ** Font Configuration
@@ -191,7 +179,7 @@
 * Theme Configuration
 ** Setup Theme
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-;; Good Dark Themes: doom-meltbus doom-tomorrow-night doom-monokai-pro doom-vivendi
+;; Good Dark Themes: doom-moonless doom-tomorrow-night
 
 ;; Good Light Themes: doom-acario-light
 (use-package doom-themes
@@ -212,7 +200,6 @@
 
 (transparency/on)
 #+end_src
-
 
 ** Emacs Dashboard
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
@@ -268,64 +255,33 @@
   (doom-modeline-gnus-timer nil)
   (doom-modeline-github-timer nil)
   (doom-modeline-buffer-encoding nil))
-
-;; Modeline Font
 (set-face-attribute 'mode-line nil :height 1.0)
-#+end_src
-
-** Display Time in Modeline
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(use-package time
-  :defer 10
-  :config
-  ;; Only show loads of above 0.9 in the modeline
-  (setq display-time-load-average-threshold 0.9)
-  ;; A list of timezones to show for `display-time-world`
-  (setq zoneinfo-style-world-list
-        '(("Asia/Kuala_Lumpur" "Kuala Lumpur")
-          ("Europe/Berlin" "Berlin")
-          ("America/Los_Angeles" "Los Angeles")
-          ("America/New_York" "New York")
-          ("Australia/Sydney" "Sydney")))
-  (setq display-time-24hr-format t)
-  (setq display-time-format "| %H:%M | %m/%d/%y |"))
-#+end_src
-
-** Battery Indicator
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-;;(use-package fancy-battery :config (display-battery-mode))
-;;(display-battery-mode)
-#+end_src
-
-** System Monitor
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(use-package symon :bind ("s-h" . symon-mode))
 #+end_src
 
 * Desktop Environment
 ** Polybar
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-  (defvar my/polybar-process nil
-    "Holds the process of the running Polybar instance, if any")
+(defvar polybar/process nil
+  "Holds the process of the running Polybar instance, if any")
 
-  (defun my/kill-panel ()
-    (interactive)
-    (when my/polybar-process
-      (ignore-errors
-        (kill-process my/polybar-process)))
-    (setq my/polybar-process nil))
+(defun polybar/kill ()
+  (interactive)
+  (when polybar/process
+    (ignore-errors
+      (kill-process polybar/process)))
+  (setq polybar/process nil))
 
-  (defun my/start-panel ()
-    (interactive)
-    (my/kill-panel)
-    (setq my/polybar-process (start-process-shell-command
-                               "polybar" nil "polybar panel")))
+(defun polybar/start ()
+  (interactive)
+  (polybar/kill)
+  (setq polybar/process (start-process-shell-command
+                             "polybar" nil "polybar panel")))
 #+end_src
   
 ** Setup EXWM
 *** Set Wallpaper
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(defun my/set-wallpaper ()
+(defun wallpaper/set ()
   (interactive)
   (start-process-shell-command
    "feh" nil "feh --bg-scale $BACKGROUNDS/2001_A_Space_Odyssey.jpg"))
@@ -355,35 +311,44 @@
                    "transset" "-i" id "1")))
 #+end_src
 
-#+end_src
-
-***  Setup EXWM
+*** Run in Background
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-
 (defun my/run-in-background (command)
   (let ((command-parts (split-string command "[ ]+")))
     (apply #'call-process `(,(car command-parts) nil 0 nil ,@(cdr command-parts)))))
+#+end_src
 
-(defun my/exwm-update-class ()
-  (exwm-workspace-rename-buffer exwm-class-name))
+***  Setup EXWM
+**** Setup Polybar for EXWM
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(defun exwm/start-polybar ()
+    (polybar/start)
+    (add-hook 'exwm-workspace-switch-hook
+              #'polybar/send-exwm-workspace))
 
-(use-package exwm
-  :config
-  ;; Setup Resolution
-  (require 'exwm-randr)
-  (exwm-randr-enable)
-  (start-process-shell-command "xrandr" nil "xrandr --output eDP-1 --primary --mode 3840x2160 --pos 0x0 --rotate normal --output DP-1 --off --output HDMI-1 --off")
+(defun polybar/send-hook (module-name hook-index)
+  (start-process-shell-command
+   "polybar-msg" nil
+   (format "polybar-msg hook %s %s" module-name hook-index)))
 
-  (start-process-shell-command "picom" nil "picom")
-  (my/set-wallpaper)
-  
-  ;; Set the default number of workspaces
-  (setq exwm-workspace-number 5)
+(defun polybar/send-exwm-workspace ()
+  (polybar/send-hook "exwm-workspace" 1))
+#+end_src
 
-  ;; When window "class" updates, use it to set the buffer name
-  (add-hook 'exwm-update-class-hook #'my/exwm-update-class)
+**** Setup Pinentry
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+  ;; Let emacs handle queries for gpg passwords
+  (defun pinentry-emacs (desc prompt ok error)
+    (let ((str (read-passwd
+                (concat (replace-regexp-in-string
+                         "%22" "\"" (replace-regexp-in-string
+                                     "%OA" "\n" desc)) prompt ": "))))
+      str))
+#+end_src
 
-  ;; These keys should always pass through to Emacs
+**** Set Prefix Keys
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(defun exwm/set-prefix-keys ()
   (setq exwm-input-prefix-keys
         '(?\C-x
           ?\C-u
@@ -396,21 +361,13 @@
           ?\M-:
           ?\:
           escape
-          XF86AudioPrev
-          XF86AudioNext
-          XF86AudioPlay
-          XF86AudioStop
-          XF86AudioMute
-          XF86AudioRaiseVolume
-          XF86AudioLowerVolume
-          XF86MonBrightnessUp
-          XF86MonBrightnessDown
           ?\C-\M-j
-          ?\C-\ ))
+          ?\C-\ )))
+#+end_src
 
-  ;; Ctrl+Q will enable the next key to be sent directly
-  (define-key exwm-mode-map [?\C-q] 'exwm-input-send-next-key)
-
+**** Set Global Keys
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(defun exwm/set-global-keys ()
   (setq exwm-input-global-keys
         `(
           ;; Reset to line-mode (C-c C-k switches to char-mode via
@@ -418,22 +375,24 @@
           ([?\s-r] . exwm-reset)
 
           ;; Move between windows
-          ([s-left] . windmove-left)
-          ([s-right] . windmove-right)
-          ([s-up] . windmove-up)
-          ([s-down] . windmove-down)
+          ([?\s-h] . windmove-left)
+          ([?\s-j] . windmove-down)
+          ([?\s-k] . windmove-up)
+          ([?\s-l] . windmove-right)
+
+          ;; Resize windows
+          ([?\s-H] . windsize-left)
+          ([?\s-J] . windsize-down)
+          ([?\s-K] . windsize-up)
+          ([?\s-L] . windsize-right)
+
 
           ;; Launch applications via shell command
           ([?\s-&] . (lambda (command)
                        (interactive (list (read-shell-command "$ ")))
                        (start-process-shell-command command nil command)))
-
-          ;; Switch workspace
           ([?\s-w] . exwm-workspace-switch)
-
-          ;; Switch to workspace 0 using S-`
-          ([?\s-`] . (lambda () (interactive)
-                       (exwm-workspace-switch-create 0)))
+          ([?\s-f] . exwm-layout-toggle-fullscreen)
 
           ;; 's-N': Switch to certain workspacw with Super 
           ,@(mapcar (lambda (i)
@@ -441,37 +400,49 @@
                         (lambda ()
                           (interactive)
                           (exwm-workspace-switch-create ,i))))
-                    (number-sequence 0 9))))
-  
-  ;; Start Emacs Server
+                    (number-sequence 0 9))
+          ;; Switch to workspace 0 using S-`
+          ([?\s-`] . (lambda () (interactive)
+                       (exwm-workspace-switch-create 0)))
+
+          ([XF86AudioPrev] . audio/prev)
+          ([XF86AudioNext] . audio/next)
+          ([XF86AudioPlay] . audio/play-pause)
+          ([XF86AudioStop] . audio/stop)
+          ([XF86AudioMute] . audio/mute)
+          ([XF86AudioRaiseVolume] . audio/raise-volume)
+          ([XF86AudioLowerVolume] . audio/lower-volume)
+          ([XF86MonBrightnessUp] . backlight/raise-brightness)
+          ([XF86MonBrightnessDown] . backlight/lower-brightness))))
+#+end_src
+
+**** Setup Resolution
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(defun exwm/set-resolution ()
+  (require 'exwm-randr)
+  (exwm-randr-enable)
+  (start-process-shell-command "xrandr" nil "xrandr --output eDP-1 --primary --mode 3840x2160 --pos 0x0 --rotate normal --output DP-1 --off --output HDMI-1 --off"))
+#+end_src
+
+**** Start EXWM
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(defun my/exwm-update-class ()
+  (exwm-workspace-rename-buffer exwm-class-name))
+
+(use-package exwm
+  :config
+  (exwm/set-resolution)
+  (start-process-shell-command "picom" nil "picom")
+  (wallpaper/set)
+  (add-hook 'exwm-update-class-hook #'my/exwm-update-class)
+  (define-key exwm-mode-map [?\C-q] 'exwm-input-send-next-key)
+  (setq exwm-workspace-number 5)
+  (exwm/set-prefix-keys)
+  (exwm/set-global-keys)
   (server-start)
-  
-  ;; Start the Polybar panel
-  (my/start-panel)
-
-  (defun my/send-polybar-hook (module-name hook-index)
-    (start-process-shell-command
-     "polybar-msg" nil
-     (format "polybar-msg hook %s %s" module-name hook-index)))
-
-  (defun my/send-polybar-exwm-workspace ()
-    (my/send-polybar-hook "exwm-workspace" 1))
-  
-  ;; Update panel indicator when workspace changes
-  (add-hook 'exwm-workspace-switch-hook
-            #'my/send-polybar-exwm-workspace)
-  
-  ;; Let emacs handle queries for gpg passwords
+  (exwm/start-polybar)
   (setf epg-pinentry-mode 'loopback)
-  (defun pinentry-emacs (desc prompt ok error)
-    (let ((str (read-passwd
-                (concat (replace-regexp-in-string
-                         "%22" "\"" (replace-regexp-in-string
-                                     "%OA" "\n" desc)) prompt ": "))))
-      str))
-
   (exwm-enable))
-
 #+end_src
 
 ** exwm-evil-firefox
@@ -512,15 +483,7 @@
         (start-process "audio-stop" nil "playerctl" "stop"))
     (defun audio/play-pause ()
         (interactive)
-        (start-process "audio-play-pause" nil "playerctl" "play-pause"))
-
-    (global-set-key (kbd "<XF86AudioMute>") 'audio/mute)
-    (global-set-key (kbd "<XF86AudioRaiseVolume>") 'audio/raise-volume)
-    (global-set-key (kbd "<XF86AudioLowerVolume>") 'audio/lower-volume)
-    (global-set-key (kbd "<XF86AudioPrev>") 'audio/prev)
-    (global-set-key (kbd "<XF86AudioNext>") 'audio/next)
-    (global-set-key (kbd "<XF86AudioPlay>") 'audio/play-pause)
-    (global-set-key (kbd "<XF86AudioStop>") 'audio/stop))
+        (start-process "audio-play-pause" nil "playerctl" "play-pause")))
 #+end_src
 
 ** Backlight Support
@@ -535,10 +498,8 @@
     (defun backlight/lower-brightness ()
     (interactive)
     (start-process "lower-volume" nil
-                    "brightnessctl" "set" "5%-"))
+                    "brightnessctl" "set" "5%-")))
 
-    (global-set-key (kbd "<XF86MonBrightnessUp>") 'backlight/raise-brightness)
-    (global-set-key (kbd "<XF86MonBrightnessDown>") 'backlight/lower-brightness))
 #+end_src
 
 ** Bluetooth Support
@@ -821,10 +782,11 @@
 Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure templates]] feature enables you to quickly insert code blocks into your Org files in combination with =org-tempo= by typing =<= followed by the template name like =el= or =py= and then press =TAB=.
 
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(with-eval-after-load 'org (require 'org-tempo)
-                      (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
-                      (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-                      (add-to-list 'org-structure-template-alist '("py" . "src python")))
+(with-eval-after-load 'org
+  (require 'org-tempo)
+  (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+  (add-to-list 'org-structure-template-alist '("py" . "src python")))
 #+end_src
 
 ** Auto-tangle Configuration Files
@@ -836,7 +798,8 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
     (let ((org-confirm-babel-evaluate nil)) (org-babel-tangle)))) 
 
 (add-hook 'org-mode-hook (lambda ()
-                           (add-hook 'after-save-hook #'my/org-babel-tangle-config)))
+                           (add-hook 'after-save-hook
+                                     #'my/org-babel-tangle-config)))
 #+end_src
 
 * Development

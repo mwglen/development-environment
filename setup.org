@@ -185,6 +185,21 @@ playerctld daemon
 EOT
 #+end_src bash
 
+** Printing/Scanning
+*** Base Drivers
+To scan I recommend using simple-scan
+#+begin_src bash
+$INSTALL cups sane python-pillow simple-scan
+sudo systemctl enable cups
+sudo systemctl start cups
+#+end_src
+
+*** Optional Drivers for HP Printers
+Runs using cups and sane. Comes with a systemtray available through the ~hp-systray~ command. To get started find the ip address of your printer and then run ~hp-setup <ip-address>~.
+#+begin_src bash
+$INSTALL hplip
+#+end_src
+
 * Mouse Sensitivity
 #+begin_src bash
 Mouse=$(xinput list |grep -i M720 | awk -F= '{ print $2}'| awk '{print $1}'| awk 'BEGIN{ RS = "" ; FS = "\n" }{print $1}')
@@ -826,8 +841,6 @@ format-padding = 1
 * Display Managers
 ** Configure X11
 #+begin_src bash
-# mkdir -p $XDG_CONFIG_HOME/X11
-# echo "Xft.dpi: 282" > $XDG_CONFIG_HOME/X11/xresources
 echo "Xft.dpi: 200" > ~/.Xresources
 #+end_src
 
@@ -841,7 +854,10 @@ systemctl enable lightdm
 *** Install LightDM Theme
 #+begin_src bash
 $INSTALL lightdm-webkit2-greeter lightdm-webkit-theme-litarvan
-sudo tee "/etc/lightdm/lightdm.conf" > /dev/null <<'EOF'
+#+end_src
+
+*** LightDM Configuration
+#+begin_src conf :tangle /etc/lightdm/lightdm.conf :dir /sudo:://
 #
 # General configuration
 #
@@ -1005,10 +1021,9 @@ session-wrapper=/etc/lightdm/Xsession
 #width=1024
 #height=768
 #depth=8
-
-EOF
-
-sudo tee "/etc/lightdm/lightdm-webkit2-greeter.conf" > /dev/null <<'EOF'
+#+end_src
+*** Theme Configuration
+#+begin_src conf :tangle /etc/lightdm/lightdm-webkit2-greeter.conf :dir /sudo:://
 #
 # [greeter]
 # debug_mode          = Greeter theme debug mode.
