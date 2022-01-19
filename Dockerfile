@@ -15,7 +15,7 @@ RUN useradd -G wheel -m ${USERNAME}
 USER $username
 WORKDIR /home/$username
 
-# Run the setup script
+# Run the setup script (Script was removed. Will fixed later.)
 ADD . ./development-environment
 RUN sudo chown -R $username ./development-environment
 WORKDIR ./development-environment

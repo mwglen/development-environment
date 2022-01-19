@@ -1228,7 +1228,6 @@ export VISUAL=nvim
 EOT
 #+end_src
 
-
 * Change Shell
 #+begin_src bash
 sudo chsh -s /usr/bin/zsh $(whoami)
