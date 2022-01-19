@@ -1,5 +1,6 @@
 #+title: Guide to Setup Development Environment
-#+PROPERTY: header-args:bash :results none :dir /sudo:://
+#+PROPERTY: header-args:bash :dir /sudo:://
+#+PROPERTY: header-args :results none
 * Script Headers
 ** Use Bash
 #+begin_src bash
@@ -514,22 +515,22 @@ mkdir -p $XDG_CONFIG_HOME/polybar
 #+end_src
 
 ** Configuration
+:PROPERTIES:
+:header-args:conf:       :tangle ./.config/polybar/config
+:END:
 *** Global Settings
-#+begin_src bash
-cat <<EOT > $XDG_CONFIG_HOME/polybar/config
+#+begin_src conf
 [settings]
 screenchange-reload = true
 
 [global/wm]
 margin-top = 0
 margin-bottom = 0
-EOT
 #+end_src
 
 *** Themes
 **** Doom Tomorrow Night Theme
-#+begin_src bash :tangle no
-cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
+#+begin_src conf :tangle no
 [colors]
 background = #aa1d1f21
 background-alt = #161719
@@ -538,12 +539,10 @@ foreground-alt = #767876
 primary = #1d1f21
 secondary = #e60053
 alert = #bd2c40
-EOT
 #+end_src
 
 **** Doom Moonless Theme
-#+begin_src bash
-cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
+#+begin_src conf
 [colors]
 background = #000000
 background-alt = #161719
@@ -552,12 +551,22 @@ foreground-alt = #767876
 primary = #1d1f21
 secondary = #e60053
 alert = #bd2c40
-EOT
+#+end_src
+ 
+**** Doom-Acario-Light
+#+begin_src conf :tangle no
+[colors]
+background = #000000
+background-alt = #161719
+foreground = #c5c8c6
+foreground-alt = #767876
+primary = #1d1f21
+secondary = #e60053
+alert = #bd2c40
 #+end_src
 
 *** Panel
-#+begin_src bash
-cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
+#+begin_src conf
 [bar/panel]
 width = 100%
 height = 80
@@ -593,23 +602,19 @@ tray-maxsize = 28
 
 cursor-click = pointer
 cursor-scroll = ns-resize
-EOT
 #+end_src
 
 *** CPU Utilization
-#+begin_src bash
-cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
+#+begin_src conf
 [module/cpu]
 type = internal/cpu
 interval = 2
 format = CPU <label>
 label = %percentage:2%%
-EOT
 #+end_src
 
 *** Date and Time
-#+begin_src bash
-cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
+#+begin_src conf
 [module/date]
 type = internal/date
 interval = 5
@@ -620,12 +625,10 @@ time-alt = %H:%M:%S
 
 format-prefix-foreground = \${colors.foreground-alt}
 label = %date% %time%
-EOT
 #+end_src
 
 *** Battery
-#+begin_src bash
-cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
+#+begin_src conf
 [module/battery]
 type = internal/battery
 battery = BAT0
@@ -652,12 +655,10 @@ animation-charging-2 = 
 animation-charging-3 = 
 animation-charging-4 = 
 animation-charging-framerate = 750
-EOT
 #+end_src
 
 *** Temperature
-#+begin_src bash
-cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
+#+begin_src conf
 [module/temperature]
 type = internal/temperature
 thermal-zone = 0
@@ -669,15 +670,13 @@ format-warn = TEMP <label-warn>
 label = %temperature-c%
 label-warn = %temperature-c%!
 label-warn-foreground = \${colors.secondary}
-EOT
 #+end_src
 
 *** Pulse Audio
 #+begin_src bash
 $INSTALL pulseaudio-control
 #+end_src
-#+begin_src bash
-cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
+#+begin_src conf
 [module/pulseaudio]
 type = custom/script
 tail = true
@@ -690,15 +689,13 @@ click-left = pulseaudio-control togmute
 click-middle = pulseaudio-control --sink-blacklist "alsa_output.pci-0000_01_00.1.hdmi-stereo-extra2" next-sink
 scroll-up = pulseaudio-control up
 scroll-down = pulseaudio-control down
-EOT
 #+end_src
 
 *** Wireless Network
-#+begin_src bash
-cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
+#+begin_src conf
 [module/wireless-network]
 type = internal/network
-interface = wlan0
+interface = wlan2
 
 format-connected =  <label-connected>
 format-disconnected = <label-disconnected>
@@ -709,21 +706,19 @@ label-connected-foreground = #eefafafa
 
 label-disconnected = not connected
 label-disconnected-foreground = #66ffffff
-EOT
 #+end_src
 
 *** Memory                              
-#+begin_src bash
-cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
+#+begin_src conf
 [module/memory]
 type = internal/memory
 interval = 3
 format = <label>
 label = MEM %percentage_used:2%%
-EOT
 #+end_src
 
 *** Backlight
+**** Give Polybar Access to Change Backlight
 #+begin_src bash
 sudo makedir -p /etc/udev/rules.d
 groupadd -r video
@@ -731,8 +726,9 @@ sudo usermod -a -G video $USER
 sudo chgrp video /sys/class/backlight/intel_backlight/brightness"
 sudo chmod g+w /sys/class/backlight/intel_backlight/brightness
 #+end_src
-#+begin_src bash
-cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
+
+**** Module
+#+begin_src conf
 [module/backlight]
 type = internal/backlight
 enable-scroll = true
@@ -741,58 +737,63 @@ format = <ramp> <label>
 label = %percentage%%
 ramp-0 = 
 ramp-1 = 
-EOT
 #+end_src
 
 *** Redshift
+**** Install
 #+begin_src bash
 mkdir -p $XDG_CONFIG_HOME/polybar/scripts
-cat <<EOT > $XDG_CONFIG_HOME/polybar/scripts/env.sh
+#+end_src
+
+**** Scripts
+***** env.sh
+#+begin_src sh :tangle .config/polybar/scripts/env.sh :tangle-mode (identity #o755)
 export REDSHIFT=on
 export REDSHIFT_TEMP=5600
-EOT
+#+end_src
 
-cat <<EOT > $XDG_CONFIG_HOME/polybar/scripts/redshift.sh
+***** redshift.sh
+#+begin_src sh :tangle .config/polybar/scripts/redshift.sh :tangle-mode (identity #o755)
 #!/bin/sh
 
 envFile=$XDG_CONFIG_HOME/polybar/scripts/env.sh
 changeValue=300
 
 changeMode() {
-  sed -i "s/REDSHIFT=\$1/REDSHIFT=\$2/g" \$envFile 
-  REDSHIFT=\$2
-  echo \$REDSHIFT
+  sed -i "s/REDSHIFT=$1/REDSHIFT=$2/g" $envFile 
+  REDSHIFT=$2
+  echo $REDSHIFT
 }
 
 changeTemp() {
-  if [ "\$2" -gt 1000 ] && [ "\$2" -lt 25000 ]
+  if [ "$2" -gt 1000 ] && [ "$2" -lt 25000 ]
   then
-    sed -i "s/REDSHIFT_TEMP=\$1/REDSHIFT_TEMP=\$2/g" \$envFile 
-    redshift -P -O \$((REDSHIFT_TEMP+changeValue))
+    sed -i "s/REDSHIFT_TEMP=$1/REDSHIFT_TEMP=$2/g" $envFile 
+    redshift -P -O $((REDSHIFT_TEMP+changeValue))
   fi
 }
 
-case \$1 in 
+case $1 in 
   toggle) 
-    if [ "\$REDSHIFT" = on ];
+    if [ "$REDSHIFT" = on ];
     then
-      changeMode "\$REDSHIFT" off
+      changeMode "$REDSHIFT" off
       redshift -x
     else
-      changeMode "\$REDSHIFT" on
-      redshift -O "\$REDSHIFT_TEMP"
+      changeMode "$REDSHIFT" on
+      redshift -O "$REDSHIFT_TEMP"
     fi
     ;;
   increase)
-    changeTemp \$((REDSHIFT_TEMP)) \$((REDSHIFT_TEMP+changeValue))
+    changeTemp $((REDSHIFT_TEMP)) $((REDSHIFT_TEMP+changeValue))
     ;;
   decrease)
-    changeTemp \$((REDSHIFT_TEMP)) \$((REDSHIFT_TEMP-changeValue));
+    changeTemp $((REDSHIFT_TEMP)) $((REDSHIFT_TEMP-changeValue));
     ;;
   temperature)
-    case \$REDSHIFT in
+    case $REDSHIFT in
       on)
-        printf "%dK" "\$REDSHIFT_TEMP"
+        printf "%dK" "$REDSHIFT_TEMP"
         ;;
       off)
         printf "off"
@@ -800,12 +801,10 @@ case \$1 in
     esac
     ;;
 esac
-EOT
-chmod +x $XDG_CONFIG_HOME/polybar/scripts/redshift.sh
-chmod +x $XDG_CONFIG_HOME/polybar/scripts/env.sh
 #+end_src
-#+begin_src bash
-cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
+
+**** Module
+#+begin_src conf
 [module/redshift]
 type = custom/script
 format-prefix = ""
@@ -814,18 +813,15 @@ click-left = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/
 scroll-up = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh increase
 scroll-down = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh decrease
 interval=0.5
-EOT
 #+end_src
 
 *** Workspace Indicator
-#+begin_src bash
-cat <<EOT >> $XDG_CONFIG_HOME/polybar/config
+#+begin_src conf
 [module/exwm-workspace]
 type = custom/ipc
 hook-0 = emacsclient -e "exwm-workspace-current-index" | sed -e 's/^"//' -e 's/"$//'
 initial = 1
 format-padding = 1
-EOT
 #+end_src
 * Display Managers
 ** Configure X11

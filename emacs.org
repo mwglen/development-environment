@@ -191,9 +191,9 @@
 * Theme Configuration
 ** Setup Theme
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-;; Good Dark Themes: doom-meltbus doom-tomorrow-night
+;; Good Dark Themes: doom-meltbus doom-tomorrow-night doom-monokai-pro doom-vivendi
 
-;; Good Light Themes: doom-solarized-light doom-tomorrow-day doom-homage-white doom-acario-light doom-opera-light doom-nord-light modus-operandi doom-one-light doom-earl-grey adwaita doom-vivendi doom-monokai-pro
+;; Good Light Themes: doom-acario-light
 (use-package doom-themes
   :init (load-theme 'doom-moonless t))
 #+end_src
@@ -216,12 +216,17 @@
 
 ** Emacs Dashboard
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-  (use-package dashboard
-    :config
-    (dashboard-setup-startup-hook)
-    (setq initial-buffer-choice
-    (lambda () (get-buffer "*dashboard*")))
-    (setq dashboard-set-init-info t))
+(use-package dashboard
+  :config
+  (dashboard-setup-startup-hook)
+  (setq dashboard-center-content t)
+  (setq initial-buffer-choice
+  (lambda () (get-buffer "*dashboard*")))
+  (setq dashboard-set-init-info t)
+  (setq dashboard-items '((recents . 5)
+                          (bookmarks . 5)
+                          (projects . 5)
+                          (agenda . 5))))
 #+end_src
 
 ** All The Icons
@@ -752,7 +757,7 @@
                 org-pretty-entities t
                 org-hide-emphasis-markers t
                 org-edit-src-content-indentation 0)
-  (setq org-agenda-files '("~/OrgFiles/agenda")))
+  (setq org-agenda-files '("~/personal-documents/OrgFiles/agenda")))
 #+end_src
 
 *** Nicer Heading Bullets
