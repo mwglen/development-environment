@@ -1,5 +1,5 @@
 #+title: Setup Guide
-#+PROPERTY: header-args:bash :results none
+#+PROPERTY: header-args:bash :results none :dir /sudo:://
 * Set GRUB to Remember Last Selection
 1. Put the following in ~/etc/default/grub~
    #+begin_src bash
@@ -126,7 +126,7 @@ gpg --output backupkeys.pgp --armor --export-secret-keys --export-options export
 * Setup a Software Access Point
 ** Linux-Wifi-Hotspot
 ~linux-wifi-hotspot~ is an AUR package that allows you to easily create a wifi-hotspot without needing to mess around with ~hostapd~, ~dnsmasq~, and ~iptables~. It includes both a gui and cli interface.
-#+begin_src bash :dir /sudo:://
+#+begin_src bash
 $INSTALL linux-wifi-hotspot
 #+end_src
 
@@ -143,14 +143,14 @@ wihotspot
 * Converting ICS format to Org
 See [[https://tero.hasu.is/blog/org-icalendar-import/]] for more information.
 ** Installing
-#+begin_src bash :dir /sudo:://
+#+begin_src bash
 $INSTALL ruby
 gem install date icalendar optparse tzinfo
 git clone https://tero.hasu.is/repo/icalendar-to-org.git
 #+end_src
 
 **  To Use
-#+begin_src bash :dir /sudo:://
+#+begin_src bash
 ics-to-org input.ics > output.org
 #+end_src
 
