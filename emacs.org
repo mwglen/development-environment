@@ -849,6 +849,11 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
 #+end_src
 
 * Flyspell
+** Popup Buffers
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package flyspell-correct-popup)
+#+end_src bash
+
 ** Start Flyspell with Certain Modes
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (dolist (hook '(text-mode-hook org-mode-hook))
@@ -871,6 +876,80 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
   (ispell-change-dictionary "russian")
   (flyspell-buffer))
 #+end_src bash
+
+* LSP-Mode
+** Basic Setup
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(defun lsp/mode-setup ()
+  (setq lsp-headerline-breadcrumb-segments
+        '(path-up-to-project file symbols))
+  (lsp-headerline-breadcrumb-mode))
+
+(use-package lsp-mode
+  :commands (lsp lsp-deferred)
+  :hook (lsp-mode . lsp/mode-setup)
+  :init
+  (setq lsp-keymap-prefix "C-l")
+  :config
+  (lsp-enable-which-key-integration t))
+#+end_src
+
+** LSP UI
+Gives sidelines, documentation popups, and references popups
+#+begin_src emacs-lisp :tangle no
+(use-package lsp-ui
+  :hook (lsp-mode . lsp-ui-mode)
+  :custom
+  (lsp-ui-doc-position 'bottom))
+#+end_src
+
+** LSP Treemacs
+#+begin_src emacs-lisp :tangle no
+(use-package lsp-treemacs
+  :after lsp)
+#+end_src
+
+** LSP Ivy
+Allows you to quckly find definitions.
+#+begin_src emacs-lisp :tangle no
+(use-package lsp-ivy)
+#+end_src
+
+** Company Mode
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package company
+  :after lsp-mode
+  :hook (lsp-mode . company-mode)
+  :bind (:map company-active-map
+              ("<tab>" . company-complete-selection))
+        (:map lsp-mode-map
+              ("<tab>" . company-indent-or-complete-common))
+  :custom
+  (company-minimum-prefix-length 1)
+  (company-idle-delay 0.0))
+#+end_src
+
+**** Company Box Mode
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package company-box
+  :hook (company-mode . company-box-mode))
+#+end_src
+
+** TypeScript
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package typescript-mode
+  :mode "\\.ts\\'"
+  :hook (typescript-mode . lsp-deferred)
+  :config
+  (setq typescript-indent-level 2))
+#+end_src
+
+** Rust
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package rust-mode
+  :mode "\\.rs\\'"
+  :hook (rust-mode-hook . lsp-deferred))
+#+end_src
 
 * File Management
 ** Dired
