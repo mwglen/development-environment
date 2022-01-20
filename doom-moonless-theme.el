@@ -158,5 +158,8 @@ determine the exact padding."
    (treemacs-git-conflict-face :foreground vc-conflict)
    (treemacs-git-modified-face :foreground vc-modified)
 
+   ;;;; flyspell
+   (flyspell-incorrect :background red :foreground white :weight 'bold)
+   (flyspell-duplicate :background blue :foreground white :weight 'bold)
    ))
 ;;; doom-moonless-theme.el ends here

@@ -848,6 +848,30 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
   :config (show-paren-mode 1))
 #+end_src
 
+* Flyspell
+** Start Flyspell with Certain Modes
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(dolist (hook '(text-mode-hook org-mode-hook))
+  (add-hook hook (lambda () (flyspell-mode 1))))
+(dolist (hook '(change-log-mode-hook log-edit-mode-hook))
+  (add-hook hook (lambda () (flyspell-mode -1))))
+(dolist (hook '(python-mode-hook))
+  (add-hook hook (lambda () (flyspell-prog-mode 1))))
+#+end_src bash
+
+** Check Spelling On Demand
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(defun flyspell/english ()
+  (interactive)
+  (ispell-change-dictionary "english")
+  (flyspell-buffer))
+  
+(defun flyspell/russian ()
+  (interactive)
+  (ispell-change-dictionary "russian")
+  (flyspell-buffer))
+#+end_src bash
+
 * File Management
 ** Dired
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
