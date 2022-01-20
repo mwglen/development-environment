@@ -289,7 +289,7 @@
 
 *** Add Transparency
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(defconst transsetDefault ".4")
+(defconst transsetDefault ".6")
 (defun transset/on ()
   (interactive)
   (dolist (id (butlast
