@@ -531,7 +531,7 @@ mkdir -p $XDG_CONFIG_HOME/polybar
 
 ** Configuration
 :PROPERTIES:
-:header-args:conf:       :tangle ./.config/polybar/config
+:header-args:conf: :tangle ./.config/polybar/config
 :END:
 *** Global Settings
 #+begin_src conf
@@ -548,60 +548,40 @@ margin-bottom = 0
 #+begin_src conf :tangle no
 [colors]
 background = #aa1d1f21
-background-alt = #161719
 foreground = #c5c8c6
-foreground-alt = #767876
-primary = #1d1f21
-secondary = #e60053
-alert = #bd2c40
 #+end_src
 
 **** Doom Moonless Theme
 #+begin_src conf
 [colors]
-background = #000000
-background-alt = #161719
+background = #cc000000
 foreground = #c5c8c6
-foreground-alt = #767876
-primary = #1d1f21
-secondary = #e60053
-alert = #bd2c40
 #+end_src
  
 **** Doom-Acario-Light
 #+begin_src conf :tangle no
 [colors]
-background = #000000
-background-alt = #161719
+background = #FF0000
 foreground = #c5c8c6
-foreground-alt = #767876
-primary = #1d1f21
-secondary = #e60053
-alert = #bd2c40
 #+end_src
 
 *** Panel
 #+begin_src conf
 [bar/panel]
 width = 100%
-height = 80
+height = 70
 offset-x = 0
 offset-y = 0
 fixed-center = true
 enable-ipc = true
 
-background = \${colors.background}
-foreground = \${colors.foreground}
+background = ${colors.background}
+foreground = ${colors.foreground}
 
-line-size = 3
-line-color = #f00
+padding-left = 4
+padding-right = 4
 
-border-size = 0
-border-color = #00000000 padding-top = 5
-padding-left = 2
-padding-right = 2
-
-module-margin = 1
+module-margin = 2
 
 font-0 = "Noto Sans:size=25:weight=bold"
 font-1 = "Material Icons:size=35;5"
@@ -612,7 +592,6 @@ modules-center = cpu temperature memory
 modules-right = wireless-network pulseaudio backlight redshift battery
 
 tray-position = right
-tray-padding = 2
 tray-maxsize = 28
 
 cursor-click = pointer
@@ -638,7 +617,6 @@ date-alt = "%A %B %d, %Y"
 time = %l:%M %p
 time-alt = %H:%M:%S
 
-format-prefix-foreground = \${colors.foreground-alt}
 label = %date% %time%
 #+end_src
 
@@ -684,7 +662,6 @@ format-warn = TEMP <label-warn>
 
 label = %temperature-c%
 label-warn = %temperature-c%!
-label-warn-foreground = \${colors.secondary}
 #+end_src
 
 *** Pulse Audio
@@ -696,7 +673,6 @@ $INSTALL pulseaudio-control
 type = custom/script
 tail = true
 label-padding = 2
-label-foreground = $\{colors.foreground}
 
 exec = pulseaudio-control --icons-volume " , " --icon-muted " " --sink-nicknames-from "device.description" --sink-nickname "alsa_output.pci-0000_00_1f.3.analog-stereo: Built In Speakers" listen
 click-right = pavucontrol
@@ -857,7 +833,7 @@ $INSTALL lightdm-webkit2-greeter lightdm-webkit-theme-litarvan
 #+end_src
 
 *** LightDM Configuration
-#+begin_src conf :tangle /etc/lightdm/lightdm.conf :dir /sudo:://
+#+begin_src conf :tangle /sudo:://etc/lightdm/lightdm.conf
 #
 # General configuration
 #
@@ -1023,7 +999,7 @@ session-wrapper=/etc/lightdm/Xsession
 #depth=8
 #+end_src
 *** Theme Configuration
-#+begin_src conf :tangle /etc/lightdm/lightdm-webkit2-greeter.conf :dir /sudo:://
+#+begin_src conf :tangle /sudo:://etc/lightdm/lightdm-webkit2-greeter.conf
 #
 # [greeter]
 # debug_mode          = Greeter theme debug mode.

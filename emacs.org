@@ -284,12 +284,12 @@
 (defun wallpaper/set ()
   (interactive)
   (start-process-shell-command
-   "feh" nil "feh --bg-scale $BACKGROUNDS/2001_A_Space_Odyssey.jpg"))
+   "feh" nil "feh --bg-scale $BACKGROUNDS/unit-01.jpg"))
 #+end_src
 
 *** Add Transparency
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(defconst transsetDefault ".6")
+(defconst transsetDefault ".4")
 (defun transset/on ()
   (interactive)
   (dolist (id (butlast
