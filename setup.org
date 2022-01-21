@@ -1081,7 +1081,7 @@ $INSTALL libnotify
 ** Dunst
 In order to use libnotify you have to install a notification server. I use Dunst.
 #+begin_src bash
-$INSTALL dunst
+$INSTALL dunst dmenu
 #+end_src
 
 *** Dunst Config
@@ -1093,7 +1093,7 @@ See [[https://dunst-project.org/documentation/]]
 
     ### Geometry ###
     offset = 20x80
-    width = 300
+    width = (250, 500)
     height = 300
     transparency = 10  # Requires X11 and a compositor [0; 100]
     corner_radius = 5
@@ -1158,6 +1158,18 @@ See [[https://dunst-project.org/documentation/]]
     timeout = 0
     # Icon for notifications with critical urgency, uncomment to enable
     #default_icon = /path/to/icon
+#+end_src
+
+** Battery Notifications
+#+begin_src conf :tangle /sudo:://usr/lib/systemd/system/batsignal.service
+[Unit]
+Description=Lightweight battery daemon
+
+[Service]
+ExecStart=/usr/bin/batsignal -f 90 -w 30 -c 20 -d 10
+
+[Install]
+WantedBy=multi-user.target
 #+end_src
 
 * Virtualization

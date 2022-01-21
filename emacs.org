@@ -208,6 +208,8 @@
   (dashboard-setup-startup-hook)
   (setq dashboard-center-content t)
   (setq dashboard-startup-banner 1)
+  ;(setq dashboard-filter-agenda-entry 'dashboard-no-filter-agenda)
+  (setq dashboard-week-agenda t)
   (setq initial-buffer-choice
   (lambda () (get-buffer "*dashboard*")))
   (setq dashboard-set-init-info t)
@@ -806,6 +808,17 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
 (add-hook 'org-mode-hook (lambda ()
                            (add-hook 'after-save-hook
                                      #'babel/tangle-config)))
+#+end_src
+
+** Org-Alert
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package org-alert
+  :ensure t
+  :config
+  (setq alert-default-style 'libnotify)
+  (setq org-alert-interval (* 60 60))
+  (setq org-alert-notify-cutoff (* 2 24 60 60))
+  (org-alert-enable))
 #+end_src
 
 * Development
