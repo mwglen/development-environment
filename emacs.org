@@ -282,10 +282,15 @@
 ** Setup EXWM
 *** Set Wallpaper
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(defun wallpaper/set ()
+(defun wallpaper/use-default ()
   (interactive)
   (start-process-shell-command
    "feh" nil "feh --bg-scale $BACKGROUNDS/unit-01.jpg"))
+
+(defun wallpaper/set ()
+  (interactive)
+  (start-process-shell-command
+   "feh" nil (concat "feh --bg-scale " (counsel-find-file))))
 #+end_src
 
 *** Add Transparency
@@ -314,7 +319,7 @@
 
 *** Run in Background
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(defun my/run-in-background (command)
+(defun process/run-in-background (command)
   (let ((command-parts (split-string command "[ ]+")))
     (apply #'call-process `(,(car command-parts) nil 0 nil ,@(cdr command-parts)))))
 #+end_src
@@ -427,15 +432,15 @@
 
 **** Start EXWM
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(defun my/exwm-update-class ()
+(defun exwm/update-class ()
   (exwm-workspace-rename-buffer exwm-class-name))
 
 (use-package exwm
   :config
   (exwm/set-resolution)
   (start-process-shell-command "picom" nil "picom")
-  (wallpaper/set)
-  (add-hook 'exwm-update-class-hook #'my/exwm-update-class)
+  (wallpaper/use-default)
+  (add-hook 'exwm-update-class-hook #'exwm/update-class)
   (define-key exwm-mode-map [?\C-q] 'exwm-input-send-next-key)
   (setq exwm-workspace-number 5)
   (exwm/set-prefix-keys)
@@ -694,7 +699,7 @@
 * Org Mode
 ** Better Font Faces
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(defun my/org-font-setup ()
+(defun org/font-setup ()
   ;; Replace list hyphen with dot
   (font-lock-add-keywords 'org-mode '(("^ *\\([-]\\) "
                                        (0 (prog1 () (compose-region
@@ -705,16 +710,16 @@
 ** Basic Config
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (setq-default indent-tabs-mode nil)
-(defun my/org-mode-setup ()
+(defun org/setup ()
   (org-indent-mode 1)
   (visual-line-mode 1))
 
 (use-package org
   :pin org
   :commands (org-capture org-agenda)
-  :hook (org-mode . my/org-mode-setup)
+  :hook (org-mode . org/setup)
   :config
-  (my/org-font-setup)
+  (org/font-setup)
   (setq-default org-ellipsis " ▾"
                 org-pretty-entities t
                 org-hide-emphasis-markers t
@@ -792,7 +797,7 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
 
 ** Auto-tangle Configuration Files
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(defun my/org-babel-tangle-config ()
+(defun babel/tangle-config ()
   (when (member (file-name-nondirectory (buffer-file-name))
                 '("emacs.org"
                   "setup.org"))
@@ -800,7 +805,7 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
 
 (add-hook 'org-mode-hook (lambda ()
                            (add-hook 'after-save-hook
-                                     #'my/org-babel-tangle-config)))
+                                     #'babel/tangle-config)))
 #+end_src
 
 * Development
@@ -1045,6 +1050,6 @@ Allows you to quckly find definitions.
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (use-package gcmh
   :config
-  (setq gcmh-high-cons-threshold (* 1 1000 1000 1000))
+  (setq gcmh-high-cons-threshold (* 100 1000 1000))
   (gcmh-mode 1))
 #+end_src
