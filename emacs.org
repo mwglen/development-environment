@@ -145,7 +145,8 @@
                 org-mode-hook
                 shell-mode-hook
                 treemacs-mode-hook
-                eshell-mode-hook))
+                eshell-mode-hook
+                vterm-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 #+end_src
 
@@ -401,6 +402,7 @@
                        (start-process-shell-command command nil command)))
           ([?\s-w] . exwm-workspace-switch)
           ([?\s-f] . exwm-layout-toggle-fullscreen)
+          ([?\s-F] . exwm-floating-toggle-floating)
 
           ;; 's-N': Switch to certain workspacw with Super 
           ,@(mapcar (lambda (i)
@@ -437,14 +439,40 @@
 (defun exwm/update-class ()
   (exwm-workspace-rename-buffer exwm-class-name))
 
+(defun exwm/update-title ()
+  (pcase exwm-class-name
+    ("Firefox" (exwm-workspace-rename-buffer
+                (format "Firefox: %s" exwm-title)))))
+
+(defun exwm/configure-window-by-class ()
+  (interactive)
+  (pcase exwm-class-name
+    ;("Firefox" (exwm-workspace-move-window 2))
+    ("mpv" (exwm-floating-toggle-floating)
+           (exwm-layout-toggle-mode-line)
+    ("Sol" (exwm-workspace-move-window 3)))))
+
+(defun exwm/position-window (x y)
+  (interactive)
+  (let* ((pos (frame-position))
+         (pos-x (car pos))
+         (pos-y (cdr pos)))
+    (exwm-floating-move
+     (+ (- pos-x) x) (+ (- pos-y) y))))
+
 (use-package exwm
   :config
   (exwm/set-resolution)
   (start-process-shell-command "picom" nil "picom")
   (wallpaper/use-default)
   (add-hook 'exwm-update-class-hook #'exwm/update-class)
+  (add-hook 'exwm-update-title-hook #'exwm/update-title)
+  ;(add-hook 'exwm-manage-finish-hook #'exwm/configure-window-by-class)
+  ;(start-process-shell-command "xmodmap" nil "xmodmap $XDG_CONFIG_HOME/xmodmap")
   (define-key exwm-mode-map [?\C-q] 'exwm-input-send-next-key)
   (setq exwm-workspace-number 5)
+  ;(setq exwm-layout-show-all-buffers t)
+  ;(setq exwm-workspace-show-all-buffers t)
   (exwm/set-prefix-keys)
   (exwm/set-global-keys)
   (server-start)
@@ -540,14 +568,7 @@
     (kbd "<remap> <evil-previous-line>") #'evil-previous-line)
 
   (define-key evil-operator-state-map
-    (kbd "<remap> <evil-previous-line>") #'evil-previous-line)
-
-  (define-key evil-normal-state-map
-    (kbd "<remap> <evil-quit>") #'my/exit-to-dashboard)
-  (evil-define-command exit () (interactive) (save-buffers-kill-terminal)))
-
-(defun my/exit-to-dashboard () (interactive)
-  (if (eq (count-windows) 1) (switch-to-buffer "*dashboard*") (delete-window)))
+    (kbd "<remap> <evil-previous-line>") #'evil-previous-line))
 #+end_src
 
 *** Evil Collection
@@ -569,8 +590,7 @@
     :global-prefix "C-SPC")
 
   (my/leader-keys
-    "t"  '(:ignore t :which-key "toggles")
-    "tt" '(counsel-load-theme :which-key "choose theme")
+    "tt" '(counsel-load-theme)
     "fde" '(lambda () (interactive)
              (find-file (expand-file-name "~/.emacs.d/Emacs.org")))))
 #+end_src
@@ -581,16 +601,6 @@
 #+end_src
 
 * Autocomplete Modes
-** Which Key
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(use-package which-key
-  :defer 0
-  :diminish which-key-mode
-  :config
-  (which-key-mode)
-  (setq which-key-idle-delay 1))
-#+end_src
-
 ** Ivy
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (use-package ivy
@@ -609,6 +619,18 @@
          ("C-k" . ivy-previous-line)
          ("C-d" . ivy-reverse-i-search-kill))
   :config (ivy-mode 1))
+#+end_src
+
+*** Ivy-PosFrame
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package ivy-posframe
+  :after ivy
+  :config
+  (setq ivy-posframe-width (frame-width)
+        ivy-posframe-height 10)
+  (setq ivy-posframe-display-functions-alist
+        '((t . ivy-posframe-display-at-frame-bottom-center)))
+  (ivy-posframe-mode 1))
 #+end_src
 
 *** Ivy-Rich
@@ -907,9 +929,7 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
   :commands (lsp lsp-deferred)
   :hook (lsp-mode . lsp/mode-setup)
   :init
-  (setq lsp-keymap-prefix "C-l")
-  :config
-  (lsp-enable-which-key-integration t))
+  (setq lsp-keymap-prefix "C-l"))
 #+end_src
 
 ** LSP UI

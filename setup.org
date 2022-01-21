@@ -578,8 +578,8 @@ enable-ipc = true
 background = ${colors.background}
 foreground = ${colors.foreground}
 
-padding-left = 4
-padding-right = 4
+padding-left = 2
+padding-right = 2
 
 module-margin = 1
 
@@ -588,7 +588,7 @@ font-1 = "Material Icons:size=35;5"
 font-2 = "Font Awesome:size=35;5"
 
 modules-left = date
-modules-center = cpu temperature memory
+;modules-center = cpu temperature memory
 modules-right = wireless-network pulseaudio backlight redshift battery
 
 tray-position = right
@@ -823,6 +823,26 @@ hook-0 = emacsclient -e "exwm-workspace-current-index" | sed -e 's/^"//' -e 's/"
 initial = 1
 format-padding = 1
 #+end_src
+
+* TUI Applications
+#+begin_src bash
+$INSTALL gotop cava alsi
+#+end_src
+
+* GTK Theme
+** Install Theme
+#+begin_src bash
+$INSTALL materia-gtk-theme themix-full-git
+#+end_src
+
+** Set Theme
+#+begin_src conf :tangle ~/development-environment/.config/gtk-3.0/settings.ini
+[Settings]
+gtk-icon-theme-name = Materia
+gtk-theme-name = Materia
+gtk-application-prefer-dark-theme = true
+#+end_src conf
+
 * Display Managers
 ** Configure X11
 #+begin_src bash
