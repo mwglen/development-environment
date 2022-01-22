@@ -177,11 +177,30 @@
   :hook (text-mode . mixed-pitch-mode))
 #+end_src
 
+** Edwina
+#+begin_src emacs-lisp :tangle no
+(use-package edwina
+  :config
+  (setq display-buffer-base-action
+        '(display-buffer-below-selected))
+  (edwina-setup-dwm-keys)
+  (edwina-mode 1))
+#+end_src
+
+** Buffer Move
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package buffer-move
+  :commands (buf-move-up buf-move-down buf-move-left buf-move-right))
+(global-set-key [?\s-k] 'buf-move-up)
+(global-set-key [?\s-j] 'buf-move-down)
+(global-set-key [?\s-h] 'buf-move-left)
+(global-set-key [?\s-l] 'buf-move-right)
+#+end_src
+
 * Theme Configuration
 ** Setup Theme
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 ;; Good Dark Themes: doom-moonless doom-tomorrow-night
-
 ;; Good Light Themes: doom-acario-light
 (use-package doom-themes
   :init (load-theme 'doom-moonless t))
@@ -209,7 +228,6 @@
   (dashboard-setup-startup-hook)
   (setq dashboard-center-content t)
   (setq dashboard-startup-banner 1)
-  ;(setq dashboard-filter-agenda-entry 'dashboard-no-filter-agenda)
   (setq dashboard-week-agenda t)
   (setq initial-buffer-choice
   (lambda () (get-buffer "*dashboard*")))
@@ -362,6 +380,7 @@
         '(?\C-x
           ?\C-u
           ?\C-h
+          ?\C-\;
           ?\C-w
           ?\C-c
           ?\M-x
@@ -369,6 +388,13 @@
           ?\M-&
           ?\M-:
           ?\:
+          
+          ;; Move Buffers
+          ?\s-h
+          ?\s-j
+          ?\s-k
+          ?\s-l
+          
           escape
           ?\C-\M-j
           ?\C-\ )))
@@ -383,18 +409,11 @@
           ;; exwm-input-release-keyboard)
           ([?\s-r] . exwm-reset)
 
-          ;; Move between windows
-          ([?\s-h] . windmove-left)
-          ([?\s-j] . windmove-down)
-          ([?\s-k] . windmove-up)
-          ([?\s-l] . windmove-right)
-
           ;; Resize windows
           ([?\s-H] . windsize-left)
           ([?\s-J] . windsize-down)
           ([?\s-K] . windsize-up)
           ([?\s-L] . windsize-right)
-
 
           ;; Launch applications via shell command
           ([?\s-&] . (lambda (command)
@@ -592,11 +611,6 @@
 
   (my/leader-keys
     "tt" '(counsel-load-theme)))
-#+end_src
-
-** Extra Keybindings
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(global-set-key (kbd "C-;") 'keyboard-escape-quit)
 #+end_src
 
 * Autocomplete Modes

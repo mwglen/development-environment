@@ -392,7 +392,6 @@ add control = Control_L
 add lock = Control_R
 #+end_src
 
-
 * Installing NVIDIA Drivers
 #+begin_src bash
 sudo pacman -S nvidia
@@ -566,14 +565,14 @@ margin-bottom = 0
 **** Doom Tomorrow Night Theme
 #+begin_src conf :tangle no
 [colors]
-background = #aa1d1f21
+background = #1d1f21
 foreground = #c5c8c6
 #+end_src
 
 **** Doom Moonless Theme
 #+begin_src conf
 [colors]
-background = #cc000000
+background = #000000
 foreground = #c5c8c6
 #+end_src
  
@@ -717,7 +716,7 @@ format-connected =  <label-connected>
 format-disconnected = <label-disconnected>
 format-packetloss = <animation-packetloss label-connected>
 
-label-connected = %essid%: %downspeed:2%
+label-connected = %essid%
 label-connected-foreground = #eefafafa
 
 label-disconnected = not connected
@@ -1109,7 +1108,90 @@ EOF
 
 *** Background Image
 #+begin_src bash
-$INSTALL picom feh
+$INSTALL picom-ibhagwan-git feh
+#+end_src
+
+*** Picom Config
+#+begin_src conf :tangle ./.config/picom.conf
+#corner-radius = 50; # obviously doesn't work with EXWM, but useful
+#################################
+#             Shadows           #
+#################################
+shadow = true;
+shadow-radius = 7;
+# shadow-opacity = .75
+shadow-offset-x = -7;
+shadow-offset-y = -7;
+# no-dock-shadow = false
+# no-dnd-shadow = false
+
+# Color valus of shadow (0.0 - 1.0, defaults to 0).
+# shadow-red = 0
+# shadow-green = 0
+# shadow-blue = 0
+
+shadow-exclude = [
+  "name = 'Notification'",
+  "class_g = 'Conky'",
+  "class_g ?= 'Notify-osd'",
+  "class_g = 'Cairo-clock'",
+  "_GTK_FRAME_EXTENTS@:c"
+];
+
+#################################
+#           Fading              #
+#################################
+fading = true
+fade-in-step = 0.03;
+fade-out-step = 0.03;
+
+#################################
+#   Transparency / Opacity      #
+#################################
+inactive-opacity = 0.8;
+frame-opacity = 0.7;
+inactive-opacity-override = false;
+focus-exclude = [ "class_g = 'Cairo-clock'" ];
+opacity-rule = [
+  "100:class_g = 'firefox'",
+  "0:class_g = 'polybar'"
+];
+
+#################################
+#     Background-Blurring       #
+#################################
+blur-method = "dual_kawase";
+blur-strength = 5;
+blur-background-exclude = [
+  "window_type = 'dock'",
+  "window_type = 'desktop'",
+  "_GTK_FRAME_EXTENTS@:c"
+];
+
+#################################
+#       General Settings        #
+#################################
+backend = "glx";
+vsync = true
+mark-wmwin-focused = true;
+mark-ovredir-focused = true;
+detect-rounded-corners = true;
+detect-client-opacity = true;
+refresh-rate = 0
+detect-transient = true
+detect-client-leader = true
+glx-no-stencil = true;
+glx-no-rebind-pixmap = true;
+use-damage = true
+log-level = "warn";
+wintypes:
+{
+  tooltip = { fade = true; shadow = true; opacity = 0.75; focus = true; full-shadow = false; };
+  dock = { shadow = false; }
+  dnd = { shadow = false; }
+  popup_menu = { opacity = 0.8; }
+  dropdown_menu = { opacity = 0.8; }
+};
 #+end_src
 
 * Notifications
