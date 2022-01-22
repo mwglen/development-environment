@@ -468,7 +468,8 @@
   (add-hook 'exwm-update-class-hook #'exwm/update-class)
   (add-hook 'exwm-update-title-hook #'exwm/update-title)
   ;(add-hook 'exwm-manage-finish-hook #'exwm/configure-window-by-class)
-  ;(start-process-shell-command "xmodmap" nil "xmodmap $XDG_CONFIG_HOME/xmodmap")
+  (start-process-shell-command
+   "xmodmap" nil "xmodmap $XDG_CONFIG_HOME/xmodmap/config")
   (define-key exwm-mode-map [?\C-q] 'exwm-input-send-next-key)
   (setq exwm-workspace-number 5)
   ;(setq exwm-layout-show-all-buffers t)
@@ -476,8 +477,8 @@
   (exwm/set-prefix-keys)
   (exwm/set-global-keys)
   (server-start)
-  (exwm/start-polybar)
   (setf epg-pinentry-mode 'loopback)
+  (exwm/start-polybar)
   (exwm-enable))
 #+end_src
 
@@ -554,7 +555,7 @@
   (setq evil-want-C-i-jump nil)
   :config
   (evil-mode 1)
-  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+  (define-key evil-insert-state-map (kbd "C-;") 'evil-normal-state)
   (define-key evil-insert-state-map (kbd "C-h")
     'evil-delete-backward-char-and-join)
 
@@ -590,14 +591,12 @@
     :global-prefix "C-SPC")
 
   (my/leader-keys
-    "tt" '(counsel-load-theme)
-    "fde" '(lambda () (interactive)
-             (find-file (expand-file-name "~/.emacs.d/Emacs.org")))))
+    "tt" '(counsel-load-theme)))
 #+end_src
 
 ** Extra Keybindings
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+(global-set-key (kbd "C-;") 'keyboard-escape-quit)
 #+end_src
 
 * Autocomplete Modes

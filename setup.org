@@ -214,6 +214,7 @@ xinput set-prop $Mouse "libinput Accel Speed" 0.5
 xinput set-prop $Mouse "Coordinate Transformation Matrix" 1 0 0 0 1 0 0 0 1
 
 #+end_src
+
 * Setup Core Packages
 ** Latex
 #+begin_src bash
@@ -374,6 +375,24 @@ ln -s $XDG_CONFIG_HOME/emacs ~/.emacs.d
 systemctl enable --user emacs
 systemctl start --user emacs
 #+end_src
+
+* Universial Keybindings
+** Install Xmodmap
+#+begin_src bash
+$INSTALL xorg-xmodmap
+#+end_src
+
+** Setup Xmodmap
+*** Move Caps Lock to Right Control and Left Control to Caps Lock
+#+begin_src conf :tangle .config/xmodmap/config
+clear lock
+clear control
+keycode 66 = Control_L NoSymbol Control_L
+add control = Control_L
+add lock = Control_R
+#+end_src
+
+
 * Installing NVIDIA Drivers
 #+begin_src bash
 sudo pacman -S nvidia
@@ -1027,6 +1046,7 @@ session-wrapper=/etc/lightdm/Xsession
 #height=768
 #depth=8
 #+end_src
+
 *** Theme Configuration
 #+begin_src conf :tangle /sudo:://etc/lightdm/lightdm-webkit2-greeter.conf
 #
@@ -1068,6 +1088,7 @@ user_image        = /usr/share/pixmaps/archlinux-user.svg
 
 EOF
 #+end_src
+
 * Window Managers
 ** EXWM
 *** Setup
