@@ -33,6 +33,11 @@
 #+end_src
 
 * Package Management
+** Specify Load Path
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(add-to-list 'load-path "~/.emacs.d/lisp")
+#+end_src
+
 ** Enable AOT Compilation of External Packages
 #+begin_src emacs-lisp :tangle ./.config/emacs/init.el
 (setq package-native-compile t)
@@ -195,6 +200,22 @@
 (global-set-key [?\s-j] 'buf-move-down)
 (global-set-key [?\s-h] 'buf-move-left)
 (global-set-key [?\s-l] 'buf-move-right)
+#+end_src
+
+** Add Outer Gaps
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(with-eval-after-load
+  (require 'exwm-outer-gaps))
+  ;(exwm-outer-gaps-mode 1))
+#+end_src
+
+** Add Window Dividers
+Could work as gaps, but can't change transparency
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+;(setq window-divider-default-places t)
+;(setq window-divider-default-right-width 50)
+;(setq window-divider-default-bottom-width 50)
+;(window-divider-mode 1)
 #+end_src
 
 * Theme Configuration
@@ -640,10 +661,18 @@
   :after ivy
   :config
   (setq ivy-posframe-width (frame-width)
-        ivy-posframe-height 10)
+        ivy-posframe-height (/ (frame-height) 5))
   (setq ivy-posframe-display-functions-alist
-        '((t . ivy-posframe-display-at-frame-bottom-center)))
+        '((t . ivy-posframe-display-at-frame-bottom-left)))
+  (set-face-attribute 'ivy-posframe nil
+                      :foreground "white"
+                      :background "black")
   (ivy-posframe-mode 1))
+#+end_src
+
+*** Ivy Clipmenu
+#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+(use-package ivy-clipmenu)
 #+end_src
 
 *** Ivy-Rich

@@ -1,5 +1,5 @@
 #+title: Guide to Setup Development Environment
-#+PROPERTY: header-args:bash :dir /sudo:://
+#+PROPERTY: header-args:bash
 #+PROPERTY: header-args :results none
 * Script Headers
 ** Use Bash
@@ -160,14 +160,6 @@ sudo systemctl enable bluetooth-autoconnect
 sudo systemctl start bluetooth-autoconnect
 sudo systemctl enable pulseaudio-bluetooth-autoconnect
 sudo systemctl start pulseaudio-bluetooth-autoconnect
-
-# sudo tee "/etc/bluetooth/main.conf" > /dev/null <<'EOF'
-# [Policy]
-# AutoEnable=true
-
-# [General]
-# DiscoverableTimeout = 0
-# EOF
 #+end_src
 
 ** Wifi
@@ -212,7 +204,6 @@ xinput set-prop $Mouse "libinput Accel Speed" 0.5
 
 # Set sensitivity with the last number (0 is off, higher is slower)
 xinput set-prop $Mouse "Coordinate Transformation Matrix" 1 0 0 0 1 0 0 0 1
-
 #+end_src
 
 * Setup Core Packages
@@ -592,7 +583,9 @@ offset-x = 0
 offset-y = 0
 fixed-center = true
 enable-ipc = true
-
+border-color = #c5c8c6
+border-bottom-size = 0
+             
 background = ${colors.background}
 foreground = ${colors.foreground}
 
@@ -881,186 +874,19 @@ $INSTALL lightdm-webkit2-greeter lightdm-webkit-theme-litarvan
 
 *** LightDM Configuration
 #+begin_src conf :tangle /sudo:://etc/lightdm/lightdm.conf
-#
-# General configuration
-#
-# start-default-seat = True to always start one seat if none are defined in the configuration
-# greeter-user = User to run greeter as
-# minimum-display-number = Minimum display number to use for X servers
-# minimum-vt = First VT to run displays on
-# lock-memory = True to prevent memory from being paged to disk
-# user-authority-in-system-dir = True if session authority should be in the system location
-# guest-account-script = Script to be run to setup guest account
-# logind-check-graphical = True to on start seats that are marked as graphical by logind
-# log-directory = Directory to log information to
-# run-directory = Directory to put running state in
-# cache-directory = Directory to cache to
-# sessions-directory = Directory to find sessions
-# remote-sessions-directory = Directory to find remote sessions
-# greeters-directory = Directory to find greeters
-# backup-logs = True to move add a .old suffix to old log files when opening new ones
-# dbus-service = True if LightDM provides a D-Bus service to control it
-#
 [LightDM]
-#start-default-seat=true
-#greeter-user=lightdm
-#minimum-display-number=0
-#minimum-vt=7 # Setting this to a value < 7 implies security issues, see FS#46799
-#lock-memory=true
-#user-authority-in-system-dir=false
-#guest-account-script=guest-account
-#logind-check-graphical=false
-#log-directory=/var/log/lightdm
 run-directory=/run/lightdm
-#cache-directory=/var/cache/lightdm
-#sessions-directory=/usr/share/lightdm/sessions:/usr/share/xsessions:/usr/share/wayland-sessions
-#remote-sessions-directory=/usr/share/lightdm/remote-sessions
-#greeters-directory=$XDG_DATA_DIRS/lightdm/greeters:$XDG_DATA_DIRS/xgreeters
-#backup-logs=true
-#dbus-service=true
 
-#
-# Seat configuration
-#
-# Seat configuration is matched against the seat name glob in the section, for example:
-# [Seat:*] matches all seats and is applied first.
-# [Seat:seat0] matches the seat named "seat0".
-# [Seat:seat-thin-client*] matches all seats that have names that start with "seat-thin-client".
-#
-# type = Seat type (local, xremote)
-# pam-service = PAM service to use for login
-# pam-autologin-service = PAM service to use for autologin
-# pam-greeter-service = PAM service to use for greeters
-# xserver-command = X server command to run (can also contain arguments e.g. X -special-option)
-# xmir-command = Xmir server command to run (can also contain arguments e.g. Xmir -special-option)
-# xserver-config = Config file to pass to X server
-# xserver-layout = Layout to pass to X server
-# xserver-allow-tcp = True if TCP/IP connections are allowed to this X server
-# xserver-share = True if the X server is shared for both greeter and session
-# xserver-hostname = Hostname of X server (only for type=xremote)
-# xserver-display-number = Display number of X server (only for type=xremote)
-# xdmcp-manager = XDMCP manager to connect to (implies xserver-allow-tcp=true)
-# xdmcp-port = XDMCP UDP/IP port to communicate on
-# xdmcp-key = Authentication key to use for XDM-AUTHENTICATION-1 (stored in keys.conf)
-# greeter-session = Session to load for greeter
-# greeter-hide-users = True to hide the user list
-# greeter-allow-guest = True if the greeter should show a guest login option
-# greeter-show-manual-login = True if the greeter should offer a manual login option
-# greeter-show-remote-login = True if the greeter should offer a remote login option
-# user-session = Session to load for users
-# allow-user-switching = True if allowed to switch users
-# allow-guest = True if guest login is allowed
-# guest-session = Session to load for guests (overrides user-session)
-# session-wrapper = Wrapper script to run session with
-# greeter-wrapper = Wrapper script to run greeter with
-# guest-wrapper = Wrapper script to run guest sessions with
-# display-setup-script = Script to run when starting a greeter session (runs as root)
-# display-stopped-script = Script to run after stopping the display server (runs as root)
-# greeter-setup-script = Script to run when starting a greeter (runs as root)
-# session-setup-script = Script to run when starting a user session (runs as root)
-# session-cleanup-script = Script to run when quitting a user session (runs as root)
-# autologin-guest = True to log in as guest by default
-# autologin-user = User to log in with by default (overrides autologin-guest)
-# autologin-user-timeout = Number of seconds to wait before loading default user
-# autologin-session = Session to load for automatic login (overrides user-session)
-# autologin-in-background = True if autologin session should not be immediately activated
-# exit-on-failure = True if the daemon should exit if this seat fails
-#
 [Seat:*]
-#type=local
-#pam-service=lightdm
-#pam-autologin-service=lightdm-autologin
-#pam-greeter-service=lightdm-greeter
-#xserver-command=X
-#xmir-command=Xmir
-#xserver-config=
-#xserver-layout=
-#xserver-allow-tcp=false
-#xserver-share=true
-#xserver-hostname=
-#xserver-display-number=
-#xdmcp-manager=
-#xdmcp-port=177
-#xdmcp-key=
 greeter-session=lightdm-webkit2-greeter
-#greeter-hide-users=false
-#greeter-allow-guest=true
-#greeter-show-manual-login=false
-#greeter-show-remote-login=true
-#user-session=default
-#allow-user-switching=true
-#allow-guest=true
-#guest-session=
 session-wrapper=/etc/lightdm/Xsession
-#greeter-wrapper=
-#guest-wrapper=
-#display-setup-script=
-#display-stopped-script=
-#greeter-setup-script=
-#session-setup-script=
-#session-cleanup-script=
-#autologin-guest=false
-#autologin-user=
-#autologin-user-timeout=0
-#autologin-in-background=false
-#autologin-session=
-#exit-on-failure=false
 
-#
-# XDMCP Server configuration
-#
-# enabled = True if XDMCP connections should be allowed
-# port = UDP/IP port to listen for connections on
-# listen-address = Host/address to listen for XDMCP connections (use all addresses if not present)
-# key = Authentication key to use for XDM-AUTHENTICATION-1 or blank to not use authentication (stored in keys.conf)
-# hostname = Hostname to report to XDMCP clients (defaults to system hostname if unset)
-#
-# The authentication key is a 56 bit DES key specified in hex as 0xnnnnnnnnnnnnnn.  Alternatively
-# it can be a word and the first 7 characters are used as the key.
-#
 [XDMCPServer]
-#enabled=false
-#port=177
-#listen-address=
-#key=
-#hostname=
-
-#
-# VNC Server configuration
-#
-# enabled = True if VNC connections should be allowed
-# command = Command to run Xvnc server with
-# port = TCP/IP port to listen for connections on
-# listen-address = Host/address to listen for VNC connections (use all addresses if not present)
-# width = Width of display to use
-# height = Height of display to use
-# depth = Color depth of display to use
-#
 [VNCServer]
-#enabled=false
-#command=Xvnc
-#port=5900
-#listen-address=
-#width=1024
-#height=768
-#depth=8
 #+end_src
 
 *** Theme Configuration
 #+begin_src conf :tangle /sudo:://etc/lightdm/lightdm-webkit2-greeter.conf
-#
-# [greeter]
-# debug_mode          = Greeter theme debug mode.
-# detect_theme_errors = Provide an option to load a fallback theme when theme errors are detected.
-# screensaver_timeout = Blank the screen after this many seconds of inactivity.
-# secure_mode         = Don't allow themes to make remote http requests.
-# time_format         = A moment.js format string so the greeter can generate localized time for display.
-# time_language       = Language to use when displaying the time or "auto" to use the system's language.
-# webkit_theme        = Webkit theme to use.
-#
-# NOTE: See moment.js documentation for format string options: http://momentjs.com/docs/#/displaying/format/
-#
-
 [greeter]
 debug_mode          = false
 detect_theme_errors = true
@@ -1069,15 +895,6 @@ secure_mode         = true
 time_format         = LT
 time_language       = auto
 webkit_theme        = litarvan
-
-#
-# [branding]
-# background_images = Path to directory that contains background images for use by themes.
-# logo              = Path to logo image for use by greeter themes.
-# user_image        = Default user image/avatar. This is used by themes for users that have no .face image.
-#
-# NOTE: Paths must be accessible to the lightdm system user account (so they cannot be anywhere in /home)
-#
 
 [branding]
 background_images = /usr/share/backgrounds
@@ -1090,20 +907,31 @@ EOF
 
 * Window Managers
 ** EXWM
-*** Setup
+*** Install
 #+begin_src bash
 $INSTALL xorg dbus xorg-xrdb xorg-transset wmctrl
-sudo mkdir -p /usr/share/xsessions/
-sudo tee "/usr/share/xsessions/exwm.desktop" > /dev/null <<'EOF'
+#+end_src
+
+*** Desktop Entry
+#+begin_src conf :tangle /sudo:://usr/share/xsessions/exwm.desktop
 [Desktop Entry]
 Name=exwm
 Type=Application
 Icon=exwm
 Comment=The Emacs X Window Manager
 TryExec=emacs
-Exec=emacs -fg --debug-init
-EOF
+Exec=emacs
+#+end_src
 
+*** Download Packages not on Melpa
+**** EXWM Outer Gaps
+#+begin_src bash
+cd ./.config/emacs/lisp && wget https://raw.githubusercontent.com/lucasgruss/exwm-outer-gaps/main/exwm-outer-gaps.el
+#+end_src
+
+**** Ivy Clipmenu
+#+begin_src bash
+cd ./.config/emacs/lisp && wget https://raw.githubusercontent.com/mwglen/ivy-clipmenu.el/master/ivy-clipmenu.el
 #+end_src
 
 *** Background Image
@@ -1153,8 +981,7 @@ frame-opacity = 0.7;
 inactive-opacity-override = false;
 focus-exclude = [ "class_g = 'Cairo-clock'" ];
 opacity-rule = [
-  "100:class_g = 'firefox'",
-  "0:class_g = 'polybar'"
+  "100:fullscreen", "80:!fullscreen",
 ];
 
 #################################
@@ -1163,7 +990,6 @@ opacity-rule = [
 blur-method = "dual_kawase";
 blur-strength = 5;
 blur-background-exclude = [
-  "window_type = 'dock'",
   "window_type = 'desktop'",
   "_GTK_FRAME_EXTENTS@:c"
 ];
@@ -1371,6 +1197,120 @@ To create an OSX Virtual Machine check out the ~OSX-KVM~ project and follow the 
 $INSTALL firefox
 #+end_src
 
+** Qutebrowser
+*** Installation
+#+begin_src bash
+$INSTALL qutebrowser
+#+end_src
+
+*** Configuration
+#+begin_src python :tangle ./.config/qutebrowser/config.py
+# Change the argument to True to still load settings configured via autoconfig.yml
+config.load_autoconfig(False)
+c.qt.highdpi = True
+c.auto_save.session = True
+c.aliases = {
+    'q': 'quit',
+    'w': 'session-save',
+    'wq': 'quit --save'
+}
+config.set("colors.webpage.darkmode.enabled", True)
+c.completion.show = "auto"
+c.downloads.location.directory = '~/Downloads'
+c.tabs.show = 'never'
+c.statusbar.show = 'never'
+
+# Fonts
+c.fonts.default_family = '"Fira Code Retina"'
+c.fonts.default_size = '11pt'
+c.fonts.completion.entry = '11pt "Fira Code Retina"'
+c.fonts.debug_console = '11pt "Fira Code Retina"'
+c.fonts.prompts = 'default_size "Noto Sans"'
+c.fonts.statusbar = '11pt "Fira Code Retina"'
+
+# Use dmenu
+config.bind('o', 'spawn --userscript dmenu-open')
+config.bind('O', 'spawn --userscript dmenu-open --tab')
+
+# Colors
+c.colors.completion.fg = ['#9cc4ff', 'white', 'white']
+c.colors.completion.odd.bg = '#1c1f24'
+c.colors.completion.even.bg = '#232429'
+c.colors.completion.category.fg = '#e1acff'
+c.colors.completion.category.bg = 'qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #000000, stop:1 #232429)'
+c.colors.completion.category.border.top = '#3f4147'
+c.colors.completion.category.border.bottom = '#3f4147'
+c.colors.completion.item.selected.fg = '#282c34'
+c.colors.completion.item.selected.bg = '#ecbe7b'
+c.colors.completion.item.selected.match.fg = '#c678dd'
+c.colors.completion.match.fg = '#c678dd'
+c.colors.completion.scrollbar.fg = 'white'
+c.colors.downloads.bar.bg = '#282c34'
+c.colors.downloads.error.bg = '#ff6c6b'
+c.colors.hints.fg = '#282c34'
+c.colors.hints.match.fg = '#98be65'
+c.colors.messages.info.bg = '#282c34'
+c.colors.statusbar.normal.bg = '#282c34'
+c.colors.statusbar.insert.fg = 'white'
+c.colors.statusbar.insert.bg = '#497920'
+c.colors.statusbar.passthrough.bg = '#34426f'
+c.colors.statusbar.command.bg = '#282c34'
+c.colors.statusbar.url.warn.fg = 'yellow'
+c.colors.tabs.bar.bg = '#1c1f34'
+c.colors.tabs.odd.bg = '#282c34'
+c.colors.tabs.even.bg = '#282c34'
+c.colors.tabs.selected.odd.bg = '#282c34'
+c.colors.tabs.selected.even.bg = '#282c34'
+c.colors.tabs.pinned.odd.bg = 'seagreen'
+c.colors.tabs.pinned.even.bg = 'darkseagreen'
+c.colors.tabs.pinned.selected.odd.bg = '#282c34'
+c.colors.tabs.pinned.selected.even.bg = '#282c34'
+
+# Search Engines
+c.url.searchengines = {
+    'DEFAULT': 'https://www.google.com/search?q={}',
+    'arch':    'https://wiki.archlinux.org/?search={}',
+    'wiki':    'https://en.wikipedia.org/wiki/{}',
+    'yt':      'https://www.youtube.com/results?search_query={}'
+}
+
+# Normal Mode Keybindings
+config.bind('M', 'hint links spawn mpv {hint-url}')
+config.bind('xb', 'config-cycle statusbar.show always never')
+config.bind('xt', 'config-cycle tabs.show always never')
+config.bind('xx', 'config-cycle statusbar.show always never;; config-cycle tabs.show always never')
+
+config.set('content.cookies.accept', 'all', 'chrome-devtools://*')
+config.set('content.cookies.accept', 'all', 'devtools://*')
+
+config.set('content.headers.accept_language', '', 'https://matchmaker.krunker.io/*')
+
+config.set('content.headers.user_agent', 'Mozilla/5.0 ({os_info}) AppleWebKit/{webkit_version} (KHTML, like Gecko) {upstream_browser_key}/{upstream_browser_version} Safari/{webkit_version}', 'https://web.whatsapp.com/')
+
+config.set('content.headers.user_agent', 'Mozilla/5.0 ({os_info}; rv:90.0) Gecko/20100101 Firefox/90.0', 'https://accounts.google.com/*')
+
+config.set('content.headers.user_agent', 'Mozilla/5.0 ({os_info}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99 Safari/537.36', 'https://*.slack.com/*')
+
+config.set('content.images', True, 'chrome-devtools://*')
+config.set('content.images', True, 'devtools://*')
+
+config.set('content.javascript.enabled', True, 'chrome-devtools://*')
+config.set('content.javascript.enabled', True, 'devtools://*')
+config.set('content.javascript.enabled', True, 'chrome://*/*')
+config.set('content.javascript.enabled', True, 'qute://*/*')
+#+end_src
+
+*** Add Solarized Themes
+#+begin_src bash
+mkdir -p $XDG_CONFIG_HOME/qutebrowser
+cd $XDG_CONFIG_HOME/qutebrowser && git clone https://github.com/alphapapa/solarized-everything-css
+#+end_src
+
+** Surf Browser
+#+begin_src bash
+$INSTALL surf dmenu
+#+end_src
+
 ** Bitwarden
 #+begin_src bash
 $INSTALL bitwarden bitwarden-cli
@@ -1438,6 +1378,7 @@ colorscheme tender              " change the colorscheme
 let g:airline_theme = 'tender'  " change airline colorscheme
 
 EOT
+
 cat <<EOT >> $ZDOTDIR/.zshrc
 # neovim config
 alias vi=nvim
