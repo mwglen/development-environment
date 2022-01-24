@@ -98,11 +98,6 @@ export VISUAL=nvim
 playerctld daemon
 #+end_src
 
-*** Ntangle
-#+begin_src bash
-alias ntangle="\$XDG_DATA_HOME"/nimble/bin/ntangle
-#+end_src
-
 *** Emacs
 #+begin_src bash
 vterm_printf(){
@@ -117,848 +112,9 @@ vterm_printf(){
 }
 #+end_src
 
-*** Neovim
-:PROPERTIES:
-:header-args:conf: :tangle (concat (getenv $XDG_CONFIG_HOME) "/nvim/init.vim")
-:END:
-#+begin_src conf
-call plug#begin('$XDG_CONFIG_HOME/nvim/plugged')
-Plug 'jacoborus/tender.vim'
-Plug 'LnL7/vim-nix'
-Plug 'rust-lang/rust.vim'
-Plug 'vim-airline/vim-airline'
-Plug 'vim-airline/vim-airline-themes'
-Plug 'airblade/vim-gitgutter'
-Plug 'tpope/vim-surround'
-Plug 'tpope/vim-fugitive'
-Plug 'tpope/vim-commentary'
-call plug#end()
-
-set number relativenumber       " set line-numbers to be relative
-set nohlsearch                  " no highlight search
-set mouse=a                     " recognize and enable mouse
-set tabstop=4                   " show existing tab as 4 spaces
-set shiftwidth=4                " use 4 spaces when indenting with '>'
-set expandtab                   " on pressing tab, insert 4 spaces
-set termguicolors               " use terminal colors
-let g:airline_powerlin_fonts=1  " set airline theme
-colorscheme tender              " change the colorscheme
-let g:airline_theme = 'tender'  " change airline colorscheme
-#+end_src
-
-** Polybar
-:PROPERTIES:
-:header-args:conf: :tangle (concat (getenv $XDG_CONFIG_HOME) "/polybar/config")
-:END:
-*** Global Settings
-#+begin_src conf
-[settings]
-screenchange-reload = true
-
-[global/wm]
-margin-top = 0
-margin-bottom = 0
-#+end_src
-
-*** Themes
-**** Doom Tomorrow Night Theme
-#+begin_src conf :tangle no
-[colors]
-background = #1d1f21
-foreground = #c5c8c6
-#+end_src
-
-**** Doom Moonless Theme
-#+begin_src conf
-[colors]
-background = #000000
-foreground = #c5c8c6
-#+end_src
- 
-**** Doom-Acario-Light
-#+begin_src conf :tangle no
-[colors]
-background = #FF0000
-foreground = #c5c8c6
-#+end_src
-
-*** Panel
-#+begin_src conf
-[bar/panel]
-width = 100%
-height = 70
-offset-x = 0
-offset-y = 0
-fixed-center = true
-enable-ipc = true
-border-color = #c5c8c6
-border-bottom-size = 0
-             
-background = ${colors.background}
-foreground = ${colors.foreground}
-
-padding-left = 2
-padding-right = 2
-
-module-margin = 1
-
-font-0 = "Noto Sans:size=25:weight=bold"
-font-1 = "Material Icons:size=35;5"
-font-2 = "Font Awesome:size=35;5"
-
-modules-left = date
-;modules-center = cpu temperature memory
-modules-right = wireless-network pulseaudio backlight redshift battery
-
-tray-position = right
-tray-maxsize = 28
-
-cursor-click = pointer
-cursor-scroll = ns-resize
-#+end_src
-
-*** CPU Utilization
-#+begin_src conf
-[module/cpu]
-type = internal/cpu
-interval = 2
-format = CPU <label>
-label = %percentage:2%%
-#+end_src
-
-*** Date and Time
-#+begin_src conf
-[module/date]
-type = internal/date
-interval = 5
-date = "%B %d, %Y"
-date-alt = "%A %B %d, %Y"
-time = %l:%M %p
-time-alt = %H:%M:%S
-
-label = %date% %time%
-#+end_src
-
-*** Battery
-#+begin_src conf
-[module/battery]
-type = internal/battery
-battery = BAT0
-adapter = ADP1
-full-at = 98
-time-format = %-l:%M
-
-label-charging = %percentage%%
-format-charging = <animation-charging> <label-charging>
-label-discharging = %percentage%%
-format-discharging = <ramp-capacity> <label-discharging>
-
-format-full = <ramp-capacity> <label-full>
-
-ramp-capacity-0 = 
-ramp-capacity-0-foreground = #FF0000
-ramp-capacity-1 = 
-ramp-capacity-1-foreground = #FF0000
-ramp-capacity-2 = 
-ramp-capacity-2-foreground = #BBBB00
-ramp-capacity-3 = 
-ramp-capacity-3-foreground = #007700
-ramp-capacity-4 = 
-ramp-capacity-4-foreground = #007700
-
-animation-charging-foreground = #007700
-animation-charging-0 = 
-animation-charging-1 = 
-animation-charging-2 = 
-animation-charging-3 = 
-animation-charging-4 = 
-animation-charging-framerate = 750
-#+end_src
-
-*** Temperature
-#+begin_src conf
-[module/temperature]
-type = internal/temperature
-thermal-zone = 0
-warn-temperature = 70
-
-format = TEMP <label>
-format-warn = TEMP <label-warn>
-
-label = %temperature-c%
-label-warn = %temperature-c%!
-#+end_src
-
-*** Pulse Audio
+*** Ntangle
 #+begin_src bash
-$INSTALL pulseaudio-control
-#+end_src
-#+begin_src conf
-[module/pulseaudio]
-type = custom/script
-tail = true
-label-padding = 2
-
-exec = pulseaudio-control --icons-volume " , " --icon-muted " " --sink-nicknames-from "device.description" --sink-nickname "alsa_output.pci-0000_00_1f.3.analog-stereo: Built In Speakers" listen
-click-right = pavucontrol
-click-left = pulseaudio-control togmute
-click-middle = pulseaudio-control --sink-blacklist "alsa_output.pci-0000_01_00.1.hdmi-stereo-extra2" next-sink
-scroll-up = pulseaudio-control up
-scroll-down = pulseaudio-control down
-#+end_src
-
-*** Wireless Network
-#+begin_src conf
-[module/wireless-network]
-type = internal/network
-interface = wlan0
-
-format-connected =  <label-connected>
-format-disconnected = <label-disconnected>
-format-packetloss = <animation-packetloss label-connected>
-
-label-connected = %essid%
-label-connected-foreground = #eefafafa
-
-label-disconnected = not connected
-label-disconnected-foreground = #66ffffff
-#+end_src
-
-*** Memory                              
-#+begin_src conf
-[module/memory]
-type = internal/memory
-interval = 3
-format = <label>
-label = MEM %percentage_used:2%%
-#+end_src
-
-*** Backlight
-**** Give Polybar Access to Change Backlight
-#+begin_src bash
-sudo makedir -p /etc/udev/rules.d
-groupadd -r video
-sudo usermod -a -G video $USER
-sudo chgrp video /sys/class/backlight/intel_backlight/brightness"
-sudo chmod g+w /sys/class/backlight/intel_backlight/brightness
-#+end_src
-
-**** Module
-#+begin_src conf
-[module/backlight]
-type = internal/backlight
-enable-scroll = true
-card = intel_backlight
-format = <ramp> <label>
-label = %percentage%%
-ramp-0 = 
-;ramp-0-foreground = #4455bb
-ramp-1 = 
-;ramp-1-foreground = #888800
-#+end_src
-
-*** Redshift
-**** Scripts
-***** env.sh
-:PROPERTIES:
-:header-args:sh: :tangle (concat (getenv $XDG_CONFIG_HOME) "/polybar/scripts/env.sh") (identity #o755)
-:END:
-#+begin_src sh
-export REDSHIFT=on
-export REDSHIFT_TEMP=5600
-#+end_src
-
-***** redshift.sh
-:PROPERTIES:
-:header-args:sh: :tangle (concat (getenv $XDG_CONFIG_HOME) "/polybar/scripts/redshift.sh") (identity #o755)
-:END:
-#+begin_src sh
-#!/bin/sh
-
-envFile=$XDG_CONFIG_HOME/polybar/scripts/env.sh
-changeValue=300
-
-changeMode() {
-  sed -i "s/REDSHIFT=$1/REDSHIFT=$2/g" $envFile 
-  REDSHIFT=$2
-  echo $REDSHIFT
-}
-
-changeTemp() {
-  if [ "$2" -gt 1000 ] && [ "$2" -lt 25000 ]
-  then
-    sed -i "s/REDSHIFT_TEMP=$1/REDSHIFT_TEMP=$2/g" $envFile 
-    redshift -P -O $((REDSHIFT_TEMP+changeValue))
-  fi
-}
-
-case $1 in 
-  toggle) 
-    if [ "$REDSHIFT" = on ];
-    then
-      changeMode "$REDSHIFT" off
-      redshift -x
-    else
-      changeMode "$REDSHIFT" on
-      redshift -O "$REDSHIFT_TEMP"
-    fi
-    ;;
-  increase)
-    changeTemp $((REDSHIFT_TEMP)) $((REDSHIFT_TEMP+changeValue))
-    ;;
-  decrease)
-    changeTemp $((REDSHIFT_TEMP)) $((REDSHIFT_TEMP-changeValue));
-    ;;
-  temperature)
-    case $REDSHIFT in
-      on)
-        printf "%dK" "$REDSHIFT_TEMP"
-        ;;
-      off)
-        printf "off"
-        ;;
-    esac
-    ;;
-esac
-#+end_src
-
-**** Module
-#+begin_src conf
-[module/redshift]
-type = custom/script
-format-prefix = ""
-;format-prefix-foreground = #888888
-exec = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh temperature
-click-left = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh toggle
-scroll-up = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh increase
-scroll-down = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh decrease
-interval=0.5
-#+end_src
-
-*** Workspace Indicator
-#+begin_src conf
-[module/exwm-workspace]
-type = custom/ipc
-hook-0 = emacsclient -e "exwm-workspace-current-index" | sed -e 's/^"//' -e 's/"$//'
-initial = 1
-format-padding = 1
-#+end_src
-
-** Alacritty
-:PROPERTIES:
-:header-args:conf: :tangle (concat (getenv $XDG_CONFIG_HOME) "/alacritty/alacritty.yml")
-:END:
-#+begin_src conf
-#env:
-  #TERM: alacritty
-
-#window:
-  #  columns: 0
-  #  lines: 0
-  #  x: 0
-  #  y: 0
-
-  #padding:
-  #  x: 0
-  #  y: 0
-  #dynamic_padding: false
-  #decorations: full (or none)
-
-  # Allow terminal applications to change Alacritty's window title.
-  #dynamic_title: true
-
-#font:
-  #normal:
-    #family: monospace
-    #style: Regular
-
-  #bold:
-    #family: monospace
-    #style: Bold
-
-  #italic:
-    # Font family
-    #family: monospace
-    #style: Italic
-
-  #bold_italic:
-    #family: monospace
-    #style: Bold Italic
-
-  #size: 11.0
-
-
-# Colors (Tomorrow Night)
-#colors:
-  # Default colors
-  #primary:
-  #  background: '#1d1f21'
-  #  foreground: '#c5c8c6'
-
-    # Bright and dim foreground colors
-    #
-    # The dimmed foreground color is calculated automatically if it is not
-    # present. If the bright foreground color is not set, or
-    # `draw_bold_text_with_bright_colors` is `false`, the normal foreground
-    # color will be used.
-    #dim_foreground: '#828482'
-    #bright_foreground: '#eaeaea'
-
-  # Cursor colors
-  #
-  # Colors which should be used to draw the terminal cursor.
-  #
-  # Allowed values are CellForeground/CellBackground, which reference the
-  # affected cell, or hexadecimal colors like #ff00ff.
-  #cursor:
-  #  text: CellBackground
-  #  cursor: CellForeground
-
-  # Vi mode cursor colors
-  #
-  # Colors for the cursor when the vi mode is active.
-  #
-  # Allowed values are CellForeground/CellBackground, which reference the
-  # affected cell, or hexadecimal colors like #ff00ff.
-  #vi_mode_cursor:
-  #  text: CellBackground
-  #  cursor: CellForeground
-
-  # Search colors
-  #
-  # Colors used for the search bar and match highlighting.
-  #search:
-    # Allowed values are CellForeground/CellBackground, which reference the
-    # affected cell, or hexadecimal colors like #ff00ff.
-    #matches:
-    #  foreground: '#000000'
-    #  background: '#ffffff'
-    #focused_match:
-    #  foreground: '#ffffff'
-    #  background: '#000000'
-
-    #bar:
-    #  background: '#c5c8c6'
-    #  foreground: '#1d1f21'
-
-  # Keyboard regex hints
-  #hints:
-    # First character in the hint label
-    #
-    # Allowed values are CellForeground/CellBackground, which reference the
-    # affected cell, or hexadecimal colors like #ff00ff.
-    #start:
-    #  foreground: '#1d1f21'
-    #  background: '#e9ff5e'
-
-    # All characters after the first one in the hint label
-    #
-    # Allowed values are CellForeground/CellBackground, which reference the
-    # affected cell, or hexadecimal colors like #ff00ff.
-    #end:
-    #  foreground: '#e9ff5e'
-    #  background: '#1d1f21'
-
-  # Line indicator
-  #
-  # Color used for the indicator displaying the position in history during
-  # search and vi mode.
-  #
-  # By default, these will use the opposing primary color.
-  #line_indicator:
-  #  foreground: None
-  #  background: None
-
-  # Selection colors
-  #
-  # Colors which should be used to draw the selection area.
-  #
-  # Allowed values are CellForeground/CellBackground, which reference the
-  # affected cell, or hexadecimal colors like #ff00ff.
-  #selection:
-  #  text: CellBackground
-  #  background: CellForeground
-
-  # Normal colors
-  #normal:
-  #  black:   '#1d1f21'
-  #  red:     '#cc6666'
-  #  green:   '#b5bd68'
-  #  yellow:  '#f0c674'
-  #  blue:    '#81a2be'
-  #  magenta: '#b294bb'
-  #  cyan:    '#8abeb7'
-  #  white:   '#c5c8c6'
-
-  # Bright colors
-  #bright:
-  #  black:   '#666666'
-  #  red:     '#d54e53'
-  #  green:   '#b9ca4a'
-  #  yellow:  '#e7c547'
-  #  blue:    '#7aa6da'
-  #  magenta: '#c397d8'
-  #  cyan:    '#70c0b1'
-  #  white:   '#eaeaea'
-
-  # Dim colors
-  #
-  # If the dim colors are not set, they will be calculated automatically based
-  # on the `normal` colors.
-  #dim:
-  #  black:   '#131415'
-  #  red:     '#864343'
-  #  green:   '#777c44'
-  #  yellow:  '#9e824c'
-  #  blue:    '#556a7d'
-  #  magenta: '#75617b'
-  #  cyan:    '#5b7d78'
-  #  white:   '#828482'
-
-  # Indexed Colors
-  #
-  # The indexed colors include all colors from 16 to 256.
-  # When these are not set, they're filled with sensible defaults.
-  #
-  # Example:
-  #   `- { index: 16, color: '#ff00ff' }`
-  #
-  #indexed_colors: []
-
-# Bell
-#
-# The bell is rung every time the BEL control character is received.
-#bell:
-  # Visual Bell Animation
-  #
-  # Animation effect for flashing the screen when the visual bell is rung.
-  #
-  # Values for `animation`:
-  #   - Ease
-  #   - EaseOut
-  #   - EaseOutSine
-  #   - EaseOutQuad
-  #   - EaseOutCubic
-  #   - EaseOutQuart
-  #   - EaseOutQuint
-  #   - EaseOutExpo
-  #   - EaseOutCirc
-  #   - Linear
-  #animation: EaseOutExpo
-
-  # Duration of the visual bell flash in milliseconds. A `duration` of `0` will
-  # disable the visual bell animation.
-  #duration: 0
-
-  # Visual bell animation color.
-  #color: '#ffffff'
-
-  # Bell Command
-  #
-  # This program is executed whenever the bell is rung.
-  #
-  # When set to `command: None`, no command will be executed.
-  #
-  # Example:
-  #   command:
-  #     program: notify-send
-  #     args: ["Hello, World!"]
-  #
-  #command: None
-
-# Background opacity
-#
-# Window opacity as a floating point number from `0.0` to `1.0`.
-# The value `0.0` is completely transparent and `1.0` is opaque.
-#background_opacity: 1.0
-
-#selection:
-  # This string contains all characters that are used as separators for
-  # "semantic words" in Alacritty.
-  #semantic_escape_chars: ",│`|:\"' ()[]{}<>\t"
-
-  # When set to `true`, selected text will be copied to the primary clipboard.
-  #save_to_clipboard: false
-
-#cursor:
-  # Cursor style
-  #style:
-    # Cursor shape
-    #
-    # Values for `shape`:
-    #   - ▇ Block
-    #   - _ Underline
-    #   - | Beam
-    #shape: Block
-
-    # Cursor blinking state
-    #
-    # Values for `blinking`:
-    #   - Never: Prevent the cursor from ever blinking
-    #   - Off: Disable blinking by default
-    #   - On: Enable blinking by default
-    #   - Always: Force the cursor to always blink
-    #blinking: Off
-
-  # Vi mode cursor style
-  #
-  # If the vi mode cursor style is `None` or not specified, it will fall back to
-  # the style of the active value of the normal cursor.
-  #
-  # See `cursor.style` for available options.
-  #vi_mode_style: None
-
-  # Cursor blinking interval in milliseconds.
-  #blink_interval: 750
-
-  # If this is `true`, the cursor will be rendered as a hollow box when the
-  # window is not focused.
-  #unfocused_hollow: true
-
-  # Thickness of the cursor relative to the cell width as floating point number
-  # from `0.0` to `1.0`.
-  #thickness: 0.15
-
-# Live config reload (changes require restart)
-#live_config_reload: true
-
-#mouse:
-  # Click settings
-  #
-  # The `double_click` and `triple_click` settings control the time
-  # alacritty should wait for accepting multiple clicks as one double
-  # or triple click.
-  #double_click: { threshold: 300 }
-  #triple_click: { threshold: 300 }
-
-  # If this is `true`, the cursor is temporarily hidden when typing.
-  #hide_when_typing: false
-
-# Regex hints
-#
-# Terminal hints can be used to find text in the visible part of the terminal
-# and pipe it to other applications.
-#hints:
-  # Keys used for the hint labels.
-  #alphabet: "jfkdls;ahgurieowpq"
-
-  # List with all available hints
-  #
-  # Each hint must have a `regex` and either an `action` or a `command` field.
-  # The fields `mouse`, `binding` and `post_processing` are optional.
-  #
-  # The fields `command`, `binding.key`, `binding.mods`, `binding.mode` and
-  # `mouse.mods` accept the same values as they do in the `key_bindings` section.
-  #
-  # The `mouse.enabled` field controls if the hint should be underlined while
-  # the mouse with all `mouse.mods` keys held or the vi mode cursor is above it.
-  #
-  # If the `post_processing` field is set to `true`, heuristics will be used to
-  # shorten the match if there are characters likely not to be part of the hint
-  # (e.g. a trailing `.`). This is most useful for URIs.
-  #
-  # Values for `action`:
-  #   - Copy
-  #       Copy the hint's text to the clipboard.
-  #   - Paste
-  #       Paste the hint's text to the terminal or search.
-  #   - Select
-  #       Select the hint's text.
-  #   - MoveViModeCursor
-  #       Move the vi mode cursor to the beginning of the hint.
-  #enabled:
-  # - regex: "(ipfs:|ipns:|magnet:|mailto:|gemini:|gopher:|https:|http:|news:|file:|git:|ssh:|ftp:)\
-  #           [^\u0000-\u001F\u007F-\u009F<>\"\\s{-}\\^⟨⟩`]+"
-  #   command: xdg-open
-  #   post_processing: true
-  #   mouse:
-  #     enabled: true
-  #     mods: None
-  #   binding:
-  #     key: U
-  #     mods: Control|Shift
-
-#mouse_bindings:
-#  - { mouse: Middle, action: PasteSelection }
-
-#key_bindings:
-  #- { key: Paste,                                       action: Paste          }
-  #- { key: Copy,                                        action: Copy           }
-  #- { key: L,         mods: Control,                    action: ClearLogNotice }
-  #- { key: L,         mods: Control, mode: ~Vi|~Search, chars: "\x0c"          }
-  #- { key: PageUp,    mods: Shift,   mode: ~Alt,        action: ScrollPageUp,  }
-  #- { key: PageDown,  mods: Shift,   mode: ~Alt,        action: ScrollPageDown }
-  #- { key: Home,      mods: Shift,   mode: ~Alt,        action: ScrollToTop,   }
-  #- { key: End,       mods: Shift,   mode: ~Alt,        action: ScrollToBottom }
-
-  # Vi Mode
-  #- { key: Space,  mods: Shift|Control, mode: ~Search,    action: ToggleViMode            }
-  #- { key: Space,  mods: Shift|Control, mode: Vi|~Search, action: ScrollToBottom          }
-  #- { key: Escape,                      mode: Vi|~Search, action: ClearSelection          }
-  #- { key: I,                           mode: Vi|~Search, action: ToggleViMode            }
-  #- { key: I,                           mode: Vi|~Search, action: ScrollToBottom          }
-  #- { key: C,      mods: Control,       mode: Vi|~Search, action: ToggleViMode            }
-  #- { key: Y,      mods: Control,       mode: Vi|~Search, action: ScrollLineUp            }
-  #- { key: E,      mods: Control,       mode: Vi|~Search, action: ScrollLineDown          }
-  #- { key: G,                           mode: Vi|~Search, action: ScrollToTop             }
-  #- { key: G,      mods: Shift,         mode: Vi|~Search, action: ScrollToBottom          }
-  #- { key: B,      mods: Control,       mode: Vi|~Search, action: ScrollPageUp            }
-  #- { key: F,      mods: Control,       mode: Vi|~Search, action: ScrollPageDown          }
-  #- { key: U,      mods: Control,       mode: Vi|~Search, action: ScrollHalfPageUp        }
-  #- { key: D,      mods: Control,       mode: Vi|~Search, action: ScrollHalfPageDown      }
-  #- { key: Y,                           mode: Vi|~Search, action: Copy                    }
-  #- { key: Y,                           mode: Vi|~Search, action: ClearSelection          }
-  #- { key: Copy,                        mode: Vi|~Search, action: ClearSelection          }
-  #- { key: V,                           mode: Vi|~Search, action: ToggleNormalSelection   }
-  #- { key: V,      mods: Shift,         mode: Vi|~Search, action: ToggleLineSelection     }
-  #- { key: V,      mods: Control,       mode: Vi|~Search, action: ToggleBlockSelection    }
-  #- { key: V,      mods: Alt,           mode: Vi|~Search, action: ToggleSemanticSelection }
-  #- { key: Return,                      mode: Vi|~Search, action: Open                    }
-  #- { key: K,                           mode: Vi|~Search, action: Up                      }
-  #- { key: J,                           mode: Vi|~Search, action: Down                    }
-  #- { key: H,                           mode: Vi|~Search, action: Left                    }
-  #- { key: L,                           mode: Vi|~Search, action: Right                   }
-  #- { key: Up,                          mode: Vi|~Search, action: Up                      }
-  #- { key: Down,                        mode: Vi|~Search, action: Down                    }
-  #- { key: Left,                        mode: Vi|~Search, action: Left                    }
-  #- { key: Right,                       mode: Vi|~Search, action: Right                   }
-  #- { key: Key0,                        mode: Vi|~Search, action: First                   }
-  #- { key: Key4,   mods: Shift,         mode: Vi|~Search, action: Last                    }
-  #- { key: Key6,   mods: Shift,         mode: Vi|~Search, action: FirstOccupied           }
-  #- { key: H,      mods: Shift,         mode: Vi|~Search, action: High                    }
-  #- { key: M,      mods: Shift,         mode: Vi|~Search, action: Middle                  }
-  #- { key: L,      mods: Shift,         mode: Vi|~Search, action: Low                     }
-  #- { key: B,                           mode: Vi|~Search, action: SemanticLeft            }
-  #- { key: W,                           mode: Vi|~Search, action: SemanticRight           }
-  #- { key: E,                           mode: Vi|~Search, action: SemanticRightEnd        }
-  #- { key: B,      mods: Shift,         mode: Vi|~Search, action: WordLeft                }
-  #- { key: W,      mods: Shift,         mode: Vi|~Search, action: WordRight               }
-  #- { key: E,      mods: Shift,         mode: Vi|~Search, action: WordRightEnd            }
-  #- { key: Key5,   mods: Shift,         mode: Vi|~Search, action: Bracket                 }
-  #- { key: Slash,                       mode: Vi|~Search, action: SearchForward           }
-  #- { key: Slash,  mods: Shift,         mode: Vi|~Search, action: SearchBackward          }
-  #- { key: N,                           mode: Vi|~Search, action: SearchNext              }
-  #- { key: N,      mods: Shift,         mode: Vi|~Search, action: SearchPrevious          }
-
-  # Search Mode
-  #- { key: Return,                mode: Search|Vi,  action: SearchConfirm         }
-  #- { key: Escape,                mode: Search,     action: SearchCancel          }
-  #- { key: C,      mods: Control, mode: Search,     action: SearchCancel          }
-  #- { key: U,      mods: Control, mode: Search,     action: SearchClear           }
-  #- { key: W,      mods: Control, mode: Search,     action: SearchDeleteWord      }
-  #- { key: P,      mods: Control, mode: Search,     action: SearchHistoryPrevious }
-  #- { key: N,      mods: Control, mode: Search,     action: SearchHistoryNext     }
-  #- { key: Up,                    mode: Search,     action: SearchHistoryPrevious }
-  #- { key: Down,                  mode: Search,     action: SearchHistoryNext     }
-  #- { key: Return,                mode: Search|~Vi, action: SearchFocusNext       }
-  #- { key: Return, mods: Shift,   mode: Search|~Vi, action: SearchFocusPrevious   }
-
-  # (Windows, Linux, and BSD only)
-  #- { key: V,              mods: Control|Shift, mode: ~Vi,        action: Paste            }
-  #- { key: C,              mods: Control|Shift,                   action: Copy             }
-  #- { key: F,              mods: Control|Shift, mode: ~Search,    action: SearchForward    }
-  #- { key: B,              mods: Control|Shift, mode: ~Search,    action: SearchBackward   }
-  #- { key: C,              mods: Control|Shift, mode: Vi|~Search, action: ClearSelection   }
-  #- { key: Insert,         mods: Shift,                           action: PasteSelection   }
-  #- { key: Key0,           mods: Control,                         action: ResetFontSize    }
-  #- { key: Equals,         mods: Control,                         action: IncreaseFontSize }
-  #- { key: Plus,           mods: Control,                         action: IncreaseFontSize }
-  #- { key: NumpadAdd,      mods: Control,                         action: IncreaseFontSize }
-  #- { key: Minus,          mods: Control,                         action: DecreaseFontSize }
-  #- { key: NumpadSubtract, mods: Control,                         action: DecreaseFontSize }
-
-#+end_src
-
-** Nim
-:PROPERTIES:
-:header-args:conf: :tangle (concat (getenv $XDG_CONFIG_HOME) "/nimble/nimble.ini")
-:END:
-#+begin_src conf
-nimbleDir = "$XDG_DATA_HOME/nimble"
-#+end_src
-
-** Picom Config
-:PROPERTIES:
-:header-args:conf: :tangle (concat (getenv $XDG_CONFIG_HOME) "/picom.conf")
-:END:
-#+begin_src conf
-#corner-radius = 50; # obviously doesn't work with EXWM, but useful
-#################################
-#             Shadows           #
-#################################
-shadow = true;
-shadow-radius = 7;
-# shadow-opacity = .75
-shadow-offset-x = -7;
-shadow-offset-y = -7;
-# no-dock-shadow = false
-# no-dnd-shadow = false
-
-# Color valus of shadow (0.0 - 1.0, defaults to 0).
-# shadow-red = 0
-# shadow-green = 0
-# shadow-blue = 0
-
-shadow-exclude = [
-  "name = 'Notification'",
-  "class_g = 'Conky'",
-  "class_g ?= 'Notify-osd'",
-  "class_g = 'Cairo-clock'",
-  "_GTK_FRAME_EXTENTS@:c"
-];
-
-#################################
-#           Fading              #
-#################################
-fading = true
-fade-in-step = 0.03;
-fade-out-step = 0.03;
-
-#################################
-#   Transparency / Opacity      #
-#################################
-inactive-opacity = 0.8;
-frame-opacity = 0.7;
-inactive-opacity-override = false;
-focus-exclude = [ "class_g = 'Cairo-clock'" ];
-opacity-rule = [
-  "100:fullscreen", "80:!fullscreen",
-];
-
-#################################
-#     Background-Blurring       #
-#################################
-blur-method = "dual_kawase";
-blur-strength = 5;
-blur-background-exclude = [
-  "window_type = 'desktop'",
-  "_GTK_FRAME_EXTENTS@:c"
-];
-
-#################################
-#       General Settings        #
-#################################
-backend = "glx";
-vsync = true
-mark-wmwin-focused = true;
-mark-ovredir-focused = true;
-detect-rounded-corners = true;
-detect-client-opacity = true;
-refresh-rate = 0
-detect-transient = true
-detect-client-leader = true
-glx-no-stencil = true;
-glx-no-rebind-pixmap = true;
-use-damage = true
-log-level = "warn";
-wintypes:
-{
-  tooltip = { fade = true; shadow = true; opacity = 0.75; focus = true; full-shadow = false; };
-  dock = { shadow = false; }
-  dnd = { shadow = false; }
-  popup_menu = { opacity = 0.8; }
-  dropdown_menu = { opacity = 0.8; }
-};
+alias ntangle="\$XDG_DATA_HOME"/nimble/bin/ntangle
 #+end_src
 
 * Script
@@ -994,6 +150,11 @@ if ! [ "$DISTRO" = "\"Arch Linux\"" ] \
     echo "Currently only Arch Linux is supported"
     return 1
 fi
+#+end_src
+
+** Get Full Path to Script
+#+begin_src bash
+DIR=$(realpath $(dirname $0))
 #+end_src
 
 ** Setup XDG Base Directories
@@ -1080,8 +241,16 @@ echo hsts-file \= "$XDG_CACHE_HOME"/wget-hsts >> "$XDG_CONFIG_HOME/wgetrc"
 
 ** Terminal Emulators
 *** Alacritty
+**** Install
 #+begin_src bash
 $INSTALL alacritty
+#+end_src
+
+**** Configure
+:PROPERTIES:
+:header-args:conf: :tangle (concat (getenv $XDG_CONFIG_HOME) "/alacritty/alacritty.yml")
+:END:
+#+begin_src conf
 #+end_src
 
 ** Drivers
@@ -1185,7 +354,7 @@ fi
 #+end_src
 
 ** Xmodmap
-*** Installation
+*** Install
 #+begin_src bash
 $INSTALL xorg-xmodmap
 #+end_src
@@ -1276,7 +445,7 @@ mbsync -a
 
 ** Converting ICS format to Org
 See [[https://tero.hasu.is/blog/org-icalendar-import/]] for more information.
-*** Installing
+*** Install
 #+begin_src bash
 $INSTALL ruby
 gem install date icalendar optparse tzinfo
@@ -1304,11 +473,309 @@ create_ap wlan0 eth0 MyAccessPoint MyPassPhrase
 #+begin_src bash :tangle no
 wihotspot
 #+end_src
+
 ** Polybar Panel
 *** Install Polybar
 #+begin_src bash
 $INSTALL polybar
-mkdir -p $XDG_CONFIG_HOME/polybar
+#+end_src
+
+**** Configuration
+:PROPERTIES:
+:header-args:conf: :tangle (concat (getenv $XDG_CONFIG_HOME) "/polybar/config")
+:END:
+***** Global Settings
+#+begin_src conf
+[settings]
+screenchange-reload = true
+
+[global/wm]
+margin-top = 0
+margin-bottom = 0
+#+end_src
+
+***** Themes
+****** Doom Tomorrow Night Theme
+#+begin_src conf :tangle no
+[colors]
+background = #1d1f21
+foreground = #c5c8c6
+#+end_src
+
+****** Doom Moonless Theme
+#+begin_src conf
+[colors]
+background = #000000
+foreground = #c5c8c6
+#+end_src
+ 
+****** Doom-Acario-Light
+#+begin_src conf :tangle no
+[colors]
+background = #FF0000
+foreground = #c5c8c6
+#+end_src
+
+***** Panel
+#+begin_src conf
+[bar/panel]
+width = 100%
+height = 70
+offset-x = 0
+offset-y = 0
+fixed-center = true
+enable-ipc = true
+border-color = #c5c8c6
+border-bottom-size = 0
+             
+background = ${colors.background}
+foreground = ${colors.foreground}
+
+padding-left = 2
+padding-right = 2
+
+module-margin = 1
+
+font-0 = "Noto Sans:size=25:weight=bold"
+font-1 = "Material Icons:size=35;5"
+font-2 = "Font Awesome:size=35;5"
+
+modules-left = date
+;modules-center = cpu temperature memory
+modules-right = wireless-network pulseaudio backlight redshift battery
+
+tray-position = right
+tray-maxsize = 28
+
+cursor-click = pointer
+cursor-scroll = ns-resize
+#+end_src
+
+***** CPU Utilization
+#+begin_src conf
+[module/cpu]
+type = internal/cpu
+interval = 2
+format = CPU <label>
+label = %percentage:2%%
+#+end_src
+
+***** Date and Time
+#+begin_src conf
+[module/date]
+type = internal/date
+interval = 5
+date = "%B %d, %Y"
+date-alt = "%A %B %d, %Y"
+time = %l:%M %p
+time-alt = %H:%M:%S
+
+label = %date% %time%
+#+end_src
+
+***** Battery
+#+begin_src conf
+[module/battery]
+type = internal/battery
+battery = BAT0
+adapter = ADP1
+full-at = 98
+time-format = %-l:%M
+
+label-charging = %percentage%%
+format-charging = <animation-charging> <label-charging>
+label-discharging = %percentage%%
+format-discharging = <ramp-capacity> <label-discharging>
+
+format-full = <ramp-capacity> <label-full>
+
+ramp-capacity-0 = 
+ramp-capacity-0-foreground = #FF0000
+ramp-capacity-1 = 
+ramp-capacity-1-foreground = #FF0000
+ramp-capacity-2 = 
+ramp-capacity-2-foreground = #BBBB00
+ramp-capacity-3 = 
+ramp-capacity-3-foreground = #007700
+ramp-capacity-4 = 
+ramp-capacity-4-foreground = #007700
+
+animation-charging-foreground = #007700
+animation-charging-0 = 
+animation-charging-1 = 
+animation-charging-2 = 
+animation-charging-3 = 
+animation-charging-4 = 
+animation-charging-framerate = 750
+#+end_src
+
+***** Temperature
+#+begin_src conf
+[module/temperature]
+type = internal/temperature
+thermal-zone = 0
+warn-temperature = 70
+
+format = TEMP <label>
+format-warn = TEMP <label-warn>
+
+label = %temperature-c%
+label-warn = %temperature-c%!
+#+end_src
+
+***** Pulse Audio
+#+begin_src bash
+$INSTALL pulseaudio-control
+#+end_src
+#+begin_src conf
+[module/pulseaudio]
+type = custom/script
+tail = true
+label-padding = 2
+
+exec = pulseaudio-control --icons-volume " , " --icon-muted " " --sink-nicknames-from "device.description" --sink-nickname "alsa_output.pci-0000_00_1f.3.analog-stereo: Built In Speakers" listen
+click-right = pavucontrol
+click-left = pulseaudio-control togmute
+click-middle = pulseaudio-control --sink-blacklist "alsa_output.pci-0000_01_00.1.hdmi-stereo-extra2" next-sink
+scroll-up = pulseaudio-control up
+scroll-down = pulseaudio-control down
+#+end_src
+
+***** Wireless Network
+#+begin_src conf
+[module/wireless-network]
+type = internal/network
+interface = wlan0
+
+format-connected =  <label-connected>
+format-disconnected = <label-disconnected>
+format-packetloss = <animation-packetloss label-connected>
+
+label-connected = %essid%
+label-connected-foreground = #eefafafa
+
+label-disconnected = not connected
+label-disconnected-foreground = #66ffffff
+#+end_src
+
+***** Memory                              
+#+begin_src conf
+[module/memory]
+type = internal/memory
+interval = 3
+format = <label>
+label = MEM %percentage_used:2%%
+#+end_src
+
+***** Backlight
+****** Give Polybar Access to Change Backlight
+#+begin_src bash
+sudo makedir -p /etc/udev/rules.d
+groupadd -r video
+sudo usermod -a -G video $USER
+sudo chgrp video /sys/class/backlight/intel_backlight/brightness"
+sudo chmod g+w /sys/class/backlight/intel_backlight/brightness
+#+end_src
+
+****** Module
+#+begin_src conf
+[module/backlight]
+type = internal/backlight
+enable-scroll = true
+card = intel_backlight
+format = <ramp> <label>
+label = %percentage%%
+ramp-0 = 
+;ramp-0-foreground = #4455bb
+ramp-1 = 
+;ramp-1-foreground = #888800
+#+end_src
+
+***** Redshift
+****** Scripts
+******* env.sh
+:PROPERTIES:
+:header-args:sh: :tangle (concat (getenv $XDG_CONFIG_HOME) "/polybar/scripts/env.sh") (identity #o755)
+:END:
+#+begin_src sh
+export REDSHIFT=on
+export REDSHIFT_TEMP=5600
+#+end_src
+
+******* redshift.sh
+:PROPERTIES:
+:header-args:sh: :tangle (concat (getenv $XDG_CONFIG_HOME) "/polybar/scripts/redshift.sh") (identity #o755)
+:END:
+#+begin_src sh
+#!/bin/sh
+
+envFile=$XDG_CONFIG_HOME/polybar/scripts/env.sh
+changeValue=300
+
+changeMode() {
+  sed -i "s/REDSHIFT=$1/REDSHIFT=$2/g" $envFile 
+  REDSHIFT=$2
+  echo $REDSHIFT
+}
+
+changeTemp() {
+  if [ "$2" -gt 1000 ] && [ "$2" -lt 25000 ]
+  then
+    sed -i "s/REDSHIFT_TEMP=$1/REDSHIFT_TEMP=$2/g" $envFile 
+    redshift -P -O $((REDSHIFT_TEMP+changeValue))
+  fi
+}
+
+case $1 in 
+  toggle) 
+    if [ "$REDSHIFT" = on ];
+    then
+      changeMode "$REDSHIFT" off
+      redshift -x
+    else
+      changeMode "$REDSHIFT" on
+      redshift -O "$REDSHIFT_TEMP"
+    fi
+    ;;
+  increase)
+    changeTemp $((REDSHIFT_TEMP)) $((REDSHIFT_TEMP+changeValue))
+    ;;
+  decrease)
+    changeTemp $((REDSHIFT_TEMP)) $((REDSHIFT_TEMP-changeValue));
+    ;;
+  temperature)
+    case $REDSHIFT in
+      on)
+        printf "%dK" "$REDSHIFT_TEMP"
+        ;;
+      off)
+        printf "off"
+        ;;
+    esac
+    ;;
+esac
+#+end_src
+
+****** Module
+#+begin_src conf
+[module/redshift]
+type = custom/script
+format-prefix = ""
+;format-prefix-foreground = #888888
+exec = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh temperature
+click-left = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh toggle
+scroll-up = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh increase
+scroll-down = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh decrease
+interval=0.5
+#+end_src
+
+***** Workspace Indicator
+#+begin_src conf
+[module/exwm-workspace]
+type = custom/ipc
+hook-0 = emacsclient -e "exwm-workspace-current-index" | sed -e 's/^"//' -e 's/"$//'
+initial = 1
+format-padding = 1
 #+end_src
 
 ** GTK Theme
@@ -1382,6 +849,98 @@ logo              = /usr/share/pixmaps/archlinux-logo.svg
 user_image        = /usr/share/pixmaps/archlinux-user.svg
 #+end_src
 
+
+** Compositors
+*** Picom
+**** Install
+#+begin_src bash
+$INSTALL picom-ibhagwan-git
+#+end_src
+
+**** Configuration
+:PROPERTIES:
+:header-args:conf: :tangle (concat (getenv $XDG_CONFIG_HOME) "/picom.conf")
+:END:
+#+begin_src conf
+#corner-radius = 50; # obviously doesn't work with EXWM, but useful
+#################################
+#             Shadows           #
+#################################
+shadow = true;
+shadow-radius = 7;
+# shadow-opacity = .75
+shadow-offset-x = -7;
+shadow-offset-y = -7;
+# no-dock-shadow = false
+# no-dnd-shadow = false
+
+# Color valus of shadow (0.0 - 1.0, defaults to 0).
+# shadow-red = 0
+# shadow-green = 0
+# shadow-blue = 0
+
+shadow-exclude = [
+  "name = 'Notification'",
+  "class_g = 'Conky'",
+  "class_g ?= 'Notify-osd'",
+  "class_g = 'Cairo-clock'",
+  "_GTK_FRAME_EXTENTS@:c"
+];
+
+#################################
+#           Fading              #
+#################################
+fading = true
+fade-in-step = 0.03;
+fade-out-step = 0.03;
+
+#################################
+#   Transparency / Opacity      #
+#################################
+inactive-opacity = 0.8;
+frame-opacity = 0.7;
+inactive-opacity-override = false;
+focus-exclude = [ "class_g = 'Cairo-clock'" ];
+opacity-rule = [
+  "100:fullscreen", "80:!fullscreen",
+];
+
+#################################
+#     Background-Blurring       #
+#################################
+blur-method = "dual_kawase";
+blur-strength = 5;
+blur-background-exclude = [
+  "window_type = 'desktop'",
+  "_GTK_FRAME_EXTENTS@:c"
+];
+
+#################################
+#       General Settings        #
+#################################
+backend = "glx";
+vsync = true
+mark-wmwin-focused = true;
+mark-ovredir-focused = true;
+detect-rounded-corners = true;
+detect-client-opacity = true;
+refresh-rate = 0
+detect-transient = true
+detect-client-leader = true
+glx-no-stencil = true;
+glx-no-rebind-pixmap = true;
+use-damage = true
+log-level = "warn";
+wintypes:
+{
+  tooltip = { fade = true; shadow = true; opacity = 0.75; focus = true; full-shadow = false; };
+  dock = { shadow = false; }
+  dnd = { shadow = false; }
+  popup_menu = { opacity = 0.8; }
+  dropdown_menu = { opacity = 0.8; }
+};
+#+end_src
+
 ** Window Managers
 *** EXWM
 **** Install
@@ -1411,9 +970,412 @@ cd ~/.config/emacs/lisp && wget https://raw.githubusercontent.com/lucasgruss/exw
 cd ~/.config/emacs/lisp && wget https://raw.githubusercontent.com/mwglen/ivy-clipmenu.el/master/ivy-clipmenu.el
 #+end_src
 
-**** Background Image
+*** XMonad
+**** Install
 #+begin_src bash
-$INSTALL picom-ibhagwan-git feh
+$INSTALL xmonad xmonad-contrib
+#+end_src
+
+**** Configuration
+#+begin_src conf :tangle ~/.xmonad/xmonad.hs
+-- IMPORTS
+import XMonad
+import XMonad.Util.SpawnOnce
+import XMonad.Util.Run(spawnPipe)
+
+-- Import For Dock
+import XMonad.Hooks.ManageDocks
+import qualified Codec.Binary.UTF8.String as UTF8
+
+-- EXMH Support
+import XMonad.Hooks.ManageHelpers
+import XMonad.Hooks.DynamicLog
+import XMonad.Hooks.EwmhDesktops
+
+-- DBUS (needed for polybar integration with xmonad)
+import qualified DBus as D
+
+import Data.Monoid
+import System.Exit
+
+import XMonad.Layout.Spacing
+import XMonad.Layout.NoBorders
+
+import qualified XMonad.StackSet as W
+import qualified Data.Map        as M
+
+myTerminal      = "alacritty"
+
+-- Whether focus follows the mouse pointer.
+myFocusFollowsMouse :: Bool
+myFocusFollowsMouse = False
+
+-- Whether clicking on a window to focus also passes the click to the window
+myClickJustFocuses :: Bool
+myClickJustFocuses = True
+
+myBorderWidth   = 2
+myModMask       = mod4Mask
+
+-- > workspaces = ["web", "irc", "code" ] ++ map show [4..9]
+myWorkspaces    = ["1","2","3","4","5","6","7","8","9"]
+
+-- Border colors for unfocused and focused windows, respectively.
+myNormalBorderColor  = "#dddddd"
+myFocusedBorderColor = "#ff0000"
+
+myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
+
+    -- launch a terminal
+    [ ((modm .|. shiftMask, xK_Return), spawn $ XMonad.terminal conf)
+
+    -- launch dmenu
+    , ((modm,               xK_p     ), spawn "rofi -show run")
+
+    -- launch gmrun
+    , ((modm .|. shiftMask, xK_p     ), spawn "gmrun")
+
+    -- close focused window
+    , ((modm .|. shiftMask, xK_c     ), kill)
+
+     -- Rotate through the available layout algorithms
+    , ((modm,               xK_space ), sendMessage NextLayout)
+
+    --  Reset the layouts on the current workspace to default
+    , ((modm .|. shiftMask, xK_space ), setLayout $ XMonad.layoutHook conf)
+
+    -- Resize viewed windows to the correct size
+    , ((modm,               xK_n     ), refresh)
+
+    -- Move focus to the next window
+    , ((modm,               xK_Tab   ), windows W.focusDown)
+
+    -- Move focus to the next window
+    , ((modm,               xK_j     ), windows W.focusDown)
+
+    -- Move focus to the previous window
+    , ((modm,               xK_k     ), windows W.focusUp  )
+
+    -- Move focus to the master window
+    , ((modm,               xK_m     ), windows W.focusMaster  )
+
+    -- Swap the focused window and the master window
+    , ((modm,               xK_Return), windows W.swapMaster)
+
+    -- Swap the focused window with the next window
+    , ((modm .|. shiftMask, xK_j     ), windows W.swapDown  )
+
+    -- Swap the focused window with the previous window
+    , ((modm .|. shiftMask, xK_k     ), windows W.swapUp    )
+
+    -- Shrink the master area
+    , ((modm,               xK_h     ), sendMessage Shrink)
+
+    -- Expand the master area
+    , ((modm,               xK_l     ), sendMessage Expand)
+
+    -- Push window back into tiling
+    , ((modm,               xK_t     ), withFocused $ windows . W.sink)
+
+    -- Increment the number of windows in the master area
+    , ((modm              , xK_comma ), sendMessage (IncMasterN 1))
+
+    -- Deincrement the number of windows in the master area
+    , ((modm              , xK_period), sendMessage (IncMasterN (-1)))
+
+    -- Quit xmonad
+    , ((modm .|. shiftMask, xK_q     ), io (exitWith ExitSuccess))
+
+    -- Restart xmonad
+    , ((modm              , xK_q     ), spawn "xmonad --recompile; xmonad --restart")
+
+    -- Run xmessage with a summary of the default keybindings (useful for beginners)
+    , ((modm .|. shiftMask, xK_slash ), spawn ("echo \"" ++ help ++ "\" | xmessage -file -"))
+    ]
+    ++
+
+    --
+    -- mod-[1..9], Switch to workspace N
+    -- mod-shift-[1..9], Move client to workspace N
+    --
+    [((m .|. modm, k), windows $ f i)
+        | (i, k) <- zip (XMonad.workspaces conf) [xK_1 .. xK_9]
+        , (f, m) <- [(W.greedyView, 0), (W.shift, shiftMask)]]
+    ++
+
+    --
+    -- mod-{w,e,r}, Switch to physical/Xinerama screens 1, 2, or 3
+    -- mod-shift-{w,e,r}, Move client to screen 1, 2, or 3
+    --
+    [((m .|. modm, key), screenWorkspace sc >>= flip whenJust (windows . f))
+        | (key, sc) <- zip [xK_w, xK_e, xK_r] [0..]
+        , (f, m) <- [(W.view, 0), (W.shift, shiftMask)]]
+
+
+------------------------------------------------------------------------
+-- Mouse bindings: default actions bound to mouse events
+--
+myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
+
+    -- mod-button1, Set the window to floating mode and move by dragging
+    [ ((modm, button1), (\w -> focus w >> mouseMoveWindow w
+                                       >> windows W.shiftMaster))
+
+    -- mod-button2, Raise the window to the top of the stack
+    , ((modm, button2), (\w -> focus w >> windows W.shiftMaster))
+
+    -- mod-button3, Set the window to floating mode and resize by dragging
+    , ((modm, button3), (\w -> focus w >> mouseResizeWindow w
+                                       >> windows W.shiftMaster))
+
+    -- you may also bind events to the mouse scroll wheel (button4 and button5)
+    ]
+
+myLayout = avoidStruts (tiled ||| Mirror tiled ||| Full)
+  where
+     -- default tiling algorithm partitions the screen into two panes
+     tiled   = Tall nmaster delta ratio
+
+     -- The default number of windows in the master pane
+     nmaster = 1
+
+     -- Default proportion of screen occupied by master pane
+     ratio   = 1/2
+
+     -- Percent of screen to increment by when resizing panes
+     delta   = 3/100
+
+myManageHook = composeAll
+    [ isFullscreen                  --> doFullFloat
+    , className =? "MPlayer"        --> doFloat
+    , className =? "Gimp"           --> doFloat
+    , resource  =? "desktop_window" --> doIgnore
+    , resource  =? "kdesktop"       --> doIgnore ]
+
+------------------------------------------------------------------------
+-- Event handling
+
+-- * EwmhDesktops users should change this to ewmhDesktopsEventHook
+--
+-- Defines a custom handler function for X Events. The function should
+-- return (All True) if the default handler is to be run afterwards. To
+-- combine event hooks use mappend or mconcat from Data.Monoid.
+--
+myEventHook = ewmhDesktopsEventHook
+
+myLogHook = return ()
+myStartupHook = do
+    spawnOnce "picom &"
+    spawnOnce "feh --bg-scale $BACKGROUNDS/unit-01.jpg"
+    spawnOnce "xmodmap $XDG_CONFIG_HOME/xmodmap/config"
+    spawnOnce "emacs --daemon"
+
+main :: IO ()
+main = do
+    -- Start xmonad
+    xmonad $ ewmh . docks $ defaults
+
+defaults = def {
+      -- simple stuff
+        terminal           = myTerminal,
+        focusFollowsMouse  = myFocusFollowsMouse,
+        clickJustFocuses   = myClickJustFocuses,
+        borderWidth        = myBorderWidth,
+        modMask            = myModMask,
+        workspaces         = myWorkspaces,
+        normalBorderColor  = myNormalBorderColor,
+        focusedBorderColor = myFocusedBorderColor,
+
+      -- key bindings
+        keys               = myKeys,
+        mouseBindings      = myMouseBindings,
+
+      -- hooks, layouts
+        layoutHook         = spacingWithEdge 30 $ myLayout,
+        manageHook         = myManageHook,
+        handleEventHook    = myEventHook,
+        logHook            = myLogHook,
+        startupHook        = myStartupHook
+    }
+
+-- | Finally, a copy of the default bindings in simple textual tabular format.
+help :: String
+help = unlines ["The default modifier key is 'alt'. Default keybindings:",
+    "",
+    "-- launching and killing programs",
+    "mod-Shift-Enter  Launch alacritty",
+    "mod-p            Launch rufi",
+    "mod-Shift-p      Launch gmrun",
+    "mod-Shift-c      Close/kill the focused window",
+    "mod-Space        Rotate through the available layout algorithms",
+    "mod-Shift-Space  Reset the layouts on the current workSpace to default",
+    "mod-n            Resize/refresh viewed windows to the correct size",
+    "",
+    "-- move focus up or down the window stack",
+    "mod-Tab        Move focus to the next window",
+    "mod-Shift-Tab  Move focus to the previous window",
+    "mod-j          Move focus to the next window",
+    "mod-k          Move focus to the previous window",
+    "mod-m          Move focus to the master window",
+    "",
+    "-- modifying the window order",
+    "mod-Return   Swap the focused window and the master window",
+    "mod-Shift-j  Swap the focused window with the next window",
+    "mod-Shift-k  Swap the focused window with the previous window",
+    "",
+    "-- resizing the master/slave ratio",
+    "mod-h  Shrink the master area",
+    "mod-l  Expand the master area",
+    "",
+    "-- floating layer support",
+    "mod-t  Push window back into tiling; unfloat and re-tile it",
+    "",
+    "-- increase or decrease number of windows in the master area",
+    "mod-comma  (mod-,)   Increment the number of windows in the master area",
+    "mod-period (mod-.)   Deincrement the number of windows in the master area",
+    "",
+    "-- quit, or restart",
+    "mod-Shift-q  Quit xmonad",
+    "mod-q        Restart xmonad",
+    "mod-[1..9]   Switch to workSpace N",
+    "",
+    "-- Workspaces & screens",
+    "mod-Shift-[1..9]   Move client to workspace N",
+    "mod-{w,e,r}        Switch to physical/Xinerama screens 1, 2, or 3",
+    "mod-Shift-{w,e,r}  Move client to screen 1, 2, or 3",
+    "",
+    "-- Mouse bindings: default actions bound to mouse events",
+    "mod-button1  Set the window to floating mode and move by dragging",
+    "mod-button2  Raise the window to the top of the stack",
+    "mod-button3  Set the window to floating mode and resize by dragging"]
+#+end_src
+
+** Menu Systems
+*** Rofi
+**** Install
+#+begin_src bash
+$INSTALL rofi
+#+end_src
+
+**** Link Confirguration
+#+begin_src bash
+ln -s $DIR/rofi  $XDG_CONFIG_HOME/rofi
+#+end_src
+
+** Status Bars
+*** XMobar
+**** Install
+#+begin_src bash
+$INSTALL xmobar
+#+end_src
+
+**** Configuration
+#+begin_src conf :tangle (concat (getenv $XDG_CONFIG_HOME) "/xmobar/config")
+Config { 
+   -- appearance
+     font =         "xft:Fira Code Retina:size=11:bold:antialias=true"
+   , bgColor =      "black"
+   , fgColor =      "#646464"
+   , position =     Top
+   , border =       BottomB
+   , borderColor =  "#646464"
+
+   -- layout
+   , sepChar =  "%"   -- delineator between plugin names and straight text
+   , alignSep = "}{"  -- separator between left-right alignment
+   , template = "%battery% | %multicpu% | %coretemp% | %memory% | %dynnetwork% }{ %RJTT% | %date% || %kbd% "
+
+   -- general behavior
+   , lowerOnStart =     True    -- send to bottom of window stack on start
+   , hideOnStart =      False   -- start with window unmapped (hidden)
+   , allDesktops =      True    -- show on all desktops
+   , overrideRedirect = True    -- set the Override Redirect flag (Xlib)
+   , pickBroadest =     False   -- choose widest display (multi-monitor)
+   , persistent =       True    -- enable/disable hiding (True = disabled)
+
+   -- plugins
+   --   Numbers can be automatically colored according to their value. xmobar
+   --   decides color based on a three-tier/two-cutoff system, controlled by
+   --   command options:
+   --     --Low sets the low cutoff
+   --     --High sets the high cutoff
+   --
+   --     --low sets the color below --Low cutoff
+   --     --normal sets the color between --Low and --High cutoffs
+   --     --High sets the color above --High cutoff
+   --
+   --   The --template option controls how the plugin is displayed. Text
+   --   color can be set by enclosing in <fc></fc> tags. For more details
+   --   see http://projects.haskell.org/xmobar/#system-monitor-plugins.
+   , commands = 
+
+        -- weather monitor
+        [ Run Weather "KRDU" [ "--template", "<skyCondition> | <fc=#4682B4><tempC></fc>°C | <fc=#4682B4><rh></fc>% | <fc=#4682B4><pressure></fc>hPa"
+                             ] 36000
+
+        -- network activity monitor (dynamic interface resolution)
+        , Run DynNetwork     [ "--template" , "<dev>: <tx>kB/s|<rx>kB/s"
+                             , "--Low"      , "1000"       -- units: B/s
+                             , "--High"     , "5000"       -- units: B/s
+                             , "--low"      , "darkgreen"
+                             , "--normal"   , "darkorange"
+                             , "--high"     , "darkred"
+                             ] 10
+
+        -- cpu activity monitor
+        , Run MultiCpu       [ "--template" , "Cpu: <total0>%|<total1>%"
+                             , "--Low"      , "50"         -- units: %
+                             , "--High"     , "85"         -- units: %
+                             , "--low"      , "darkgreen"
+                             , "--normal"   , "darkorange"
+                             , "--high"     , "darkred"
+                             ] 10
+
+        -- cpu core temperature monitor
+        , Run CoreTemp       [ "--template" , "Temp: <core0>°C|<core1>°C"
+                             , "--Low"      , "70"        -- units: °C
+                             , "--High"     , "80"        -- units: °C
+                             , "--low"      , "darkgreen"
+                             , "--normal"   , "darkorange"
+                             , "--high"     , "darkred"
+                             ] 50
+                          
+        -- memory usage monitor
+        , Run Memory         [ "--template" ,"Mem: <usedratio>%"
+                             , "--Low"      , "20"        -- units: %
+                             , "--High"     , "90"        -- units: %
+                             , "--low"      , "darkgreen"
+                             , "--normal"   , "darkorange"
+                             , "--high"     , "darkred"
+                             ] 10
+
+        -- battery monitor
+        , Run Battery        [ "--template" , "Batt: <acstatus>"
+                             , "--Low"      , "10"        -- units: %
+                             , "--High"     , "80"        -- units: %
+                             , "--low"      , "darkred"
+                             , "--normal"   , "darkorange"
+                             , "--high"     , "darkgreen"
+
+                             , "--" -- battery specific options
+                                       -- discharging status
+                                       , "-o"	, "<left>% (<timeleft>)"
+                                       -- AC "on" status
+                                       , "-O"	, "<fc=#dAA520>Charging</fc>"
+                                       -- charged status
+                                       , "-i"	, "<fc=#006000>Charged</fc>"
+                             ] 50
+
+        -- time and date indicator 
+        --   (%F = y-m-d date, %a = day of week, %T = h:m:s time)
+        , Run Date           "<fc=#ABABAB>%F (%a) %T</fc>" "date" 10
+
+        -- keyboard layout indicator
+        , Run Kbd            [ ("us(dvorak)" , "<fc=#00008B>DV</fc>")
+                             , ("us"         , "<fc=#8B0000>US</fc>")
+                             ]
+        ]
+   }
 #+end_src
 
 ** Notifications
@@ -1598,7 +1560,7 @@ $INSTALL cantarell-fonts ttf-fira-code
 
 **** Apply Theme
 #+begin_src bash
-ln ./doom-moonless-theme.el ~/.config/emacs/doom-moonless-theme.el
+ln $DIR/doom-moonless-theme.el ~/.config/emacs/doom-moonless-theme.el
 #+end_src
 
 **** Tangle Config
@@ -1607,6 +1569,14 @@ ln ./doom-moonless-theme.el ~/.config/emacs/doom-moonless-theme.el
 $INSTALL nim nimble
 mkdir -p "$XDG_CONFIG_HOME"/nimble
 mkdir -p "$XDG_DATA_HOME"/nimble
+#+end_src
+
+***** Configuration
+:PROPERTIES:
+:header-args:conf: :tangle (concat (getenv $XDG_CONFIG_HOME) "/nimble/nimble.ini")
+:END:
+#+begin_src conf
+nimbleDir = "$XDG_DATA_HOME/nimble"
 #+end_src
 
 ***** Setup ntangle
@@ -1623,7 +1593,7 @@ nimble install -y ntangle
 #+begin_src bash
 rm -rf ~/.emacs.d
 ln -s $XDG_CONFIG_HOME/emacs ~/.emacs.d
-ln -s ./backgrounds ~/backgrounds
+ln -s $DIR/backgrounds ~/backgrounds
 
 systemctl enable --user emacs
 systemctl start --user emacs
@@ -1635,7 +1605,7 @@ $INSTALL firefox
 #+end_src
 
 *** Qutebrowser
-**** Installation
+**** Install
 #+begin_src bash
 $INSTALL qutebrowser
 #+end_src
@@ -1783,12 +1753,48 @@ echo "unqualified-search-registries = ['docker.io']" \
     | sudo tee /etc/containers/registries.conf
 #+end_src
 
-*** Setup Neovim
+*** Feh
+#+begin_src bash
+$INSTALL feh
+#+end_src
+
+*** Neovim
+**** Install
 #+begin_src bash
 $INSTALL neovim
 mkdir -p $XDG_CONFIG_HOME/nvim
 curl -fLo $XDG_DATA_HOME/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 #+end_src
+
+**** Configuration
+:PROPERTIES:
+:header-args:conf: :tangle (concat (getenv $XDG_CONFIG_HOME) "/nvim/init.vim")
+:END:
+#+begin_src conf
+call plug#begin('$XDG_CONFIG_HOME/nvim/plugged')
+Plug 'jacoborus/tender.vim'
+Plug 'LnL7/vim-nix'
+Plug 'rust-lang/rust.vim'
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+Plug 'airblade/vim-gitgutter'
+Plug 'tpope/vim-surround'
+Plug 'tpope/vim-fugitive'
+Plug 'tpope/vim-commentary'
+call plug#end()
+
+set number relativenumber       " set line-numbers to be relative
+set nohlsearch                  " no highlight search
+set mouse=a                     " recognize and enable mouse
+set tabstop=4                   " show existing tab as 4 spaces
+set shiftwidth=4                " use 4 spaces when indenting with '>'
+set expandtab                   " on pressing tab, insert 4 spaces
+set termguicolors               " use terminal colors
+let g:airline_powerlin_fonts=1  " set airline theme
+colorscheme tender              " change the colorscheme
+let g:airline_theme = 'tender'  " change airline colorscheme
+#+end_src
+
 
 ** Change Shell
 #+begin_src bash
