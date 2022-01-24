@@ -1,237 +1,54 @@
 #+title: Guide to Setup Development Environment
-#+PROPERTY: header-args:bash
 #+PROPERTY: header-args :results none
-* Script Headers
-** Use Bash
-#+begin_src bash
-#!/bin/bash
-#+end_src
-
-** Stop  Script on Error
-#+begin_src bash
-set -e
-#+end_src
-
-** Start
-#+begin_src bash
-set -v
-#+end_src
-
-**  Warning
-#+begin_src bash
-# NOTE: This file is generated from setup.org
-#+end_src
-
-* Make sure OS is supported
-#+begin_src bash
-export DISTRO=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
-if ! [ "$DISTRO" = "\"Arch Linux\"" ] \
-    && ! [ "$DISTRO" = "\"Arch Linux ARM\"" ]; then echo "Unsupported Platform"
-    echo "Currently only Arch Linux is supported"
-    return 1
-fi
-#+end_src
-
-* Setup GRUB
-** Set GRUB to Remember Last Selection
+* Manual Configuration
+** Setup GRUB
+*** Set GRUB to Remember Last Selection
 1. Put the following in ~/etc/default/grub~
-   #+begin_src bash
-   GRUB_DEFAULT=saved
-   GRUB_SAVEDEFAULT=true
+   #+begin_src bash :tangle no
+   GRUB_DEFAULT=saved GRUB_SAVEDEFAULT=true
    #+end_src
 
-** TODO Add a GRUB Theme
-** Enable Hibernation
+*** TODO Add a GRUB Theme
+
+*** Enable Hibernation
 1. To enable hibernation, make sure that you have a swap partition. It is best to make the partition larger than the total amount of RAM on your system.
+
 2. In ~/etc/default/grub~, add ~resume=/dev/nvme0n1p2~ to =GRUB_CMDLINE_LINUX=. Make sure to change "nvme0n1p2" with the name of your swap partition
+   
 3. Rebuild grub using the new config by running ~sudo grub-mkconfig -o ~/boot/grub/grub.cfg~
+
 4. Reset your computer to complete the process
 
-Now you can use ~sudo systemctl hibernate~ to hibernate and ~sudo systmectl hybrid-sleep~ to sleep. I recommend aliasing these to ~hibernate~ and ~hybrid-sleep~.
+Now you can use ~sudo systemctl hibernate~ to hibernate and ~sudo systmectl hybrid-sleep~ to sleep. I recommend aliasing these to ~hibernate~ and ~hybrid-sleep~. I also recommend changing the behavior of the system keys to all hibernate the computer
 
-I also recommend changing the behavior of the system keys to all hibernate the computer
-
-** Change Behavior of System Keys
+*** Change Behavior of System Keys
 1. In ~/etc/systemd/logind.conf~, edit =HandleSuspendKey=, =HandleHibernateKey=, =HandlePowerKey=, and =HandleLidSwitch=
+
 2. Reset your computer to complete the process
 
-* Setup XDG Base Directories
-** Export Environment Variables
+** TODO Specify SSD Sector Size
 #+begin_src bash
-cat <<EOT > $HOME/.profile
-export XDG_CONFIG_HOME=$(realpath .)/.config
-export XDG_CACHE_HOME=$(realpath .)/.cache
-export XDG_DATA_HOME=$(realpath .)/.local/share
-export XDG_STATE_HOME=$(realpath .)/.local/state
-export BACKGROUNDS=$(realpath .)/backgrounds
-EOT
-source $HOME/.profile
 #+end_src
 
-** Clean Directories
+** Enable SSD Trim
+Trim is a feature supported by most SSDs that prevents unnecessary writes and erases to lengthen your SSD's lifespan. It also increases the performance of your SSD. SSDs can only erase blocks not pages, so before it can delete a page it must save a backup of the rest of the block and then rewrite the backup after the erase. This sequence required to erase a page is known as *write amplification*. This feature allows the OS to tell the SSD what it can write over so that it doesn't have to use the erase function to begin with.
+
+1. Make sure that your SSD supports TRIM before using the feature by running ~lsblk --discard~ and finding non-zero values for =DISC-GRAN= and =DISC-MAX=.
+
+2. Run the following commands to enable trim:
+   #+begin_src bash
+   sudo systemctl enable fstrim.timer
+   #+end_src
+
+3. You should now find that fstrim set up a weekly timer in ~systemctl list-timers~.
+   
+* Configuration Files
+** ZSH Config
+:PROPERTIES:
+:header-args:bash: :tangle (concat (getenv $ZDOTDIR) "/.zshrc")
+:END:
+*** General
 #+begin_src bash
-#rm -rf $XDG_CONFIG_HOME
-#rm -rf $XDG_CACHE_HOME
-#rm -rf $XDG_DATA_HOME
-#rm -rf $XDG_STATE_HOME
-#+end_src
-
-** Make Directories
-#+begin_src bash
-mkdir -p $XDG_CONFIG_HOME
-mkdir -p $XDG_CACHE_HOME
-mkdir -p $XDG_DATA_HOME
-mkdir -p $XDG_STATE_HOME
-#+end_src
-
-* Setup Yay
-** Install Yay
-#+begin_src bash
-if ! (pacman -Qs ylay > /dev/null); then
-    if (pacman -Qs fakeroot-tcp > /dev/null); then
-        sudo pacman -Syyu --needed git base-devel \ && git clone https://aur.archlinux.org/yay.git \ && cd yay && yes | makepkg -si
-    else # cannot use --noconfirm if fakeroot-tcp is installed
-        sudo pacman -Syyu --needed --noconfirm git base-devel \
-            && git clone https://aur.archlinux.org/yay.git \
-            && cd yay && yes | makepkg -si
-    fi
-    rm -rf yay
-fi
-#+end_src
-
-** Setup Shortcuts
-#+begin_src bash
-export INSTALL="yay -S --noconfirm --needed"
-export INSTALL_LOCAL="yay -U --noconfirm --needed"
-export REMOVE="yay -Rns --noconfirm --needed"
-export UPDATE="yay -Syyu --noconfirm --needed"
-export SEARCH="yay -Qs"
-#+end_src
-
-** Update Packages
-#+begin_src bash
-$UPDATE
-#+end_src
-
-* Fundamental Packages
-** git
-#+begin_src bash
-$INSTALL git openssh
-mkdir -p "$XDG_CONFIG_HOME"/git
-touch "$XDG_CONFIG_HOME"/git/config
-git config --global user.name "Matt Glen"
-git config --global user.email "mwg2202@yahoo.com"
-git config --global init.defaultBranch master
-#+end_src
-
-** man
-#+begin_src bash
-$INSTALL man-db man-pages
-#+end_src
-
-** cmake
-#+begin_src bash
-$INSTALL cmake
-#+end_src
-
-** rsync
-#+begin_src bash
-$INSTALL rsync
-#+end_src
-
-** wget
-#+begin_src bash
-$INSTALL wget
-echo hsts-file \= "$XDG_CACHE_HOME"/wget-hsts >> "$XDG_CONFIG_HOME/wgetrc"
-#+end_src
-
-* Drivers
-** USB
-#+begin_src bash
-$INSTALL usbutils usbip
-#+end_src
-
-** Bluetooth
-#+begin_src bash
-$INSTALL bluez bluez-utils bluetooth-autoconnect
-sudo systemctl enable bluetooth
-sudo systemctl start bluetooth
-sudo systemctl enable bluetooth-autoconnect
-sudo systemctl start bluetooth-autoconnect
-sudo systemctl enable pulseaudio-bluetooth-autoconnect
-sudo systemctl start pulseaudio-bluetooth-autoconnect
-#+end_src
-
-** Wifi
-#+begin_src bash
-$INSTALL networkmanager network-manager-applet
-sudo systemctl enable NetworkManager
-sudo systemctl start NetworkManager
-#+end_src
-
-** Audio
-#+begin_src bash
-$INSTALL pulseaudio-bluetooth alsa-utils pavucontrol playerctl
-cat <<EOT >> $ZDOTDIR/.zshrc
-playerctld daemon
-EOT
-#+end_src bash
-
-** Printing/Scanning
-*** Base Drivers
-To scan I recommend using simple-scan
-#+begin_src bash
-$INSTALL cups sane python-pillow simple-scan
-sudo systemctl enable cups
-sudo systemctl start cups
-#+end_src
-
-*** Optional Drivers for HP Printers
-Runs using cups and sane. Comes with a systemtray available through the ~hp-systray~ command. To get started find the ip address of your printer and then run ~hp-setup <ip-address>~.
-#+begin_src bash
-$INSTALL hplip
-#+end_src
-
-* Mouse Sensitivity
-#+begin_src bash
-Mouse=$(xinput list |grep -i M720 | awk -F= '{ print $2}'| awk '{print $1}'| awk 'BEGIN{ RS = "" ; FS = "\n" }{print $1}')
-
-xinput set-prop $Mouse "libinput Middle Emulation Enabled" 1
-xinput set-prop $Mouse "libinput Scroll Method Enabled" 0, 0, 1
-
-# Set mouse acceleration speed (0 is off, higher is slower)
-xinput set-prop $Mouse "libinput Accel Speed" 0.5
-
-# Set sensitivity with the last number (0 is off, higher is slower)
-xinput set-prop $Mouse "Coordinate Transformation Matrix" 1 0 0 0 1 0 0 0 1
-#+end_src
-
-* Setup Core Packages
-** Latex
-#+begin_src bash
-$INSTALL tex-live-core tllocalmgr-git
-tllocalmgr update
-tllocalmgr install dvipng l3packages xcolor soul adjustbox collectbox amsmath amssymb siunitx
-sudo texhash
-#+end_src
-
-** Setup Interactive Shell
-*** Install ZSH
-#+begin_src bash
-$INSTALL zsh
-cat <<EOT > $HOME/.zshenv
-source $HOME/.profile
-export ZDOTDIR=$XDG_CONFIG_HOME/zsh
-alias ls="ls --color=auto -h"
-alias grep="grep --color=auto"
-alias ip="ip -color=auto"
-alias spotify="spotify --force-device-scale-factor=2"
-
-EOT
-source $HOME/.zshenv
-mkdir -p $ZDOTDIR
-cat <<EOT > $ZDOTDIR/.zshrc
-# zsh config
 unsetopt BEEP
 setopt HIST_FCNTL_LOCK
 setopt HIST_IGNORE_DUPS
@@ -243,17 +60,10 @@ HISTSIZE="10000"
 SAVEHIST="10000"
 HISTFILE="$XDG_STATE_HOME/zsh/history"
 mkdir -p "$(dirname "$HISTFILE")"
-
-EOT
 #+end_src
 
-*** Setup Pure (ZSH Theme)
+*** Theme
 #+begin_src bash
-if (mkdir "$XDG_CONFIG_HOME"/zsh/pure); then
-    git clone https://github.com/sindresorhus/pure.git "$XDG_CONFIG_HOME"/zsh/pure
-fi
-cat <<EOT >> $ZDOTDIR/.zshrc
-# pure config
 fpath+="$XDG_CONFIG_HOME"/zsh/pure
 autoload -U promptinit; promptinit
 zstyle :prompt:pure:prompt:success color green
@@ -273,274 +83,72 @@ zstyle :prompt:pure:host color white
 zstyle :prompt:pure:user color white
 zstyle :prompt:pure:user:root color magenta
 prompt pure
-
-EOT
 #+end_src
 
-** Setup Emacs
-*** Install Emacs
+*** Neovim
 #+begin_src bash
-$INSTALL emacs
+alias vi=nvim
+alias vim=nvim
+export EDITOR=nvim
+export VISUAL=nvim
 #+end_src
 
-*** Install Fonts
+*** Audio
 #+begin_src bash
-$INSTALL cantarell-fonts ttf-fira-code
+playerctld daemon
 #+end_src
 
-*** Apply Theme
+*** Ntangle
 #+begin_src bash
-mkdir -p .config/emacs
-ln ./doom-moonless-theme.el .config/emacs/doom-moonless-theme.el
+alias ntangle="\$XDG_DATA_HOME"/nimble/bin/ntangle
 #+end_src
 
-*** Additional vterm configuration
+*** Emacs
 #+begin_src bash
-cat <<EOT >> $ZDOTDIR/.zshrc
-# emacs config
 vterm_printf(){
-    if [ -n "\$TMUX" ] && ([ "\${TERM%%-*}" = "tmux" ] \
-       || [ "\${TERM%%-*}" = "screen" ] ); then
-        printf "\ePtmux;\e\e]%s\007\e\\\" "\$1"
-    elif [ "\${TERM%%-*}" = "screen" ]; then
-        printf "\eP\e]%s\007\e\\\" "\$1"
+    if [ -n "$TMUX" ] && ([ "${TERM%%-*}" = "tmux" ] \
+       || [ "${TERM%%-*}" = "screen" ] ); then
+        printf "\ePtmux;\e\e]%s\007\e\\\" "$1"
+    elif [ "${TERM%%-*}" = "screen" ]; then
+        printf "\eP\e]%s\007\e\\\" "$1"
     else
-        printf "\e]%s\e\\\" "\$1"
+        printf "\e]%s\e\\\" "$1"
     fi
 }
-
-EOT
 #+end_src
 
-*** Tangle Emacs Config
-**** Setup Nim and Nimble
-#+begin_src bash
-$INSTALL nim nimble
-mkdir -p "$XDG_CONFIG_HOME"/nimble
-mkdir -p "$XDG_DATA_HOME"/nimble
-cat <<EOT > "$XDG_CONFIG_HOME"/nimble/nimble.ini
-nimbleDir = "$XDG_DATA_HOME/nimble"
-
-EOT
-#+end_src
-
-**** Setup ntangle
-#+begin_src bash
-nimble install -y ntangle
-cat <<EOT >> $ZDOTDIR/.zshrc
-# ntangle config
-alias ntangle="$XDG_DATA_HOME"/nimble/bin/ntangle
-
-EOT
-#+end_src
-
-**** Tangle Config
-#+begin_src bash
-mkdir -p .config/emacs
-"$XDG_DATA_HOME"/nimble/bin/ntangle emacs.org
-#+end_src
-
-*** Enable Emacs Daemon
-#+begin_src bash
-mkdir -p "$XDG_CONFIG_HOME"/systemd/user/
-cat <<EOT > "$XDG_CONFIG_HOME"/systemd/user/emacs.service
-[Unit]
-Description=Emacs
-Documentation=info:emacs man:emacs(1) https://gnu.org/software/emacs/
-
-[Service]
-type=forking
-ExecStart=/user/bin/emacs --daemon
-ExecStop=/usr/bin/emacsclient --eval "(kill-emacs)"
-Environment=SSH_AUTH_SOCK=%t/keyring/ssh
-Restart=on_failure
-
-[Install]
-WantedBy=default.target
-
-EOT
-
-rm -rf ~/.emacs.d
-ln -s $XDG_CONFIG_HOME/emacs ~/.emacs.d
-
-systemctl enable --user emacs
-systemctl start --user emacs
-#+end_src
-
-* Universial Keybindings
-** Install Xmodmap
-#+begin_src bash
-$INSTALL xorg-xmodmap
-#+end_src
-
-** Setup Xmodmap
-*** Move Caps Lock to Right Control and Left Control to Caps Lock
-#+begin_src conf :tangle .config/xmodmap/config
-clear lock
-clear control
-keycode 66 = Control_L NoSymbol Control_L
-add control = Control_L
-add lock = Control_R
-#+end_src
-
-* Installing NVIDIA Drivers
-#+begin_src bash
-sudo pacman -S nvidia
-#+end_src
-
-** NVIDIA Optimus
-#+begin_src bash
-sudo pacman -S nvidia-prime
-sudo yay -S optimus-manager
-#+end_src
-
-Use the ~prime-run~ command to run a program using dedicated graphics.
-
-* Power Saving Mode using TLP
-1. Run the following commands to start using TLP:
-   #+begin_src bash
-   sudo pacman -S tlp
-   sudo systemctl enable tlp
-   sudo systemctl start tlp
-   #+end_src
-
-* Enable SSD Trim
-Trim is a feature supported by most SSDs that prevents unnecessary writes and erases to lengthen your SSD's lifespan. It also increases the performance of your SSD. SSDs can only erase blocks not pages, so before it can delete a page it must save a backup of the rest of the block and then rewrite the backup after the erase. This sequence required to erase a page is known as *write amplification*. This feature allows the OS to tell the SSD what it can write over so that it doesn't have to use the erase function to begin with.
-
-1. Make sure that your SSD supports TRIM before using the feature by running ~lsblk --discard~ and finding non-zero values for =DISC-GRAN= and =DISC-MAX=.
-   
-2. Run the following commands to enable trim:
-   
-   #+begin_src bash
-   sudo systemctl enable fstrim.timer
-   #+end_src
-
-   You should now find that fstrim set up a weekly timer in ~systemctl list-timers~.
-
-* TODO Specify SSD Sector Size
-#+begin_src bash
-#+end_src
-
-* File System Support
-** exFAT Support
-#+begin_src bash
-$INSTALL exfatprogs
-#+end_src
-
-** NTFS Support
-#+begin_src bash
-$INSTALL ntfs-3g
-#+end_src
-
-** VHD and VHDX Support
-#+begin_src bash
-$INSTALL libguestfs
-#+end_src
-
-* Syncing Emails to a Local Directory
-** Install Isync
-*NOTE*: ~isync~ gives us the ~mbsync~ utility
-#+begin_src bash
-sudo pacman -S isync
-#+end_src
-
-** Create a Local Folder to Hold Emails
-#+begin_src bash
-mkdir -p ~/personal-documents/Mail
-#+end_src
-
-** Configure Mbsync
-*NOTE*: Different distributions of linux might place the certificate file at a different location.
-#+begin_src bash
-cat <<EOT > $HOME/.mbsyncrc
-IMAPAccount gmail
-Host imap.gmail.com
-User mwg2202@gmail.com
-PassCmd ""
-SSLType IMAPS
-CertificateFile /etc/ssl/certs/ca-certificates.crt
-
-IMAPStore gmail-remote
-Account gmail
-
-MaildirStore gmail-local
-Subfolders Verbatim
-Path ~/personal-documents/Mail/
-Inbox ~/personal-documents/Mail/Inbox
-
-Channel gmail
-Master :gmail-remote:
-Slave :gmail-local:
-Patterns * ![Gmail]* "[Gmail]/Sent Mail" "[Gmail]/Starred" "[Gmail]/All Mail" "[Gmail]/Trash"
-Create Both
-SyncState *
-EOT
-#+end_src
-
-** Run Mbsync
-#+begin_src bash
-mbsync -a
-#+end_src
-
-* Linux Password Manager
-#+begin_src bash
-sudo pacman -S pass
-pass init "62EC2C26" # Use the last 8 characters of your GPG key's ID
-#+end_src
-
-The =passfs= addon for firefox allows you to use your password store while browsing in firefox
-The =Password Store= android app allows you to access your passwords on  
-
-* Exporting PGP Keys
-#+begin_src bash
-gpg --output public.pgp --armor --export username@email
-gpg --output private.pgp --armor --export-secret-key username@email
-
-# Backup Private Keys
-gpg --output backupkeys.pgp --armor --export-secret-keys --export-options export-backup user@email
-#+end_src
-
-* Setup a Software Access Point
-** Linux-Wifi-Hotspot
-~linux-wifi-hotspot~ is an AUR package that allows you to easily create a wifi-hotspot without needing to mess around with ~hostapd~, ~dnsmasq~, and ~iptables~. It includes both a gui and cli interface.
-#+begin_src bash
-$INSTALL linux-wifi-hotspot
-#+end_src
-
-*** Use CLI
-#+begin_src bash
-create_ap wlan0 eth0 MyAccessPoint MyPassPhrase
-#+end_src
-
-*** Use GUI
-#+begin_src bash
-wihotspot
-#+end_src
-
-* Converting ICS format to Org
-See [[https://tero.hasu.is/blog/org-icalendar-import/]] for more information.
-** Installing
-#+begin_src bash
-$INSTALL ruby
-gem install date icalendar optparse tzinfo
-git clone https://tero.hasu.is/repo/icalendar-to-org.git
-#+end_src
-
-**  To Use
-#+begin_src bash
-ics-to-org input.ics > output.org
-#+end_src
-
-* Polybar Panel
-** Install Polybar
-#+begin_src bash
-$INSTALL polybar
-mkdir -p $XDG_CONFIG_HOME/polybar
-#+end_src
-
-** Configuration
+*** Neovim
 :PROPERTIES:
-:header-args:conf: :tangle ./.config/polybar/config
+:header-args:conf: :tangle (concat (getenv $XDG_CONFIG_HOME) "/nvim/init.vim")
+:END:
+#+begin_src conf
+call plug#begin('$XDG_CONFIG_HOME/nvim/plugged')
+Plug 'jacoborus/tender.vim'
+Plug 'LnL7/vim-nix'
+Plug 'rust-lang/rust.vim'
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+Plug 'airblade/vim-gitgutter'
+Plug 'tpope/vim-surround'
+Plug 'tpope/vim-fugitive'
+Plug 'tpope/vim-commentary'
+call plug#end()
+
+set number relativenumber       " set line-numbers to be relative
+set nohlsearch                  " no highlight search
+set mouse=a                     " recognize and enable mouse
+set tabstop=4                   " show existing tab as 4 spaces
+set shiftwidth=4                " use 4 spaces when indenting with '>'
+set expandtab                   " on pressing tab, insert 4 spaces
+set termguicolors               " use terminal colors
+let g:airline_powerlin_fonts=1  " set airline theme
+colorscheme tender              " change the colorscheme
+let g:airline_theme = 'tender'  " change airline colorscheme
+#+end_src
+
+** Polybar
+:PROPERTIES:
+:header-args:conf: :tangle (concat (getenv $XDG_CONFIG_HOME) "/polybar/config")
 :END:
 *** Global Settings
 #+begin_src conf
@@ -750,20 +358,21 @@ ramp-1 = 
 #+end_src
 
 *** Redshift
-**** Install
-#+begin_src bash
-mkdir -p $XDG_CONFIG_HOME/polybar/scripts
-#+end_src
-
 **** Scripts
 ***** env.sh
-#+begin_src sh :tangle .config/polybar/scripts/env.sh :tangle-mode (identity #o755)
+:PROPERTIES:
+:header-args:sh: :tangle (concat (getenv $XDG_CONFIG_HOME) "/polybar/scripts/env.sh") (identity #o755)
+:END:
+#+begin_src sh
 export REDSHIFT=on
 export REDSHIFT_TEMP=5600
 #+end_src
 
 ***** redshift.sh
-#+begin_src sh :tangle .config/polybar/scripts/redshift.sh :tangle-mode (identity #o755)
+:PROPERTIES:
+:header-args:sh: :tangle (concat (getenv $XDG_CONFIG_HOME) "/polybar/scripts/redshift.sh") (identity #o755)
+:END:
+#+begin_src sh
 #!/bin/sh
 
 envFile=$XDG_CONFIG_HOME/polybar/scripts/env.sh
@@ -835,112 +444,444 @@ initial = 1
 format-padding = 1
 #+end_src
 
-* TUI Applications
-#+begin_src bash
-$INSTALL gotop cava alsi
+** Alacritty
+:PROPERTIES:
+:header-args:conf: :tangle (concat (getenv $XDG_CONFIG_HOME) "/alacritty/alacritty.yml")
+:END:
+#+begin_src conf
+#env:
+  #TERM: alacritty
+
+#window:
+  #  columns: 0
+  #  lines: 0
+  #  x: 0
+  #  y: 0
+
+  #padding:
+  #  x: 0
+  #  y: 0
+  #dynamic_padding: false
+  #decorations: full (or none)
+
+  # Allow terminal applications to change Alacritty's window title.
+  #dynamic_title: true
+
+#font:
+  #normal:
+    #family: monospace
+    #style: Regular
+
+  #bold:
+    #family: monospace
+    #style: Bold
+
+  #italic:
+    # Font family
+    #family: monospace
+    #style: Italic
+
+  #bold_italic:
+    #family: monospace
+    #style: Bold Italic
+
+  #size: 11.0
+
+
+# Colors (Tomorrow Night)
+#colors:
+  # Default colors
+  #primary:
+  #  background: '#1d1f21'
+  #  foreground: '#c5c8c6'
+
+    # Bright and dim foreground colors
+    #
+    # The dimmed foreground color is calculated automatically if it is not
+    # present. If the bright foreground color is not set, or
+    # `draw_bold_text_with_bright_colors` is `false`, the normal foreground
+    # color will be used.
+    #dim_foreground: '#828482'
+    #bright_foreground: '#eaeaea'
+
+  # Cursor colors
+  #
+  # Colors which should be used to draw the terminal cursor.
+  #
+  # Allowed values are CellForeground/CellBackground, which reference the
+  # affected cell, or hexadecimal colors like #ff00ff.
+  #cursor:
+  #  text: CellBackground
+  #  cursor: CellForeground
+
+  # Vi mode cursor colors
+  #
+  # Colors for the cursor when the vi mode is active.
+  #
+  # Allowed values are CellForeground/CellBackground, which reference the
+  # affected cell, or hexadecimal colors like #ff00ff.
+  #vi_mode_cursor:
+  #  text: CellBackground
+  #  cursor: CellForeground
+
+  # Search colors
+  #
+  # Colors used for the search bar and match highlighting.
+  #search:
+    # Allowed values are CellForeground/CellBackground, which reference the
+    # affected cell, or hexadecimal colors like #ff00ff.
+    #matches:
+    #  foreground: '#000000'
+    #  background: '#ffffff'
+    #focused_match:
+    #  foreground: '#ffffff'
+    #  background: '#000000'
+
+    #bar:
+    #  background: '#c5c8c6'
+    #  foreground: '#1d1f21'
+
+  # Keyboard regex hints
+  #hints:
+    # First character in the hint label
+    #
+    # Allowed values are CellForeground/CellBackground, which reference the
+    # affected cell, or hexadecimal colors like #ff00ff.
+    #start:
+    #  foreground: '#1d1f21'
+    #  background: '#e9ff5e'
+
+    # All characters after the first one in the hint label
+    #
+    # Allowed values are CellForeground/CellBackground, which reference the
+    # affected cell, or hexadecimal colors like #ff00ff.
+    #end:
+    #  foreground: '#e9ff5e'
+    #  background: '#1d1f21'
+
+  # Line indicator
+  #
+  # Color used for the indicator displaying the position in history during
+  # search and vi mode.
+  #
+  # By default, these will use the opposing primary color.
+  #line_indicator:
+  #  foreground: None
+  #  background: None
+
+  # Selection colors
+  #
+  # Colors which should be used to draw the selection area.
+  #
+  # Allowed values are CellForeground/CellBackground, which reference the
+  # affected cell, or hexadecimal colors like #ff00ff.
+  #selection:
+  #  text: CellBackground
+  #  background: CellForeground
+
+  # Normal colors
+  #normal:
+  #  black:   '#1d1f21'
+  #  red:     '#cc6666'
+  #  green:   '#b5bd68'
+  #  yellow:  '#f0c674'
+  #  blue:    '#81a2be'
+  #  magenta: '#b294bb'
+  #  cyan:    '#8abeb7'
+  #  white:   '#c5c8c6'
+
+  # Bright colors
+  #bright:
+  #  black:   '#666666'
+  #  red:     '#d54e53'
+  #  green:   '#b9ca4a'
+  #  yellow:  '#e7c547'
+  #  blue:    '#7aa6da'
+  #  magenta: '#c397d8'
+  #  cyan:    '#70c0b1'
+  #  white:   '#eaeaea'
+
+  # Dim colors
+  #
+  # If the dim colors are not set, they will be calculated automatically based
+  # on the `normal` colors.
+  #dim:
+  #  black:   '#131415'
+  #  red:     '#864343'
+  #  green:   '#777c44'
+  #  yellow:  '#9e824c'
+  #  blue:    '#556a7d'
+  #  magenta: '#75617b'
+  #  cyan:    '#5b7d78'
+  #  white:   '#828482'
+
+  # Indexed Colors
+  #
+  # The indexed colors include all colors from 16 to 256.
+  # When these are not set, they're filled with sensible defaults.
+  #
+  # Example:
+  #   `- { index: 16, color: '#ff00ff' }`
+  #
+  #indexed_colors: []
+
+# Bell
+#
+# The bell is rung every time the BEL control character is received.
+#bell:
+  # Visual Bell Animation
+  #
+  # Animation effect for flashing the screen when the visual bell is rung.
+  #
+  # Values for `animation`:
+  #   - Ease
+  #   - EaseOut
+  #   - EaseOutSine
+  #   - EaseOutQuad
+  #   - EaseOutCubic
+  #   - EaseOutQuart
+  #   - EaseOutQuint
+  #   - EaseOutExpo
+  #   - EaseOutCirc
+  #   - Linear
+  #animation: EaseOutExpo
+
+  # Duration of the visual bell flash in milliseconds. A `duration` of `0` will
+  # disable the visual bell animation.
+  #duration: 0
+
+  # Visual bell animation color.
+  #color: '#ffffff'
+
+  # Bell Command
+  #
+  # This program is executed whenever the bell is rung.
+  #
+  # When set to `command: None`, no command will be executed.
+  #
+  # Example:
+  #   command:
+  #     program: notify-send
+  #     args: ["Hello, World!"]
+  #
+  #command: None
+
+# Background opacity
+#
+# Window opacity as a floating point number from `0.0` to `1.0`.
+# The value `0.0` is completely transparent and `1.0` is opaque.
+#background_opacity: 1.0
+
+#selection:
+  # This string contains all characters that are used as separators for
+  # "semantic words" in Alacritty.
+  #semantic_escape_chars: ",│`|:\"' ()[]{}<>\t"
+
+  # When set to `true`, selected text will be copied to the primary clipboard.
+  #save_to_clipboard: false
+
+#cursor:
+  # Cursor style
+  #style:
+    # Cursor shape
+    #
+    # Values for `shape`:
+    #   - ▇ Block
+    #   - _ Underline
+    #   - | Beam
+    #shape: Block
+
+    # Cursor blinking state
+    #
+    # Values for `blinking`:
+    #   - Never: Prevent the cursor from ever blinking
+    #   - Off: Disable blinking by default
+    #   - On: Enable blinking by default
+    #   - Always: Force the cursor to always blink
+    #blinking: Off
+
+  # Vi mode cursor style
+  #
+  # If the vi mode cursor style is `None` or not specified, it will fall back to
+  # the style of the active value of the normal cursor.
+  #
+  # See `cursor.style` for available options.
+  #vi_mode_style: None
+
+  # Cursor blinking interval in milliseconds.
+  #blink_interval: 750
+
+  # If this is `true`, the cursor will be rendered as a hollow box when the
+  # window is not focused.
+  #unfocused_hollow: true
+
+  # Thickness of the cursor relative to the cell width as floating point number
+  # from `0.0` to `1.0`.
+  #thickness: 0.15
+
+# Live config reload (changes require restart)
+#live_config_reload: true
+
+#mouse:
+  # Click settings
+  #
+  # The `double_click` and `triple_click` settings control the time
+  # alacritty should wait for accepting multiple clicks as one double
+  # or triple click.
+  #double_click: { threshold: 300 }
+  #triple_click: { threshold: 300 }
+
+  # If this is `true`, the cursor is temporarily hidden when typing.
+  #hide_when_typing: false
+
+# Regex hints
+#
+# Terminal hints can be used to find text in the visible part of the terminal
+# and pipe it to other applications.
+#hints:
+  # Keys used for the hint labels.
+  #alphabet: "jfkdls;ahgurieowpq"
+
+  # List with all available hints
+  #
+  # Each hint must have a `regex` and either an `action` or a `command` field.
+  # The fields `mouse`, `binding` and `post_processing` are optional.
+  #
+  # The fields `command`, `binding.key`, `binding.mods`, `binding.mode` and
+  # `mouse.mods` accept the same values as they do in the `key_bindings` section.
+  #
+  # The `mouse.enabled` field controls if the hint should be underlined while
+  # the mouse with all `mouse.mods` keys held or the vi mode cursor is above it.
+  #
+  # If the `post_processing` field is set to `true`, heuristics will be used to
+  # shorten the match if there are characters likely not to be part of the hint
+  # (e.g. a trailing `.`). This is most useful for URIs.
+  #
+  # Values for `action`:
+  #   - Copy
+  #       Copy the hint's text to the clipboard.
+  #   - Paste
+  #       Paste the hint's text to the terminal or search.
+  #   - Select
+  #       Select the hint's text.
+  #   - MoveViModeCursor
+  #       Move the vi mode cursor to the beginning of the hint.
+  #enabled:
+  # - regex: "(ipfs:|ipns:|magnet:|mailto:|gemini:|gopher:|https:|http:|news:|file:|git:|ssh:|ftp:)\
+  #           [^\u0000-\u001F\u007F-\u009F<>\"\\s{-}\\^⟨⟩`]+"
+  #   command: xdg-open
+  #   post_processing: true
+  #   mouse:
+  #     enabled: true
+  #     mods: None
+  #   binding:
+  #     key: U
+  #     mods: Control|Shift
+
+#mouse_bindings:
+#  - { mouse: Middle, action: PasteSelection }
+
+#key_bindings:
+  #- { key: Paste,                                       action: Paste          }
+  #- { key: Copy,                                        action: Copy           }
+  #- { key: L,         mods: Control,                    action: ClearLogNotice }
+  #- { key: L,         mods: Control, mode: ~Vi|~Search, chars: "\x0c"          }
+  #- { key: PageUp,    mods: Shift,   mode: ~Alt,        action: ScrollPageUp,  }
+  #- { key: PageDown,  mods: Shift,   mode: ~Alt,        action: ScrollPageDown }
+  #- { key: Home,      mods: Shift,   mode: ~Alt,        action: ScrollToTop,   }
+  #- { key: End,       mods: Shift,   mode: ~Alt,        action: ScrollToBottom }
+
+  # Vi Mode
+  #- { key: Space,  mods: Shift|Control, mode: ~Search,    action: ToggleViMode            }
+  #- { key: Space,  mods: Shift|Control, mode: Vi|~Search, action: ScrollToBottom          }
+  #- { key: Escape,                      mode: Vi|~Search, action: ClearSelection          }
+  #- { key: I,                           mode: Vi|~Search, action: ToggleViMode            }
+  #- { key: I,                           mode: Vi|~Search, action: ScrollToBottom          }
+  #- { key: C,      mods: Control,       mode: Vi|~Search, action: ToggleViMode            }
+  #- { key: Y,      mods: Control,       mode: Vi|~Search, action: ScrollLineUp            }
+  #- { key: E,      mods: Control,       mode: Vi|~Search, action: ScrollLineDown          }
+  #- { key: G,                           mode: Vi|~Search, action: ScrollToTop             }
+  #- { key: G,      mods: Shift,         mode: Vi|~Search, action: ScrollToBottom          }
+  #- { key: B,      mods: Control,       mode: Vi|~Search, action: ScrollPageUp            }
+  #- { key: F,      mods: Control,       mode: Vi|~Search, action: ScrollPageDown          }
+  #- { key: U,      mods: Control,       mode: Vi|~Search, action: ScrollHalfPageUp        }
+  #- { key: D,      mods: Control,       mode: Vi|~Search, action: ScrollHalfPageDown      }
+  #- { key: Y,                           mode: Vi|~Search, action: Copy                    }
+  #- { key: Y,                           mode: Vi|~Search, action: ClearSelection          }
+  #- { key: Copy,                        mode: Vi|~Search, action: ClearSelection          }
+  #- { key: V,                           mode: Vi|~Search, action: ToggleNormalSelection   }
+  #- { key: V,      mods: Shift,         mode: Vi|~Search, action: ToggleLineSelection     }
+  #- { key: V,      mods: Control,       mode: Vi|~Search, action: ToggleBlockSelection    }
+  #- { key: V,      mods: Alt,           mode: Vi|~Search, action: ToggleSemanticSelection }
+  #- { key: Return,                      mode: Vi|~Search, action: Open                    }
+  #- { key: K,                           mode: Vi|~Search, action: Up                      }
+  #- { key: J,                           mode: Vi|~Search, action: Down                    }
+  #- { key: H,                           mode: Vi|~Search, action: Left                    }
+  #- { key: L,                           mode: Vi|~Search, action: Right                   }
+  #- { key: Up,                          mode: Vi|~Search, action: Up                      }
+  #- { key: Down,                        mode: Vi|~Search, action: Down                    }
+  #- { key: Left,                        mode: Vi|~Search, action: Left                    }
+  #- { key: Right,                       mode: Vi|~Search, action: Right                   }
+  #- { key: Key0,                        mode: Vi|~Search, action: First                   }
+  #- { key: Key4,   mods: Shift,         mode: Vi|~Search, action: Last                    }
+  #- { key: Key6,   mods: Shift,         mode: Vi|~Search, action: FirstOccupied           }
+  #- { key: H,      mods: Shift,         mode: Vi|~Search, action: High                    }
+  #- { key: M,      mods: Shift,         mode: Vi|~Search, action: Middle                  }
+  #- { key: L,      mods: Shift,         mode: Vi|~Search, action: Low                     }
+  #- { key: B,                           mode: Vi|~Search, action: SemanticLeft            }
+  #- { key: W,                           mode: Vi|~Search, action: SemanticRight           }
+  #- { key: E,                           mode: Vi|~Search, action: SemanticRightEnd        }
+  #- { key: B,      mods: Shift,         mode: Vi|~Search, action: WordLeft                }
+  #- { key: W,      mods: Shift,         mode: Vi|~Search, action: WordRight               }
+  #- { key: E,      mods: Shift,         mode: Vi|~Search, action: WordRightEnd            }
+  #- { key: Key5,   mods: Shift,         mode: Vi|~Search, action: Bracket                 }
+  #- { key: Slash,                       mode: Vi|~Search, action: SearchForward           }
+  #- { key: Slash,  mods: Shift,         mode: Vi|~Search, action: SearchBackward          }
+  #- { key: N,                           mode: Vi|~Search, action: SearchNext              }
+  #- { key: N,      mods: Shift,         mode: Vi|~Search, action: SearchPrevious          }
+
+  # Search Mode
+  #- { key: Return,                mode: Search|Vi,  action: SearchConfirm         }
+  #- { key: Escape,                mode: Search,     action: SearchCancel          }
+  #- { key: C,      mods: Control, mode: Search,     action: SearchCancel          }
+  #- { key: U,      mods: Control, mode: Search,     action: SearchClear           }
+  #- { key: W,      mods: Control, mode: Search,     action: SearchDeleteWord      }
+  #- { key: P,      mods: Control, mode: Search,     action: SearchHistoryPrevious }
+  #- { key: N,      mods: Control, mode: Search,     action: SearchHistoryNext     }
+  #- { key: Up,                    mode: Search,     action: SearchHistoryPrevious }
+  #- { key: Down,                  mode: Search,     action: SearchHistoryNext     }
+  #- { key: Return,                mode: Search|~Vi, action: SearchFocusNext       }
+  #- { key: Return, mods: Shift,   mode: Search|~Vi, action: SearchFocusPrevious   }
+
+  # (Windows, Linux, and BSD only)
+  #- { key: V,              mods: Control|Shift, mode: ~Vi,        action: Paste            }
+  #- { key: C,              mods: Control|Shift,                   action: Copy             }
+  #- { key: F,              mods: Control|Shift, mode: ~Search,    action: SearchForward    }
+  #- { key: B,              mods: Control|Shift, mode: ~Search,    action: SearchBackward   }
+  #- { key: C,              mods: Control|Shift, mode: Vi|~Search, action: ClearSelection   }
+  #- { key: Insert,         mods: Shift,                           action: PasteSelection   }
+  #- { key: Key0,           mods: Control,                         action: ResetFontSize    }
+  #- { key: Equals,         mods: Control,                         action: IncreaseFontSize }
+  #- { key: Plus,           mods: Control,                         action: IncreaseFontSize }
+  #- { key: NumpadAdd,      mods: Control,                         action: IncreaseFontSize }
+  #- { key: Minus,          mods: Control,                         action: DecreaseFontSize }
+  #- { key: NumpadSubtract, mods: Control,                         action: DecreaseFontSize }
+
 #+end_src
 
-* GTK Theme
-** Install Theme
-#+begin_src bash
-$INSTALL materia-gtk-theme themix-full-git
+** Nim
+:PROPERTIES:
+:header-args:conf: :tangle (concat (getenv $XDG_CONFIG_HOME) "/nimble/nimble.ini")
+:END:
+#+begin_src conf
+nimbleDir = "$XDG_DATA_HOME/nimble"
 #+end_src
 
-** Set Theme
-#+begin_src conf :tangle ~/development-environment/.config/gtk-3.0/settings.ini
-[Settings]
-gtk-icon-theme-name = Materia
-gtk-theme-name = Materia
-gtk-application-prefer-dark-theme = true
-#+end_src conf
-
-* Display Managers
-** Configure X11
-#+begin_src bash
-echo "Xft.dpi: 200" > ~/.Xresources
-#+end_src
-
-** LightDM
-*** Install LightDM
-#+begin_src bash
-$INSTALL lightdm
-systemctl enable lightdm
-#+end_src
-
-*** Install LightDM Theme
-#+begin_src bash
-$INSTALL lightdm-webkit2-greeter lightdm-webkit-theme-litarvan
-#+end_src
-
-*** LightDM Configuration
-#+begin_src conf :tangle /sudo:://etc/lightdm/lightdm.conf
-[LightDM]
-run-directory=/run/lightdm
-
-[Seat:*]
-greeter-session=lightdm-webkit2-greeter
-session-wrapper=/etc/lightdm/Xsession
-
-[XDMCPServer]
-[VNCServer]
-#+end_src
-
-*** Theme Configuration
-#+begin_src conf :tangle /sudo:://etc/lightdm/lightdm-webkit2-greeter.conf
-[greeter]
-debug_mode          = false
-detect_theme_errors = true
-screensaver_timeout = 300
-secure_mode         = true
-time_format         = LT
-time_language       = auto
-webkit_theme        = litarvan
-
-[branding]
-background_images = /usr/share/backgrounds
-logo              = /usr/share/pixmaps/archlinux-logo.svg
-user_image        = /usr/share/pixmaps/archlinux-user.svg
-
-
-EOF
-#+end_src
-
-* Window Managers
-** EXWM
-*** Install
-#+begin_src bash
-$INSTALL xorg dbus xorg-xrdb xorg-transset wmctrl
-#+end_src
-
-*** Desktop Entry
-#+begin_src conf :tangle /sudo:://usr/share/xsessions/exwm.desktop
-[Desktop Entry]
-Name=exwm
-Type=Application
-Icon=exwm
-Comment=The Emacs X Window Manager
-TryExec=emacs
-Exec=emacs
-#+end_src
-
-*** Download Packages not on Melpa
-**** EXWM Outer Gaps
-#+begin_src bash
-cd ./.config/emacs/lisp && wget https://raw.githubusercontent.com/lucasgruss/exwm-outer-gaps/main/exwm-outer-gaps.el
-#+end_src
-
-**** Ivy Clipmenu
-#+begin_src bash
-cd ./.config/emacs/lisp && wget https://raw.githubusercontent.com/mwglen/ivy-clipmenu.el/master/ivy-clipmenu.el
-#+end_src
-
-*** Background Image
-#+begin_src bash
-$INSTALL picom-ibhagwan-git feh
-#+end_src
-
-*** Picom Config
-#+begin_src conf :tangle ./.config/picom.conf
+** Picom Config
+:PROPERTIES:
+:header-args:conf: :tangle (concat (getenv $XDG_CONFIG_HOME) "/picom.conf")
+:END:
+#+begin_src conf
 #corner-radius = 50; # obviously doesn't work with EXWM, but useful
 #################################
 #             Shadows           #
@@ -1020,22 +961,480 @@ wintypes:
 };
 #+end_src
 
-* Notifications
-** Libnotify
+* Script
+:PROPERTIES:
+:header-args:bash: :tangle ./setup.sh
+:END:
+** Script Headers
+*** Use Bash
+#+begin_src bash
+#!/bin/bash
+#+end_src
+
+*** Stop  Script on Error
+#+begin_src bash
+set -e
+#+end_src
+
+*** Start
+#+begin_src bash
+set -v
+#+end_src
+
+***  Warning
+#+begin_src bash
+# NOTE: This file is generated from setup.org
+#+end_src
+
+** Make sure OS is supported
+#+begin_src bash
+export DISTRO=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
+if ! [ "$DISTRO" = "\"Arch Linux\"" ] \
+    && ! [ "$DISTRO" = "\"Arch Linux ARM\"" ]; then echo "Unsupported Platform"
+    echo "Currently only Arch Linux is supported"
+    return 1
+fi
+#+end_src
+
+** Setup XDG Base Directories
+#+begin_src bash
+source $HOME/.profile
+#+end_src
+
+*** Clean Directories
+#+begin_src bash
+#rm -rf $XDG_CONFIG_HOME
+#rm -rf $XDG_CACHE_HOME
+#rm -rf $XDG_DATA_HOME
+#rm -rf $XDG_STATE_HOME
+#+end_src
+
+*** Make Directories
+#+begin_src bash
+mkdir -p $XDG_CONFIG_HOME
+mkdir -p $XDG_CACHE_HOME
+mkdir -p $XDG_DATA_HOME
+mkdir -p $XDG_STATE_HOME
+#+end_src
+
+** Setup Yay
+*** Install
+#+begin_src bash
+if ! (pacman -Qs ylay > /dev/null); then
+    if (pacman -Qs fakeroot-tcp > /dev/null); then
+        sudo pacman -Syyu --needed git base-devel \ && git clone https://aur.archlinux.org/yay.git \ && cd yay && yes | makepkg -si
+    else # cannot use --noconfirm if fakeroot-tcp is installed
+        sudo pacman -Syyu --needed --noconfirm git base-devel \
+            && git clone https://aur.archlinux.org/yay.git \
+            && cd yay && yes | makepkg -si
+    fi
+    rm -rf yay
+fi
+#+end_src
+
+*** Shortcuts
+#+begin_src bash
+export INSTALL="yay -S --noconfirm --needed"
+export INSTALL_LOCAL="yay -U --noconfirm --needed"
+export REMOVE="yay -Rns --noconfirm --needed"
+export UPDATE="yay -Syyu --noconfirm --needed"
+export SEARCH="yay -Qs"
+#+end_src
+
+*** Update Packages
+#+begin_src bash
+$UPDATE
+#+end_src
+
+** Fundamental Packages
+*** git
+#+begin_src bash
+$INSTALL git openssh
+mkdir -p "$XDG_CONFIG_HOME"/git
+touch "$XDG_CONFIG_HOME"/git/config
+git config --global user.name "Matt Glen"
+git config --global user.email "mwg2202@yahoo.com"
+git config --global init.defaultBranch master
+#+end_src
+
+*** man
+#+begin_src bash
+$INSTALL man-db man-pages
+#+end_src
+
+*** cmake
+#+begin_src bash
+$INSTALL cmake
+#+end_src
+
+*** rsync
+#+begin_src bash
+$INSTALL rsync
+#+end_src
+
+*** wget
+#+begin_src bash
+$INSTALL wget
+echo hsts-file \= "$XDG_CACHE_HOME"/wget-hsts >> "$XDG_CONFIG_HOME/wgetrc"
+#+end_src
+
+** Terminal Emulators
+*** Alacritty
+#+begin_src bash
+$INSTALL alacritty
+#+end_src
+
+** Drivers
+*** NVIDIA
+Use the ~prime-run~ command to run a program using dedicated graphics.
+
+#+begin_src bash
+$INSTALL nvidia nvidia-prime optimus-manager
+#+end_src
+
+*** USB
+#+begin_src bash
+$INSTALL usbutils usbip
+#+end_src
+
+*** Bluetooth
+#+begin_src bash
+$INSTALL bluez bluez-utils bluetooth-autoconnect
+sudo systemctl enable bluetooth
+sudo systemctl start bluetooth
+sudo systemctl enable bluetooth-autoconnect
+sudo systemctl start bluetooth-autoconnect
+sudo systemctl enable pulseaudio-bluetooth-autoconnect
+sudo systemctl start pulseaudio-bluetooth-autoconnect
+#+end_src
+
+*** Wifi
+#+begin_src bash
+$INSTALL networkmanager network-manager-applet
+sudo systemctl enable NetworkManager
+sudo systemctl start NetworkManager
+#+end_src
+
+*** Audio
+#+begin_src bash
+$INSTALL pulseaudio-bluetooth alsa-utils pavucontrol playerctl
+#+end_src bash
+
+*** Printing/Scanning
+**** Base Drivers
+To scan I recommend using simple-scan
+#+begin_src bash
+$INSTALL cups sane python-pillow simple-scan
+sudo systemctl enable cups
+sudo systemctl start cups
+#+end_src
+
+**** Optional Drivers for HP Printers
+Runs using cups and sane. Comes with a systemtray available through the ~hp-systray~ command. To get started find the ip address of your printer and then run ~hp-setup <ip-address>~.
+#+begin_src bash
+$INSTALL hplip
+#+end_src
+
+** Setup Core Packages
+*** Latex
+#+begin_src bash
+$INSTALL tex-live-core tllocalmgr-git
+tllocalmgr update
+tllocalmgr install dvipng l3packages xcolor soul adjustbox collectbox amsmath amssymb siunitx
+sudo texhash
+#+end_src
+
+*** ZSH
+**** Install
+#+begin_src bash
+$INSTALL zsh
+#+end_src
+
+**** Source Config
+#+begin_src bash
+source $HOME/.zshenv
+#+end_src
+
+**** Dot Profile
+#+begin_src bash :tangle ~/.profile
+export XDG_CONFIG_HOME=$HOME/.config
+export XDG_CACHE_HOME=$HOME/.cache
+export XDG_DATA_HOME=$HOME/.local/share
+export XDG_STATE_HOME=$HOME/.local/state
+export BACKGROUNDS=$HOME/backgrounds
+#+end_src
+
+**** Environment Config
+:PROPERTIES:
+:header-args:bash: :tangle (concat (getenv $HOME) "/.zshenv")
+:END:
+#+begin_src bash
+source $HOME/.profile
+export ZDOTDIR=$XDG_CONFIG_HOME/zsh
+alias ls="ls --color=auto -h"
+alias grep="grep --color=auto"
+alias ip="ip -color=auto"
+alias spotify="spotify --force-device-scale-factor=2"
+#+end_src
+
+**** Pure (ZSH Theme)
+#+begin_src bash
+if (mkdir "$XDG_CONFIG_HOME"/zsh/pure); then
+    git clone https://github.com/sindresorhus/pure.git "$XDG_CONFIG_HOME"/zsh/pure
+fi
+#+end_src
+
+** Xmodmap
+*** Installation
+#+begin_src bash
+$INSTALL xorg-xmodmap
+#+end_src
+
+*** Configuration
+:PROPERTIES:
+:header-args:conf: :tangle (concat (getenv $XDG_CONFIG_HOME) "/xmodmap/config")
+:END:
+Moves caps lock to right control and left control to caps lock
+#+begin_src conf
+clear lock
+clear control
+keycode 66 = Control_L NoSymbol Control_L
+add control = Control_L
+add lock = Control_R
+#+end_src
+
+** Power Saving Mode using TLP
+1. Run the following commands to start using TLP:
+   
+   #+begin_src bash
+   $INSTALL tlp
+   sudo systemctl enable tlp
+   sudo systemctl start tlp
+   #+end_src
+
+** File System Support
+*** exFAT Support
+#+begin_src bash
+$INSTALL exfatprogs
+#+end_src
+
+*** NTFS Support
+#+begin_src bash
+$INSTALL ntfs-3g
+#+end_src
+
+*** VHD and VHDX Support
+#+begin_src bash
+$INSTALL libguestfs
+#+end_src
+
+** Syncing Emails to a Local Directory
+*** Install Isync
+*NOTE*: ~isync~ gives us the ~mbsync~ utility
+#+begin_src bash
+$INSTALL isync
+#+end_src
+
+*** Configure Mbsync
+*NOTE*: Different distributions of linux might place the certificate file at a different location.
+:PROPERTIES:
+:header-args:conf: :tangle (concat (getenv $HOME) "/.mbsyncrc")
+:END:
+#+begin_src conf
+IMAPAccount gmail
+Host imap.gmail.com
+User mwg2202@gmail.com
+PassCmd ""
+SSLType IMAPS
+CertificateFile /etc/ssl/certs/ca-certificates.crt
+
+IMAPStore gmail-remote
+Account gmail
+
+MaildirStore gmail-local
+Subfolders Verbatim
+Path ~/personal-documents/Mail/
+Inbox ~/personal-documents/Mail/Inbox
+
+Channel gmail
+Master :gmail-remote:
+Slave :gmail-local:
+Patterns * ![Gmail]* "[Gmail]/Sent Mail" "[Gmail]/Starred" "[Gmail]/All Mail" "[Gmail]/Trash"
+Create Both
+SyncState *
+#+end_src
+
+*** Create a Local Folder to Hold Emails
+#+begin_src bash
+mkdir -p ~/personal-documents/Mail
+#+end_src
+
+*** Run Mbsync
+#+begin_src bash
+mbsync -a
+#+end_src
+
+** Converting ICS format to Org
+See [[https://tero.hasu.is/blog/org-icalendar-import/]] for more information.
+*** Installing
+#+begin_src bash
+$INSTALL ruby
+gem install date icalendar optparse tzinfo
+git clone https://tero.hasu.is/repo/icalendar-to-org.git
+#+end_src
+
+***  To Use
+#+begin_src bash :tangle no
+ics-to-org input.ics > output.org
+#+end_src
+
+** Setup a Software Access Point
+*** Linux-Wifi-Hotspot
+~linux-wifi-hotspot~ is an AUR package that allows you to easily create a wifi-hotspot without needing to mess around with ~hostapd~, ~dnsmasq~, and ~iptables~. It includes both a gui and cli interface.
+#+begin_src bash
+$INSTALL linux-wifi-hotspot
+#+end_src
+
+**** Use CLI
+#+begin_src bash :tangle no
+create_ap wlan0 eth0 MyAccessPoint MyPassPhrase
+#+end_src
+
+**** Use GUI
+#+begin_src bash :tangle no
+wihotspot
+#+end_src
+** Polybar Panel
+*** Install Polybar
+#+begin_src bash
+$INSTALL polybar
+mkdir -p $XDG_CONFIG_HOME/polybar
+#+end_src
+
+** GTK Theme
+*** Install Theme
+#+begin_src bash
+$INSTALL materia-gtk-theme themix-full-git
+#+end_src
+
+*** Configure GTK
+:PROPERTIES:
+:header-args:python: :tangle (concat (getenv $XDG_CONFIG_HOME) "/gtk-3.0/settings.ini")
+:END:
+#+begin_src conf
+[Settings]
+gtk-icon-theme-name = Materia
+gtk-theme-name = Materia
+gtk-application-prefer-dark-theme = true
+#+end_src conf
+
+** Display Managers
+*** Configure X11
+#+begin_src bash
+echo "Xft.dpi: 200" > ~/.Xresources
+#+end_src
+
+*** LightDM
+**** Install LightDM
+#+begin_src bash
+$INSTALL lightdm
+systemctl enable lightdm
+#+end_src
+
+**** Install LightDM Theme
+#+begin_src bash
+$INSTALL lightdm-webkit2-greeter lightdm-webkit-theme-litarvan
+#+end_src
+
+**** Configure LightDM
+:PROPERTIES:
+:header-args:conf: :tangle /sudo:://etc/lightdm/lightdm.conf
+:END:
+#+begin_src conf
+[LightDM]
+run-directory=/run/lightdm
+
+[Seat:*]
+greeter-session=lightdm-webkit2-greeter
+session-wrapper=/etc/lightdm/Xsession
+
+[XDMCPServer]
+[VNCServer]
+#+end_src
+
+**** Configure LightDM Greeter
+:PROPERTIES:
+:header-args:conf: :tangle /sudo:://etc/lightdm/lightdm-webkit2-greeter.conf
+:END:
+#+begin_src conf
+[greeter]
+debug_mode          = false
+detect_theme_errors = true
+screensaver_timeout = 300
+secure_mode         = true
+time_format         = LT
+time_language       = auto
+webkit_theme        = litarvan
+
+[branding]
+background_images = /usr/share/backgrounds
+logo              = /usr/share/pixmaps/archlinux-logo.svg
+user_image        = /usr/share/pixmaps/archlinux-user.svg
+#+end_src
+
+** Window Managers
+*** EXWM
+**** Install
+#+begin_src bash
+$INSTALL xorg dbus xorg-xrdb xorg-transset wmctrl
+#+end_src
+
+**** Desktop Entry
+#+begin_src conf :tangle /sudo:://usr/share/xsessions/exwm.desktop
+[Desktop Entry]
+Name=exwm
+Type=Application
+Icon=exwm
+Comment=The Emacs X Window Manager
+TryExec=emacs
+Exec=emacs
+#+end_src
+
+**** Download Packages not on Melpa
+***** EXWM Outer Gaps
+#+begin_src bash
+cd ~/.config/emacs/lisp && wget https://raw.githubusercontent.com/lucasgruss/exwm-outer-gaps/main/exwm-outer-gaps.el
+#+end_src
+
+***** Ivy Clipmenu
+#+begin_src bash
+cd ~/.config/emacs/lisp && wget https://raw.githubusercontent.com/mwglen/ivy-clipmenu.el/master/ivy-clipmenu.el
+#+end_src
+
+**** Background Image
+#+begin_src bash
+$INSTALL picom-ibhagwan-git feh
+#+end_src
+
+** Notifications
+*** Libnotify
 Libnotify is an implementation of the Desktop Notifications Specification.
 #+begin_src bash
 $INSTALL libnotify
 #+end_src
 
-** Dunst
+*** Dunst
 In order to use libnotify you have to install a notification server. I use Dunst.
 #+begin_src bash
-$INSTALL dunst dmenu
+$INSTALL dunst
 #+end_src
 
-*** Dunst Config
+**** Dunst Config
+:PROPERTIES:
+:header-args:conf: :tangle (concat (getenv $XDG_CONFIG_HOME) "/dunst/dunstrc")
+:END:
 See [[https://dunst-project.org/documentation/]]
-#+begin_src conf :tangle ~/.config/dunst/dunstrc
+#+begin_src conf
 [global]
     ### Location ###
     follow = keyboard
@@ -1109,7 +1508,17 @@ See [[https://dunst-project.org/documentation/]]
     #default_icon = /path/to/icon
 #+end_src
 
-** Battery Notifications
+*** Batsignal (Battery Alerts)
+#+begin_src bash
+$INSTALL batsignal
+systemctl enable batsignal
+systemctl start batsignal
+#+end_src
+
+**** Systemd Service
+:PROPERTIES:
+:header-args:conf: :tangle /sudo:://usr/lib/systemd/system/batsignal.service)
+:END:
 #+begin_src conf :tangle /sudo:://usr/lib/systemd/system/batsignal.service
 [Unit]
 Description=Lightweight battery daemon
@@ -1121,39 +1530,8 @@ ExecStart=/usr/bin/batsignal -f 90 -w 30 -c 20 -d 10
 WantedBy=multi-user.target
 #+end_src
 
-* Virtualization
-** Notes
-[[https://wiki.archlinux.org/title/libvirt]]
-[[https://serverfault.com/questions/208693/difference-between-kvm-and-qemu]]
-*** Basics
-- *KVM* stands for *Kernel-Based Virtual Machine*.
-- *Libvirt* provides a daemon and client to manipulate VMs for convenience
-- *QEMU* is the hypervisor. QEMU also includes a long list of peripheral emulators
-- *KQEMU* is a kernel module based off of QEMu that has optimizations for converting between a physical and virtual CPU of the same architecture (It can't just directly pass the code to the physical CPU, as it needs to replace privileged instructions with context switches). This served as a software-only "accelerator" and was made obsolete by KVM.
-- A *guest domain* is the same as a *virtual machine* when talking about OS Virtualization. You will see this term be brought up in ~virsh~ documentation
-- A *pool* is a location where storage volumes can be kept. *Volumes* are another name for *virtual disks* or *virtual machine images*. Pool locations can be a directory, network filesystem, or partition.
-- On the system-level, ~/var/lib/libvirt/images/~ will be activated by default. On a user session, ~virt-manager~ creates ~$HOME/VirtualMachines~
-- ~virsh~ and ~virt-manager~ can be used to manage pools, volumes, and domains
-- ~virt-install~ and ~virt-manager~ can be used to create new domains
-- ~virsh~ can be used to start, shutdown, destory (forceful shutdown), and autostart domains
-- ~virsh~ can also be used to quickly edit a domain's XML configuration
-*** Libvirt Networking
-- Four network types that can be created to connect a domain to:
-  1. *Bridge*: A virtual device. Shares data directly with a physical device
-  2. *Network*: A virtual network. Can share with other domains. Libvirt offers manyy virtual network modes, such as NAT mode, routed mode, and isolated mode.
-  3. *Macvtap*: Connect directly to a host physical interface
-  4. *User*: Local ability networking. use this only for a user-session
-- Libvirt handles DHCP and DNS with ~dnsmasq~, launching a separate instance for every virtual network. It also adds ~iptables~ rules for proper routing. Running ~dnsmasq~ on the host sytem could interfere with libvirts version.
-*** KVM vs QEMU Notes
-[[https://cloudbuilder.in/blogs/2014/03/09/kvm-and-qemu/]]
-- Modern processors support *virtualization extensions*. Intel uses VT-x and AMD uses AMD-V. These technologies directly map physical CPU instructions to virtual CPU instructions.
-- KVM is a kernel module that adds VT-x and AMD-V support.
-- QEMU can be configured to either use KVM for hardware acceleration, otherwise it will use TCG (Tiny Code Generate) to translate instructions
-- QEMU is a type-2 hypervisor but when paired with KVM it can act as a type-1 hypervisor
-*** 9P Protocol
-File system directories can be shared using the 9P protocol. See [[https://wiki.archlinux.org/title/libvirt#9p]] for more information.
-
-** Setup Virtualization
+** Virtualization
+*** General
 #+begin_src bash
 $INSTALL libvert qemu
 
@@ -1183,29 +1561,91 @@ sudo systemctl start libvirtd
 # Make sure to set user = /etc/libvirt/qemu.conf
 #+end_src
 
-** Wine
+*** Wine
 #+begin_src bash
 $INSTALL wine wine-mono wine-gecko
 #+end_src
 
-** OSX Machine
+*** OSX Machine
 To create an OSX Virtual Machine check out the ~OSX-KVM~ project and follow the instructions in their git repository.
 
-* Useful Applications
-** Firefox
+** Applications
+*** Gotop
+#+begin_src bash
+$INSTALL gotop cava alsi
+#+end_src
+
+*** Cava
+#+begin_src bash
+$INSTALL cava alsi
+#+end_src
+
+*** Alsi
+#+begin_src bash
+$INSTALL alsi
+#+end_src
+
+*** Emacs
+**** Install
+#+begin_src bash
+$INSTALL emacs
+#+end_src
+
+**** Fonts
+#+begin_src bash
+$INSTALL cantarell-fonts ttf-fira-code
+#+end_src
+
+**** Apply Theme
+#+begin_src bash
+ln ./doom-moonless-theme.el ~/.config/emacs/doom-moonless-theme.el
+#+end_src
+
+**** Tangle Config
+***** Setup Nim and Nimble
+#+begin_src bash
+$INSTALL nim nimble
+mkdir -p "$XDG_CONFIG_HOME"/nimble
+mkdir -p "$XDG_DATA_HOME"/nimble
+#+end_src
+
+***** Setup ntangle
+#+begin_src bash
+nimble install -y ntangle
+#+end_src
+
+***** Tangle Config
+#+begin_src bash
+"$XDG_DATA_HOME"/nimble/bin/ntangle emacs.org
+#+end_src
+
+**** Enable Daemon
+#+begin_src bash
+rm -rf ~/.emacs.d
+ln -s $XDG_CONFIG_HOME/emacs ~/.emacs.d
+ln -s ./backgrounds ~/backgrounds
+
+systemctl enable --user emacs
+systemctl start --user emacs
+#+end_src
+
+*** Firefox
 #+begin_src bash
 $INSTALL firefox
 #+end_src
 
-** Qutebrowser
-*** Installation
+*** Qutebrowser
+**** Installation
 #+begin_src bash
 $INSTALL qutebrowser
 #+end_src
 
-*** Configuration
-#+begin_src python :tangle ./.config/qutebrowser/config.py
-# Change the argument to True to still load settings configured via autoconfig.yml
+**** Configuration
+:PROPERTIES:
+:header-args:python: :tangle (concat (getenv $XDG_CONFIG_HOME) "/qutebrowser/config.py")
+:END:
+#+begin_src python
+# Set to True to load settings configured via autoconfig.yml
 config.load_autoconfig(False)
 c.qt.highdpi = True
 c.auto_save.session = True
@@ -1300,96 +1740,90 @@ config.set('content.javascript.enabled', True, 'chrome://*/*')
 config.set('content.javascript.enabled', True, 'qute://*/*')
 #+end_src
 
-*** Add Solarized Themes
+**** Solarized Themes
 #+begin_src bash
 mkdir -p $XDG_CONFIG_HOME/qutebrowser
 cd $XDG_CONFIG_HOME/qutebrowser && git clone https://github.com/alphapapa/solarized-everything-css
 #+end_src
 
-** Surf Browser
-#+begin_src bash
-$INSTALL surf dmenu
-#+end_src
-
-** Bitwarden
+*** Bitwarden
 #+begin_src bash
 $INSTALL bitwarden bitwarden-cli
 #+end_src
 
-** Spotify
+*** Spotify
 #+begin_src bash
 $INSTALL spotify
 #+end_src
 
-** Discord
+*** Discord
 #+begin_src bash
 $INSTALL discord
 #+end_src
 
-** Git-Annex
+*** Git-Annex
 #+begin_src bash
 $INSTALL git-annex
 #+end_src
 
-** Redshift
+*** Redshift
 #+begin_src bash
 $INSTALL redshift
 #+end_src
 
-** OBS Studio
+*** OBS Studio
 #+begin_src bash
 $INSTALL obs-studio
 #+end_src
 
-** Podman
+*** Podman
 #+begin_src bash
 $INSTALL podman
 echo "unqualified-search-registries = ['docker.io']" \
     | sudo tee /etc/containers/registries.conf
 #+end_src
 
-** Setup Neovim
+*** Setup Neovim
 #+begin_src bash
 $INSTALL neovim
 mkdir -p $XDG_CONFIG_HOME/nvim
 curl -fLo $XDG_DATA_HOME/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-cat <<EOT > $XDG_CONFIG_HOME/nvim/init.vim
-call plug#begin('$XDG_CONFIG_HOME/nvim/plugged')
-Plug 'jacoborus/tender.vim'
-Plug 'LnL7/vim-nix'
-Plug 'rust-lang/rust.vim'
-Plug 'vim-airline/vim-airline'
-Plug 'vim-airline/vim-airline-themes'
-Plug 'airblade/vim-gitgutter'
-Plug 'tpope/vim-surround'
-Plug 'tpope/vim-fugitive'
-Plug 'tpope/vim-commentary'
-call plug#end()
-
-set number relativenumber       " set line-numbers to be relative
-set nohlsearch                  " no highlight search
-set mouse=a                     " recognize and enable mouse
-set tabstop=4                   " show existing tab as 4 spaces
-set shiftwidth=4                " use 4 spaces when indenting with '>'
-set expandtab                   " on pressing tab, insert 4 spaces
-set termguicolors               " use terminal colors
-let g:airline_powerlin_fonts=1  " set airline theme
-colorscheme tender              " change the colorscheme
-let g:airline_theme = 'tender'  " change airline colorscheme
-
-EOT
-
-cat <<EOT >> $ZDOTDIR/.zshrc
-# neovim config
-alias vi=nvim
-alias vim=nvim
-export EDITOR=nvim
-export VISUAL=nvim
-
-EOT
 #+end_src
 
-* Change Shell
+** Change Shell
 #+begin_src bash
 sudo chsh -s /usr/bin/zsh $(whoami)
+#+end_src
+
+* After Setup
+** Exporting PGP Keys
+#+begin_src bash
+gpg --output public.pgp --armor --export username@email
+gpg --output private.pgp --armor --export-secret-key username@email
+
+# Backup Private Keys
+gpg --output backupkeys.pgp --armor --export-secret-keys --export-options export-backup user@email
+#+end_src
+
+** Linux Password Manager
+#+begin_src bash :tangle no
+$INSTALL -S pass
+pass init "62EC2C26" # Use the last 8 characters of your GPG key's ID
+#+end_src
+
+The =passfs= addon for firefox allows you to use your password store while browsing in firefox
+The =Password Store= android app allows you to access your passwords on  
+
+** Mouse Sensitivity
+#+begin_src bash :tangle no
+Mouse=$(xinput list |grep -i M720 | awk -F= '{ print $2}'| awk '{print $1}'| awk 'BEGIN{ RS = "" ; FS = "\n" }{print $1}')
+
+xinput set-prop $Mouse "libinput Middle Emulation Enabled" 1
+xinput set-prop $Mouse "libinput Scroll Method Enabled" 0, 0, 1
+
+# Set mouse acceleration speed (0 is off, higher is slower)
+xinput set-prop $Mouse "libinput Accel Speed" 0.5
+
+# Set sensitivity with the last number (0 is off, higher is slower)
+xinput set-prop $Mouse "Coordinate Transformation Matrix" 1 0 0 0 1 0 0 0 1
 #+end_src

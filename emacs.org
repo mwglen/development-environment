@@ -1,50 +1,49 @@
 #+title: Emacs Configuration
-#+PROPERTY: header-args:emacs-lisp :tangle ./.config/emacs/init.el :results none
+#+PROPERTY: header-args:emacs-lisp :tangle ~/.emacs.d/init.el :results none
 * Early Init
 ** Warning
-#+begin_src emacs-lisp :tangle ./.config/emacs/early-init.el
-;;; early-init.el -*- lexical-binding: t; -*-
+#+begin_src emacs-lisp
 ;; NOTE: This file is generated from emacs.org
 #+end_src
 
 ** Increase Garbage Collection Threshold
 *NOTE:* The default is 800 kilobytes. The threshold is measured in bytes.
-#+begin_src emacs-lisp :tangle ./.config/emacs/early-init.el
+#+begin_src emacs-lisp
 (setq gc-cons-threshold (* 1 1000 1000 1000))
 #+end_src
 
 ** Startup Performance
-#+begin_src emacs-lisp :tangle ./.config/emacs/early-init.el
+#+begin_src emacs-lisp
 (defvar file-name-handler-alist-original file-name-handler-alist)
 (setq file-name-handler-alist nil)
 #+end_src
 
 ** Start Native Compilation
-#+begin_src emacs-lisp :tangle ./.config/emacs/early-init.el
+#+begin_src emacs-lisp
 (defvar file-name-handler-alist-original file-name-handler-alist)
 (setq file-name-handler-alist nil)
 #+end_src
 
 * Intit
 ** Warning
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 ;;; init.el
 ;; NOTE: This file is generated from emacs.org
 #+end_src
 
 * Package Management
 ** Specify Load Path
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (add-to-list 'load-path "~/.emacs.d/lisp")
 #+end_src
 
 ** Enable AOT Compilation of External Packages
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (setq package-native-compile t)
 #+end_src
 
 ** Setup Package Sources
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (require 'package)
 (setq package-archives
       '(("melpa" . "https://melpa.org/packages/")
@@ -57,7 +56,7 @@
 #+end_src
 
 ** Setup Use-Package
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))
 
@@ -66,7 +65,7 @@
 #+end_src
 
 ** Automatic Package Updates
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package auto-package-update
   :custom
   (auto-package-update-interval 7)
@@ -78,7 +77,7 @@
 #+end_src
 
 ** No Littering
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package no-littering)
 (setq auto-save-file-name-transforms
       `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
@@ -88,21 +87,21 @@
 #+end_src
 
 ** Restart Emacs
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package restart-emacs
   :commands (restart-emacs))
 #+end_src
 
 * Performance Improvements
 ** Asynchronous Processes
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package async
   :init (dired-async-mode 1))
 #+end_src
 
 * User Interface
 ** Clear Default UI
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (setq inhibit-startup-message t)
 (scroll-bar-mode -1)
 (tool-bar-mode -1)
@@ -111,27 +110,27 @@
 #+end_src
 
 ** Set Fringe Mode Size
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (set-fringe-mode 10)
 #+end_src
 
 ** Disable Cursor Blinking
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (blink-cursor-mode -1)
 #+end_src
 
 ** Disable Bell
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (setq ring-bell-function 'ignore)
 #+end_src
 
 ** Enable "y/n" Answers
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (fset 'yes-or-no-p 'y-or-n-p)
 #+end_src
 
 ** Set UTF-8 Encoding
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (setq locale-coding-system 'utf-8)
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
@@ -140,7 +139,7 @@
 #+end_src
 
 ** Line Numbers
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (column-number-mode)
 (global-display-line-numbers-mode t)
 (setq display-line-numbers-type 'relative)
@@ -156,14 +155,14 @@
 #+end_src
 
 ** Good Scrolling
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package good-scroll
   :config
   (good-scroll-mode 1))
 #+end_src
 
 ** Font Configuration
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (set-face-attribute 'default nil
   :family "Fira Code Retina"
   :height 120)
@@ -183,7 +182,7 @@
 #+end_src
 
 ** Edwina
-#+begin_src emacs-lisp :tangle no
+#+begi
 (use-package edwina
   :config
   (setq display-buffer-base-action
@@ -193,7 +192,7 @@
 #+end_src
 
 ** Buffer Move
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package buffer-move
   :commands (buf-move-up buf-move-down buf-move-left buf-move-right))
 (global-set-key [?\s-k] 'buf-move-up)
@@ -203,15 +202,15 @@
 #+end_src
 
 ** Add Outer Gaps
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(with-eval-after-load
-  (require 'exwm-outer-gaps))
-  ;(exwm-outer-gaps-mode 1))
+#+begin_src emacs-lisp
+;(with-eval-after-load
+;  (require 'exwm-outer-gaps))
+;  (exwm-outer-gaps-mode 1))
 #+end_src
 
 ** Add Window Dividers
 Could work as gaps, but can't change transparency
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 ;(setq window-divider-default-places t)
 ;(setq window-divider-default-right-width 50)
 ;(setq window-divider-default-bottom-width 50)
@@ -220,7 +219,7 @@ Could work as gaps, but can't change transparency
 
 * Theme Configuration
 ** Setup Theme
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 ;; Good Dark Themes: doom-moonless doom-tomorrow-night
 ;; Good Light Themes: doom-acario-light
 (use-package doom-themes
@@ -228,7 +227,7 @@ Could work as gaps, but can't change transparency
 #+end_src
 
 ** Use Transparent Frames
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (defun transparency/on ()
     (interactive)
     (set-frame-parameter (selected-frame) 'alpha '(80 . 80))
@@ -242,32 +241,15 @@ Could work as gaps, but can't change transparency
 (transparency/on)
 #+end_src
 
-** Emacs Dashboard
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
-(use-package dashboard
-  :config
-  (dashboard-setup-startup-hook)
-  (setq dashboard-center-content t)
-  (setq dashboard-startup-banner 1)
-  (setq dashboard-week-agenda t)
-  (setq initial-buffer-choice
-  (lambda () (get-buffer "*dashboard*")))
-  (setq dashboard-set-init-info t)
-  (setq dashboard-items '((recents . 5)
-                          (bookmarks . 5)
-                          (projects . 5)
-                          (agenda . 5))))
-#+end_src
-
 ** All The Icons
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package all-the-icons)
 #+end_src
 
 ** Doom Modeline
 *NOTE:* The first time you load your configuration on a new machine, you'll need to run `M-x all-the-icons-install-fonts` so that mode line icons display correctly.
 
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package doom-modeline
   :init (doom-modeline-mode 1)
   :custom
@@ -303,7 +285,7 @@ Could work as gaps, but can't change transparency
 
 * Desktop Environment
 ** Polybar
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (defvar polybar/process nil
   "Holds the process of the running Polybar instance, if any")
 
@@ -323,7 +305,7 @@ Could work as gaps, but can't change transparency
   
 ** Setup EXWM
 *** Set Wallpaper
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (defun wallpaper/use-default ()
   (interactive)
   (start-process-shell-command
@@ -336,7 +318,7 @@ Could work as gaps, but can't change transparency
 #+end_src
 
 *** Add Transparency
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (defconst transsetDefault ".6")
 (defun transset/on ()
   (interactive)
@@ -360,7 +342,7 @@ Could work as gaps, but can't change transparency
 #+end_src
 
 *** Run in Background
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (defun process/run-in-background (command)
   (let ((command-parts (split-string command "[ ]+")))
     (apply #'call-process `(,(car command-parts) nil 0 nil ,@(cdr command-parts)))))
@@ -368,7 +350,7 @@ Could work as gaps, but can't change transparency
 
 ***  Setup EXWM
 **** Setup Polybar for EXWM
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (defun exwm/start-polybar ()
     (polybar/start)
     (add-hook 'exwm-workspace-switch-hook
@@ -384,7 +366,7 @@ Could work as gaps, but can't change transparency
 #+end_src
 
 **** Setup Pinentry
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
   ;; Let emacs handle queries for gpg passwords
   (defun pinentry-emacs (desc prompt ok error)
     (let ((str (read-passwd
@@ -395,7 +377,7 @@ Could work as gaps, but can't change transparency
 #+end_src
 
 **** Set Prefix Keys
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (defun exwm/set-prefix-keys ()
   (setq exwm-input-prefix-keys
         '(?\C-x
@@ -422,7 +404,7 @@ Could work as gaps, but can't change transparency
 #+end_src
 
 **** Set Global Keys
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (defun exwm/set-global-keys ()
   (setq exwm-input-global-keys
         `(
@@ -467,7 +449,7 @@ Could work as gaps, but can't change transparency
 #+end_src
 
 **** Setup Resolution
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (defun exwm/set-resolution ()
   (require 'exwm-randr)
   (exwm-randr-enable)
@@ -475,7 +457,7 @@ Could work as gaps, but can't change transparency
 #+end_src
 
 **** Start EXWM
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (defun exwm/update-class ()
   (exwm-workspace-rename-buffer exwm-class-name))
 
@@ -500,8 +482,7 @@ Could work as gaps, but can't change transparency
     (exwm-floating-move
      (+ (- pos-x) x) (+ (- pos-y) y))))
 
-(use-package exwm
-  :config
+(with-eval-after-load 'exwm
   (exwm/set-resolution)
   (start-process-shell-command "picom" nil "picom")
   (wallpaper/use-default)
@@ -523,14 +504,14 @@ Could work as gaps, but can't change transparency
 #+end_src
 
 ** exwm-evil-firefox
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package exwm-firefox-evil
   :after exwm
   :hook (exwm-manage-finish-hook . exwm-firefox-evil-activate-if-firefox))
 #+end_src
 
 ** Audio Support
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (with-eval-after-load 'exwm
     (defconst volumeModifier "4")
 
@@ -564,7 +545,7 @@ Could work as gaps, but can't change transparency
 #+end_src
 
 ** Backlight Support
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (with-eval-after-load 'exwm
   
     (defun backlight/raise-brightness ()
@@ -580,13 +561,13 @@ Could work as gaps, but can't change transparency
 #+end_src
 
 ** Bluetooth Support
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package bluetooth)
 #+end_src
 
 * Keybinding Configuration
 ** Evil Mode
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package evil
   :init
   (setq evil-want-integration t)
@@ -613,7 +594,7 @@ Could work as gaps, but can't change transparency
 #+end_src
 
 *** Evil Collection
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package evil-collection
   :after evil
   :config
@@ -621,7 +602,7 @@ Could work as gaps, but can't change transparency
 #+end_src
 
 ** General
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package general
   :after evil
   :config
@@ -636,7 +617,7 @@ Could work as gaps, but can't change transparency
 
 * Autocomplete Modes
 ** Ivy
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package ivy
   :diminish
   :bind (("C-s" . swiper)
@@ -656,7 +637,7 @@ Could work as gaps, but can't change transparency
 #+end_src
 
 *** Ivy-PosFrame
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package ivy-posframe
   :after ivy
   :config
@@ -671,19 +652,19 @@ Could work as gaps, but can't change transparency
 #+end_src
 
 *** Ivy Clipmenu
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package ivy-clipmenu)
 #+end_src
 
 *** Ivy-Rich
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package ivy-rich
   :after ivy
   :init (ivy-rich-mode 1))
 #+end_src
 
 *** Ivy-Prescient
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package ivy-prescient
   :after counsel
   :custom
@@ -694,7 +675,7 @@ Could work as gaps, but can't change transparency
 #+end_src
 
 ** Counsel
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package counsel
   :bind (("C-M-j" . 'counsel-switch-buffer)
          :map minibuffer-local-map
@@ -707,13 +688,13 @@ Could work as gaps, but can't change transparency
 
 * Other Modes
 ** Makefile Mode
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package make-mode
   :mode (("Makefile" . makefile-gmake-mode)))
 #+end_src
    
 ** Helpful
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package helpful
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
   :custom
@@ -727,19 +708,19 @@ Could work as gaps, but can't change transparency
 #+end_src
 
 ** Focus Mode
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package focus)
 #+end_src
 
 ** Solaire Mode
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package solaire-mode
   :config
   (solaire-global-mode +1))
 #+end_src
 
 ** Treemacs
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package treemacs
   :after general
   :config
@@ -764,7 +745,7 @@ Could work as gaps, but can't change transparency
 
 * Org Mode
 ** Better Font Faces
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (defun org/font-setup ()
   ;; Replace list hyphen with dot
   (font-lock-add-keywords 'org-mode '(("^ *\\([-]\\) "
@@ -774,7 +755,7 @@ Could work as gaps, but can't change transparency
 #+end_src
 
 ** Basic Config
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (setq-default indent-tabs-mode nil)
 (defun org/setup ()
   (org-indent-mode 1)
@@ -796,7 +777,7 @@ Could work as gaps, but can't change transparency
 *** Nicer Heading Bullets
 [[https://github.com/sabof/org-bullets][org-bullets]] replaces the heading stars in =org-mode= buffers with nicer looking characters that you can control.  Another option for this is [[https://github.com/integral-dw/org-superstar-mode][org-superstar-mode]] which we may cover in a later video.
 
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package org-bullets
   :hook (org-mode . org-bullets-mode)
   :custom
@@ -805,14 +786,14 @@ Could work as gaps, but can't change transparency
 #+end_src
 
 *** Center Org Buffers
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (setq-default fill-column 80)
 (use-package olivetti
   :hook (org-mode . olivetti-mode))
 #+end_src
 
 *** Drag and Drop Images
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package org-download
   :after org
   :config
@@ -820,7 +801,7 @@ Could work as gaps, but can't change transparency
 #+end_src
 
 ** Latex Support
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package auctex
   :defer t
   :config
@@ -840,7 +821,7 @@ Could work as gaps, but can't change transparency
 #+end_src
 
 ** Configure Babel Languages
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (with-eval-after-load 'org
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -853,7 +834,7 @@ Could work as gaps, but can't change transparency
 ** Structure Templates
 Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure templates]] feature enables you to quickly insert code blocks into your Org files in combination with =org-tempo= by typing =<= followed by the template name like =el= or =py= and then press =TAB=.
 
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (with-eval-after-load 'org
   (require 'org-tempo)
   (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
@@ -862,7 +843,7 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
 #+end_src
 
 ** Auto-tangle Configuration Files
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (defun babel/tangle-config ()
   (when (member (file-name-nondirectory (buffer-file-name))
                 '("emacs.org"
@@ -875,7 +856,7 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
 #+end_src
 
 ** Org-Alert
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 (use-package org-alert
   :ensure t
   :config
@@ -887,7 +868,7 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
 
 * Development
 ** Projectile
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package projectile
   :diminish projectile-mode
   :config (projectile-mode)
@@ -906,7 +887,7 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
 #+end_src
 
 ** Magit
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package magit
   :commands magit-status
   :custom
@@ -917,14 +898,14 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
 #+end_src
 
 ** Evil Commentary
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package evil-commentary
   :config (evil-commentary-mode))
 ;; :bind ("M-/" . evilnc-comment-or-uncomment-lines))
 #+end_src
 
 ** Rainbow Delimiters
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode)
   :config (show-paren-mode 1))
@@ -932,12 +913,12 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
 
 * Flyspell
 ** Popup Buffers
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package flyspell-correct-popup)
 #+end_src bash
 
 ** Start Flyspell with Certain Modes
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (dolist (hook '(text-mode-hook org-mode-hook))
   (add-hook hook (lambda () (flyspell-mode 1))))
 (dolist (hook '(change-log-mode-hook log-edit-mode-hook))
@@ -947,7 +928,7 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
 #+end_src bash
 
 ** Check Spelling On Demand
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (defun flyspell/english ()
   (interactive)
   (ispell-change-dictionary "english")
@@ -961,7 +942,7 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
 
 * LSP-Mode
 ** Basic Setup
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (defun lsp/mode-setup ()
   (setq lsp-headerline-breadcrumb-segments
         '(path-up-to-project file symbols))
@@ -996,7 +977,7 @@ Allows you to quckly find definitions.
 #+end_src
 
 ** Company Mode
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package company
   :after lsp-mode
   :hook (lsp-mode . company-mode)
@@ -1010,13 +991,13 @@ Allows you to quckly find definitions.
 #+end_src
 
 **** Company Box Mode
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package company-box
   :hook (company-mode . company-box-mode))
 #+end_src
 
 ** TypeScript
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package typescript-mode
   :mode "\\.ts\\'"
   :hook (typescript-mode . lsp-deferred)
@@ -1025,7 +1006,7 @@ Allows you to quckly find definitions.
 #+end_src
 
 ** Rust
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package rust-mode
   :mode "\\.rs\\'"
   :hook (rust-mode-hook . lsp-deferred))
@@ -1033,7 +1014,7 @@ Allows you to quckly find definitions.
 
 * File Management
 ** Dired
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package dired
   :ensure nil
   :bind (("C-x C-j" . dired-jump))
@@ -1064,7 +1045,7 @@ Allows you to quckly find definitions.
 
 * Terminals
 ** Term Mode
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package term
   :commands term
   :config
@@ -1073,14 +1054,14 @@ Allows you to quckly find definitions.
 
 *** Better term-mode colors
 *NOTE:* This package requires =ncurses= to be installed on your machine.
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package eterm-256color
   :hook (term-mode . eterm-256color-mode))
 #+end_src
 
 ** vterm
 *NOTE:* Make sure that you have the [[https://github.com/akermu/emacs-libvterm/#requirements][necessary dependencies]] installed before trying to use =vterm=.
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package vterm
   :commands vterm
   :config
@@ -1090,7 +1071,7 @@ Allows you to quckly find definitions.
 
 * WSL Config
 ** Copy and Paste
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (defun wsl-copy (start end)
   (interactive "r")
   (shell-command-on-region start end "clip.exe")
@@ -1111,18 +1092,18 @@ Allows you to quckly find definitions.
 
 * Closing Configuration
 ** Reduce Garbage Collector Threshold
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (setq gc-cons-threshold (* 1 1000 1000 1000))
 (setq garbage-collection-messages t)
 #+end_src
 
 ** Enable File Name Handler
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (setq file-name-handler-alist file-name-handler-alist-original)
 #+end_src
 
 ** Enable Garbage Collector Magic Hack
-#+begin_src emacs-lisp :tangle ./.config/emacs/init.el
+#+begin_src emacs-lisp
 (use-package gcmh
   :config
   (setq gcmh-high-cons-threshold (* 100 1000 1000))
