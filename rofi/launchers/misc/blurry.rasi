@@ -8,7 +8,7 @@
  */
 
 configuration {
-	font:							"Noto Sans Bold 10";
+	font:							"Noto Sans Bold 20";
     show-icons:                     true;
 	icon-theme: 					"Papirus";
     display-drun: 					"";
@@ -18,11 +18,12 @@ configuration {
 }
 
 * {
-    background:                     #00000000;
-    background-alt:              	#00000000;
-    background-bar:                 #f2f2f215;
-    foreground:                     #f2f2f2EE;
-    accent:			            	#3DAEE966;
+
+    /* last two digits control transparency */
+    background:                     #00000011;
+    background-alt:              	#00000011;
+    foreground:                     #f2f2f2ee;
+    selected:			            #aa1111ff;
 }
 
 window {
@@ -40,10 +41,10 @@ window {
 
 prompt {
     enabled: 						true;
-	padding: 						0.30% 1% 0% -0.5%;
+	padding: 						0.3% 1% 0.3% 0.3%;
 	background-color: 				@background-alt;
 	text-color: 					@foreground;
-	font:							"FantasqueSansMono Nerd Font 12";
+	font:							"FantasqueSansMono Nerd Font 26";
 }
 
 entry {
@@ -53,20 +54,22 @@ entry {
     expand:                         true;
     horizontal-align:               0;
     placeholder:                    "Search";
-    padding:                        0.10% 0% 0% 0%;
+    padding:                        0% 0% 0% 0%;
     blink:                          true;
+    border:                        0% 0% 0% 0%;
+	font:							"Noto Sans Bold 25";
 }
 
 inputbar {
 	children: 						[ prompt, entry ];
-    background-color:               @background-bar;
+    background-color:               @background;
     text-color:                     @foreground;
     expand:                         false;
-	border:							0% 0% 0% 0%;
+	border:							0.5% 0.3% 0.5% 0.3%;
     border-radius:                  12px;
-	border-color:					@accent;
+	border-color:					@selected;
     margin:                         0% 0% 0% 0%;
-    padding:                        1.5%;
+    padding:                        0% 0% 0% 0%;
 }
 
 listview {
@@ -83,7 +86,7 @@ mainbox {
     background-color:               @background-alt;
 	border:							0% 0% 0% 0%;
     border-radius:                  0% 0% 0% 0%;
-	border-color:					@accent;
+	border-color:					@selected;
     children:                       [ inputbar, listview ];
     spacing:                       	2%;
     padding:                        2% 1% 2% 1%;
@@ -102,7 +105,7 @@ element-icon {
     text-color:       				inherit;
     horizontal-align:               0.5;
     vertical-align:                 0.5;
-    size:                           64px;
+    size:                           128px;
     border:                         0px;
 }
 
@@ -115,10 +118,17 @@ element-text {
     margin:                         0.5% 0.5% -0.5% 0.5%;
 }
 
+
+element-text selected {
+    background-color:               @selected;
+}
+element-icon selected {
+    background-color:               @selected;
+}
 element selected {
-    background-color:               @background-bar;
+    background-color:               @selected;
     text-color:                     @foreground;
 	border:							0% 0% 0% 0%;
     border-radius:                  12px;
-    border-color:                  	@accent;
+    border-color:                  	@selected;
 }

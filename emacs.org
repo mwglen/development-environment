@@ -437,15 +437,7 @@ Could work as gaps, but can't change transparency
           ([?\s-`] . (lambda () (interactive)
                        (exwm-workspace-switch-create 0)))
 
-          ([XF86AudioPrev] . audio/prev)
-          ([XF86AudioNext] . audio/next)
-          ([XF86AudioPlay] . audio/play-pause)
-          ([XF86AudioStop] . audio/stop)
-          ([XF86AudioMute] . audio/mute)
-          ([XF86AudioRaiseVolume] . audio/raise-volume)
-          ([XF86AudioLowerVolume] . audio/lower-volume)
-          ([XF86MonBrightnessUp] . backlight/raise-brightness)
-          ([XF86MonBrightnessDown] . backlight/lower-brightness))))
+          )))
 #+end_src
 
 **** Setup Resolution
@@ -485,6 +477,7 @@ Could work as gaps, but can't change transparency
 (with-eval-after-load 'exwm
   (exwm/set-resolution)
   (start-process-shell-command "picom" nil "picom")
+  (start-process-shell-command "xbindkeys" nil "xbindkeys")
   (wallpaper/use-default)
   (add-hook 'exwm-update-class-hook #'exwm/update-class)
   (add-hook 'exwm-update-title-hook #'exwm/update-title)
@@ -550,12 +543,12 @@ Could work as gaps, but can't change transparency
   
     (defun backlight/raise-brightness ()
     (interactive)
-    (start-process "raise-volume" nil
+    (start-process "raise-brightness" nil
                     "brightnessctl" "set" "+5%"))
 
     (defun backlight/lower-brightness ()
     (interactive)
-    (start-process "lower-volume" nil
+    (start-process "lower-brightness" nil
                     "brightnessctl" "set" "5%-")))
 
 #+end_src

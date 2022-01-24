@@ -268,7 +268,7 @@ $INSTALL usbutils usbip
 
 *** Bluetooth
 #+begin_src bash
-$INSTALL bluez bluez-utils bluetooth-autoconnect
+$INSTALL bluez bluez-utils bluetooth-autoconnect pulseaudio-bluetooth
 sudo systemctl enable bluetooth
 sudo systemctl start bluetooth
 sudo systemctl enable bluetooth-autoconnect
@@ -285,9 +285,57 @@ sudo systemctl start NetworkManager
 #+end_src
 
 *** Audio
+**** Install
 #+begin_src bash
-$INSTALL pulseaudio-bluetooth alsa-utils pavucontrol playerctl
+$INSTALL alsa-utils pavucontrol
 #+end_src bash
+
+**** Set XF86 Keys
+#+begin_src conf :tangle ~/.xbindkeysrc
+### Audio Control ###
+"pactl set-sink-volume @DEFAULT_SINK@ +10%"
+    XF86AudioRaiseVolume
+"pactl set-sink-volume @DEFAULT_SINK@ -10%"
+    XF86AudioLowerVolume
+"pactl set-sink-mute @DEFAULT_SINK@ toggle"
+    XF86AudioMute
+"pactl set-source-mute @DEFAULT_SOURCE@ toggle"
+    XF86AudioMicMute
+#+end_src
+
+*** Media
+**** Install
+#+begin_src bash
+$INSTALL playerctl
+#+end_src
+#
+**** Set XF86 Keys
+#+begin_src conf :tangle ~/.xbindkeysrc
+### Media Control ###
+"playerctl previous"
+    XF86AudioPrev
+"playerctl next"
+    XF86AudioNext
+"playerctl play-pause"
+    XF86AudioPlay
+"playerctl stop"
+    XF86AudioStop
+#+end_src
+
+*** Brightness
+**** Install
+#+begin_src bash
+$INSTALL brightnessctl
+##+end_src
+
+**** Set XF86 Keys
+#+begin_src conf :tangle ~/.xbindkeysrc
+### Brightness Control ###
+"brightnessctl set 10%+"
+    XF86MonBrightnessUp
+"brightnessctl set 10%-"
+    XF86MonBrightnessDown
+#+end_src
 
 *** Printing/Scanning
 **** Base Drivers
