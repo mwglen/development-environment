@@ -1,51 +1,36 @@
 #+title: Guide to Setup Development Environment
-#+PROPERTY: header-args :results none
-* Manual Configuration
-** Setup GRUB
-*** Set GRUB to Remember Last Selection
-1. Put the following in ~/etc/default/grub~
-   #+begin_src bash :tangle no
-   GRUB_DEFAULT=saved GRUB_SAVEDEFAULT=true
-   #+end_src
-
-*** TODO Add a GRUB Theme
-
-*** Enable Hibernation
-1. To enable hibernation, make sure that you have a swap partition. It is best to make the partition larger than the total amount of RAM on your system.
-
-2. In ~/etc/default/grub~, add ~resume=/dev/nvme0n1p2~ to =GRUB_CMDLINE_LINUX=. Make sure to change "nvme0n1p2" with the name of your swap partition
-   
-3. Rebuild grub using the new config by running ~sudo grub-mkconfig -o ~/boot/grub/grub.cfg~
-
-4. Reset your computer to complete the process
-
-Now you can use ~sudo systemctl hibernate~ to hibernate and ~sudo systmectl hybrid-sleep~ to sleep. I recommend aliasing these to ~hibernate~ and ~hybrid-sleep~. I also recommend changing the behavior of the system keys to all hibernate the computer
-
-*** Change Behavior of System Keys
-1. In ~/etc/systemd/logind.conf~, edit =HandleSuspendKey=, =HandleHibernateKey=, =HandlePowerKey=, and =HandleLidSwitch=
-
-2. Reset your computer to complete the process
-
-** TODO Specify SSD Sector Size
-#+begin_src bash
+#+PROPERTY: header-args :results none :mkdirp yes
+* Configuration Files
+** Grub
+#+begin_src conf :tangle /sudo:://etc/default/grub
+GRUB_DEFAULT=saved
+GRUB_SAVEDEFAULT=true
+GRUB_TIMEOUT=5
+GRUB_DISTRIBUTOR="Arch"
+GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet"
+GRUB_CMDLINE_LINUX="resume=/dev/nvme0n1p2"
+GRUB_DISABLE_OS_PROBER=false
+GRUB_THEME="/boot/grub/themes/vimix/theme.txt"
+GRUB_PRELOAD_MODULES="part_gpt part_msdos"
+GRUB_TIMEOUT_STYLE=menu
+GRUB_TERMINAL_INPUT=console
+GRUB_GFXMODE=auto
+GRUB_GFXPAYLOAD_LINUX=keep
+GRUB_DISABLE_RECOVERY=true
 #+end_src
 
-** Enable SSD Trim
-Trim is a feature supported by most SSDs that prevents unnecessary writes and erases to lengthen your SSD's lifespan. It also increases the performance of your SSD. SSDs can only erase blocks not pages, so before it can delete a page it must save a backup of the rest of the block and then rewrite the backup after the erase. This sequence required to erase a page is known as *write amplification*. This feature allows the OS to tell the SSD what it can write over so that it doesn't have to use the erase function to begin with.
+** Logind
+#+begin_src conf :tangle /sudo:://etc/systemd/logind.conf
+[Login]
+HandlePowerKey=hibernate
+HandleSuspendKey=hibernate
+HandleHibernateKey=hibernate
+#HandleLidSwitch=suspend
+#+end_src
 
-1. Make sure that your SSD supports TRIM before using the feature by running ~lsblk --discard~ and finding non-zero values for =DISC-GRAN= and =DISC-MAX=.
-
-2. Run the following commands to enable trim:
-   #+begin_src bash
-   sudo systemctl enable fstrim.timer
-   #+end_src
-
-3. You should now find that fstrim set up a weekly timer in ~systemctl list-timers~.
-   
-* Configuration Files
 ** ZSH Config
 :PROPERTIES:
-:header-args:bash: :tangle (concat (getenv $ZDOTDIR) "/.zshrc")
+:header-args:bash: :tangle ~/.zshrc
 :END:
 *** General
 #+begin_src bash
@@ -114,12 +99,12 @@ vterm_printf(){
 
 *** Ntangle
 #+begin_src bash
-alias ntangle="\$XDG_DATA_HOME"/nimble/bin/ntangle
+alias ntangle=~/.nimble/bin/ntangle
 #+end_src
 
 * Script
 :PROPERTIES:
-:header-args:bash: :tangle ./setup.sh
+:header-args:bash: :tangle ./scripts/setup.sh
 :END:
 ** Script Headers
 *** Use Bash
@@ -127,17 +112,17 @@ alias ntangle="\$XDG_DATA_HOME"/nimble/bin/ntangle
 #!/bin/bash
 #+end_src
 
-*** Stop  Script on Error
+*** Stop Script on Error
 #+begin_src bash
 set -e
 #+end_src
 
-*** Start
+*** Give Verbose Output
 #+begin_src bash
 set -v
 #+end_src
 
-***  Warning
+*** Warning
 #+begin_src bash
 # NOTE: This file is generated from setup.org
 #+end_src
@@ -181,7 +166,7 @@ mkdir -p $XDG_STATE_HOME
 ** Setup Yay
 *** Install
 #+begin_src bash
-if ! (pacman -Qs ylay > /dev/null); then
+if ! (pacman -Qs yay > /dev/null); then
     if (pacman -Qs fakeroot-tcp > /dev/null); then
         sudo pacman -Syyu --needed git base-devel \ && git clone https://aur.archlinux.org/yay.git \ && cd yay && yes | makepkg -si
     else # cannot use --noconfirm if fakeroot-tcp is installed
@@ -197,7 +182,7 @@ fi
 #+begin_src bash
 export INSTALL="yay -S --noconfirm --needed"
 export INSTALL_LOCAL="yay -U --noconfirm --needed"
-export REMOVE="yay -Rns --noconfirm --needed"
+export REMOVE="yay -R --noconfirm --needed"
 export UPDATE="yay -Syyu --noconfirm --needed"
 export SEARCH="yay -Qs"
 #+end_src
@@ -248,17 +233,15 @@ $INSTALL alacritty
 
 **** Configure
 :PROPERTIES:
-:header-args:conf: :tangle (concat (getenv $XDG_CONFIG_HOME) "/alacritty/alacritty.yml")
+:header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/alacritty/alacritty.yml")
 :END:
 #+begin_src conf
 #+end_src
 
 ** Drivers
 *** NVIDIA
-Use the ~prime-run~ command to run a program using dedicated graphics.
-
 #+begin_src bash
-$INSTALL nvidia nvidia-prime optimus-manager
+$INSTALL nvidia
 #+end_src
 
 *** USB
@@ -268,20 +251,14 @@ $INSTALL usbutils usbip
 
 *** Bluetooth
 #+begin_src bash
-$INSTALL bluez bluez-utils bluetooth-autoconnect pulseaudio-bluetooth
+$INSTALL bluez bluez-utils pulseaudio-bluetooth
 sudo systemctl enable bluetooth
-sudo systemctl start bluetooth
-sudo systemctl enable bluetooth-autoconnect
-sudo systemctl start bluetooth-autoconnect
-sudo systemctl enable pulseaudio-bluetooth-autoconnect
-sudo systemctl start pulseaudio-bluetooth-autoconnect
 #+end_src
 
 *** Wifi
 #+begin_src bash
 $INSTALL networkmanager network-manager-applet
 sudo systemctl enable NetworkManager
-sudo systemctl start NetworkManager
 #+end_src
 
 *** Audio
@@ -326,7 +303,7 @@ $INSTALL playerctl
 **** Install
 #+begin_src bash
 $INSTALL brightnessctl
-##+end_src
+#+end_src
 
 **** Set XF86 Keys
 #+begin_src conf :tangle ~/.xbindkeysrc
@@ -343,7 +320,6 @@ To scan I recommend using simple-scan
 #+begin_src bash
 $INSTALL cups sane python-pillow simple-scan
 sudo systemctl enable cups
-sudo systemctl start cups
 #+end_src
 
 **** Optional Drivers for HP Printers
@@ -355,10 +331,7 @@ $INSTALL hplip
 ** Setup Core Packages
 *** Latex
 #+begin_src bash
-$INSTALL tex-live-core tllocalmgr-git
-tllocalmgr update
-tllocalmgr install dvipng l3packages xcolor soul adjustbox collectbox amsmath amssymb siunitx
-sudo texhash
+$INSTALL texlive-core
 #+end_src
 
 *** ZSH
@@ -383,11 +356,10 @@ export BACKGROUNDS=$HOME/backgrounds
 
 **** Environment Config
 :PROPERTIES:
-:header-args:bash: :tangle (concat (getenv $HOME) "/.zshenv")
+:header-args:bash: :tangle ~/.zshenv
 :END:
 #+begin_src bash
 source $HOME/.profile
-export ZDOTDIR=$XDG_CONFIG_HOME/zsh
 alias ls="ls --color=auto -h"
 alias grep="grep --color=auto"
 alias ip="ip -color=auto"
@@ -409,7 +381,7 @@ $INSTALL xorg-xmodmap
 
 *** Configuration
 :PROPERTIES:
-:header-args:conf: :tangle (concat (getenv $XDG_CONFIG_HOME) "/xmodmap/config")
+:header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/xmodmap/config")
 :END:
 Moves caps lock to right control and left control to caps lock
 #+begin_src conf
@@ -426,7 +398,6 @@ add lock = Control_R
    #+begin_src bash
    $INSTALL tlp
    sudo systemctl enable tlp
-   sudo systemctl start tlp
    #+end_src
 
 ** File System Support
@@ -455,7 +426,7 @@ $INSTALL isync
 *** Configure Mbsync
 *NOTE*: Different distributions of linux might place the certificate file at a different location.
 :PROPERTIES:
-:header-args:conf: :tangle (concat (getenv $HOME) "/.mbsyncrc")
+:header-args:conf: :tangle ~/.mbsyncrc
 :END:
 #+begin_src conf
 IMAPAccount gmail
@@ -487,7 +458,7 @@ mkdir -p ~/personal-documents/Mail
 #+end_src
 
 *** Run Mbsync
-#+begin_src bash
+#+begin_src bash :tangle no
 mbsync -a
 #+end_src
 
@@ -497,7 +468,7 @@ See [[https://tero.hasu.is/blog/org-icalendar-import/]] for more information.
 #+begin_src bash
 $INSTALL ruby
 gem install date icalendar optparse tzinfo
-git clone https://tero.hasu.is/repo/icalendar-to-org.git
+git clone https://tero.hasu.is/repos/icalendar-to-org.git && true
 #+end_src
 
 ***  To Use
@@ -530,7 +501,7 @@ $INSTALL polybar
 
 **** Configuration
 :PROPERTIES:
-:header-args:conf: :tangle (concat (getenv $XDG_CONFIG_HOME) "/polybar/config")
+:header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/polybar/config")
 :END:
 ***** Global Settings
 #+begin_src conf
@@ -718,10 +689,10 @@ label = MEM %percentage_used:2%%
 ***** Backlight
 ****** Give Polybar Access to Change Backlight
 #+begin_src bash
-sudo makedir -p /etc/udev/rules.d
-groupadd -r video
+sudo mkdir -p /etc/udev/rules.d
+groupadd -r video && true
 sudo usermod -a -G video $USER
-sudo chgrp video /sys/class/backlight/intel_backlight/brightness"
+sudo chgrp video /sys/class/backlight/intel_backlight/brightness
 sudo chmod g+w /sys/class/backlight/intel_backlight/brightness
 #+end_src
 
@@ -743,7 +714,7 @@ ramp-1 = 
 ****** Scripts
 ******* env.sh
 :PROPERTIES:
-:header-args:sh: :tangle (concat (getenv $XDG_CONFIG_HOME) "/polybar/scripts/env.sh") (identity #o755)
+:header-args:sh: :tangle (concat (getenv "XDG_CONFIG_HOME") "/polybar/scripts/env.sh") :tangle-mode (identity #o755)
 :END:
 #+begin_src sh
 export REDSHIFT=on
@@ -752,7 +723,7 @@ export REDSHIFT_TEMP=5600
 
 ******* redshift.sh
 :PROPERTIES:
-:header-args:sh: :tangle (concat (getenv $XDG_CONFIG_HOME) "/polybar/scripts/redshift.sh") (identity #o755)
+:header-args:sh: :tangle (concat (getenv "XDG_CONFIG_HOME") "/polybar/scripts/redshift.sh") :tangle-mode (identity #o755)
 :END:
 #+begin_src sh
 #!/bin/sh
@@ -829,12 +800,12 @@ format-padding = 1
 ** GTK Theme
 *** Install Theme
 #+begin_src bash
-$INSTALL materia-gtk-theme themix-full-git
+$INSTALL materia-gtk-theme
 #+end_src
 
 *** Configure GTK
 :PROPERTIES:
-:header-args:python: :tangle (concat (getenv $XDG_CONFIG_HOME) "/gtk-3.0/settings.ini")
+:header-args:python: :tangle (concat (getenv "XDG_CONFIG_HOME") "/gtk-3.0/settings.ini")
 :END:
 #+begin_src conf
 [Settings]
@@ -853,12 +824,12 @@ echo "Xft.dpi: 200" > ~/.Xresources
 **** Install LightDM
 #+begin_src bash
 $INSTALL lightdm
-systemctl enable lightdm
+sudo systemctl enable lightdm
 #+end_src
 
 **** Install LightDM Theme
 #+begin_src bash
-$INSTALL lightdm-webkit2-greeter lightdm-webkit-theme-litarvan
+$INSTALL lightdm-webkit-theme-litarvan
 #+end_src
 
 **** Configure LightDM
@@ -907,7 +878,7 @@ $INSTALL picom-ibhagwan-git
 
 **** Configuration
 :PROPERTIES:
-:header-args:conf: :tangle (concat (getenv $XDG_CONFIG_HOME) "/picom.conf")
+:header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/picom.conf")
 :END:
 #+begin_src conf
 #corner-radius = 50; # obviously doesn't work with EXWM, but useful
@@ -989,13 +960,25 @@ wintypes:
 };
 #+end_src
 
-** Window Managers
-*** EXWM
-**** Install
+** Xorg
+*** Install
 #+begin_src bash
 $INSTALL xorg dbus xorg-xrdb xorg-transset wmctrl
 #+end_src
 
+**** Xsession File
+#+begin_src bash :tangle ~/.xprofile
+xrandr --dpi 200 --output eDP-1 --primary --mode 3840x2160 --pos 0x0 --rotate normal --output DP-1 --off --output HDMI-1 --off
+picom &
+feh --bg-scale $BACKGROUNDS/unit-01.jpg
+xbindkeys
+xmodmap $XDG_CONFIG_HOME/xmodmap/config
+
+#+end_src
+
+
+** Window Managers
+*** EXWM
 **** Desktop Entry
 #+begin_src conf :tangle /sudo:://usr/share/xsessions/exwm.desktop
 [Desktop Entry]
@@ -1004,15 +987,11 @@ Type=Application
 Icon=exwm
 Comment=The Emacs X Window Manager
 TryExec=emacs
-Exec=emacs
+Exec=emacs -fs
 #+end_src
 
 **** Download Packages not on Melpa
 ***** EXWM Outer Gaps
-#+begin_src bash
-cd ~/.config/emacs/lisp && wget https://raw.githubusercontent.com/lucasgruss/exwm-outer-gaps/main/exwm-outer-gaps.el
-#+end_src
-
 ***** Ivy Clipmenu
 #+begin_src bash
 cd ~/.config/emacs/lisp && wget https://raw.githubusercontent.com/mwglen/ivy-clipmenu.el/master/ivy-clipmenu.el
@@ -1025,7 +1004,7 @@ $INSTALL xmonad xmonad-contrib
 #+end_src
 
 **** Configuration
-#+begin_src conf :tangle ~/.xmonad/xmonad.hs
+#+begin_src haskell :tangle ~/.xmonad/xmonad.hs
 -- IMPORTS
 import XMonad
 import XMonad.Util.SpawnOnce
@@ -1052,7 +1031,7 @@ import XMonad.Layout.NoBorders
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
 
-myTerminal      = "alacritty"
+myTerminal      = "emacsclient -c -a --eval vterm"
 
 -- Whether focus follows the mouse pointer.
 myFocusFollowsMouse :: Bool
@@ -1213,9 +1192,6 @@ myEventHook = ewmhDesktopsEventHook
 
 myLogHook = return ()
 myStartupHook = do
-    spawnOnce "picom &"
-    spawnOnce "feh --bg-scale $BACKGROUNDS/unit-01.jpg"
-    spawnOnce "xmodmap $XDG_CONFIG_HOME/xmodmap/config"
     spawnOnce "emacs --daemon"
 
 main :: IO ()
@@ -1307,6 +1283,7 @@ $INSTALL rofi
 
 **** Link Confirguration
 #+begin_src bash
+rm -rf $XDG_CONFIG_HOME/rofi
 ln -s $DIR/rofi  $XDG_CONFIG_HOME/rofi
 #+end_src
 
@@ -1318,7 +1295,7 @@ $INSTALL xmobar
 #+end_src
 
 **** Configuration
-#+begin_src conf :tangle (concat (getenv $XDG_CONFIG_HOME) "/xmobar/config")
+#+begin_src conf :tangle (concat (getenv "XDG_CONFIG_HOME") "/xmobar/config")
 Config { 
    -- appearance
      font =         "xft:Fira Code Retina:size=11:bold:antialias=true"
@@ -1441,7 +1418,7 @@ $INSTALL dunst
 
 **** Dunst Config
 :PROPERTIES:
-:header-args:conf: :tangle (concat (getenv $XDG_CONFIG_HOME) "/dunst/dunstrc")
+:header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/dunst/dunstrc")
 :END:
 See [[https://dunst-project.org/documentation/]]
 #+begin_src conf
@@ -1518,11 +1495,10 @@ See [[https://dunst-project.org/documentation/]]
     #default_icon = /path/to/icon
 #+end_src
 
-*** Batsignal (Battery Alerts)
-#+begin_src bash
+*** Battery Alerts (Might be Broken)
+#+begin_src bash :tangle no
 $INSTALL batsignal
-systemctl enable batsignal
-systemctl start batsignal
+sudo systemctl enable batsignal
 #+end_src
 
 **** Systemd Service
@@ -1543,37 +1519,30 @@ WantedBy=multi-user.target
 ** Virtualization
 *** General
 #+begin_src bash
-$INSTALL libvert qemu
+$INSTALL libvirt qemu
 
 # Network Connectivity with Virtual Machine #
-$INSTALL iptables-nft \  # NAT/DHCP Netowrking (iptables!=iptables-nft)
-         dnsmasq \       # NAT/DHCP Netowrking
-         bridge-utils \  # Bridged Networking
-         openbsd-netcat  # Remote Management over SSH
+$INSTALL iptables-nft    # NAT/DHCP Netowrking (iptables!=iptables-nft)
+$INSTALL dnsmasq         # NAT/DHCP Netowrking
+$INSTALL bridge-utils    # Bridged Networking
+$INSTALL openbsd-netcat  # Remote Management over SSH
 
 # Client Software #
-$INSTALL virsh \         # Managing and configuring domains
-         virt-manager    # Graphically manage KVM, Xen or LXC
+$INSTALL virt-manager    # Graphically manage KVM, Xen or LXC
 
 # Other Software #
-$INSTALL libguestfs \  # Access and modify virtual machine disk images
-         edk2-ovmf \   # UEFI Emulation
-         swtpm         # TPM Emulation
+$INSTALL libguestfs    # Access and modify virtual machine disk images
+$INSTALL edk2-ovmf     # UEFI Emulation
+$INSTALL swtpm         # TPM Emulation
          
 # Members of the libvirt group have passwordless access to the RW daemon socket by default.
-sudo usermod -aG libvirt ${whoami}
-sudo usermod -aG kvm ${whoami}
+sudo usermod -a -G libvirt $USER
+sudo usermod -a -G kvm $USER
 
-sudo systemctl enable libvirtd # Also enables virtlogd and virtlockd
+sudo systemctl enable --now libvirtd # Also enables virtlogd and virtlockd
 sudo systemctl start virtlogd
-sudo systemctl start libvirtd
 
 # Make sure to set user = /etc/libvirt/qemu.conf
-#+end_src
-
-*** Wine
-#+begin_src bash
-$INSTALL wine wine-mono wine-gecko
 #+end_src
 
 *** OSX Machine
@@ -1582,12 +1551,12 @@ To create an OSX Virtual Machine check out the ~OSX-KVM~ project and follow the 
 ** Applications
 *** Gotop
 #+begin_src bash
-$INSTALL gotop cava alsi
+$INSTALL gotop
 #+end_src
 
 *** Cava
 #+begin_src bash
-$INSTALL cava alsi
+$INSTALL cava
 #+end_src
 
 *** Alsi
@@ -1598,7 +1567,7 @@ $INSTALL alsi
 *** Emacs
 **** Install
 #+begin_src bash
-$INSTALL emacs
+$INSTALL emacs28-git
 #+end_src
 
 **** Fonts
@@ -1608,23 +1577,13 @@ $INSTALL cantarell-fonts ttf-fira-code
 
 **** Apply Theme
 #+begin_src bash
-ln $DIR/doom-moonless-theme.el ~/.config/emacs/doom-moonless-theme.el
+ln $DIR/doom-moonless-theme.el ~/.emacs.d/doom-moonless-theme.el
 #+end_src
 
 **** Tangle Config
 ***** Setup Nim and Nimble
 #+begin_src bash
 $INSTALL nim nimble
-mkdir -p "$XDG_CONFIG_HOME"/nimble
-mkdir -p "$XDG_DATA_HOME"/nimble
-#+end_src
-
-***** Configuration
-:PROPERTIES:
-:header-args:conf: :tangle (concat (getenv $XDG_CONFIG_HOME) "/nimble/nimble.ini")
-:END:
-#+begin_src conf
-nimbleDir = "$XDG_DATA_HOME/nimble"
 #+end_src
 
 ***** Setup ntangle
@@ -1632,19 +1591,14 @@ nimbleDir = "$XDG_DATA_HOME/nimble"
 nimble install -y ntangle
 #+end_src
 
-***** Tangle Config
-#+begin_src bash
-"$XDG_DATA_HOME"/nimble/bin/ntangle emacs.org
-#+end_src
-
 **** Enable Daemon
 #+begin_src bash
 rm -rf ~/.emacs.d
 ln -s $XDG_CONFIG_HOME/emacs ~/.emacs.d
+rm -rf ~/backgrounds
 ln -s $DIR/backgrounds ~/backgrounds
 
-systemctl enable --user emacs
-systemctl start --user emacs
+#sudo systemctl enable --now --user emacs
 #+end_src
 
 *** Firefox
@@ -1660,7 +1614,7 @@ $INSTALL qutebrowser
 
 **** Configuration
 :PROPERTIES:
-:header-args:python: :tangle (concat (getenv $XDG_CONFIG_HOME) "/qutebrowser/config.py")
+:header-args:python: :tangle (concat (getenv "XDG_CONFIG_HOME") "/qutebrowser/config.py")
 :END:
 #+begin_src python
 # Set to True to load settings configured via autoconfig.yml
@@ -1816,7 +1770,7 @@ curl -fLo $XDG_DATA_HOME/nvim/site/autoload/plug.vim --create-dirs https://raw.g
 
 **** Configuration
 :PROPERTIES:
-:header-args:conf: :tangle (concat (getenv $XDG_CONFIG_HOME) "/nvim/init.vim")
+:header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/nvim/init.vim")
 :END:
 #+begin_src conf
 call plug#begin('$XDG_CONFIG_HOME/nvim/plugged')
@@ -1846,7 +1800,7 @@ let g:airline_theme = 'tender'  " change airline colorscheme
 
 ** Change Shell
 #+begin_src bash
-sudo chsh -s /usr/bin/zsh $(whoami)
+sudo chsh -s /usr/bin/zsh $USER
 #+end_src
 
 * After Setup

@@ -1,9 +1,6 @@
 #+title: Emacs Configuration
-#+PROPERTY: header-args:emacs-lisp :tangle ~/.emacs.d/init.el :results none
+#+PROPERTY: header-args:emacs-lisp :tangle ~/.emacs.d/init.el :results none mkdirp: yes
 * Early Init
-:PROPERTIES:
-:header-args:emacs-lisp: :tangle ~/.emacs.d/early-init.el
-:END:
 ** Warning
 #+begin_src emacs-lisp
 ;; NOTE: This file is generated from emacs.org
@@ -21,10 +18,7 @@
 (setq file-name-handler-alist nil)
 #+end_src
 
-* Intit
-:PROPERTIES:
-:header-args:emacs-lisp: :tangle ~/.emacs.d/init.el
-:END:
+* Init
 ** Warning
 #+begin_src emacs-lisp
 ;;; init.el
@@ -201,22 +195,6 @@
 (global-set-key [?\s-l] 'buf-move-right)
 #+end_src
 
-*** Add Outer Gaps
-#+begin_src emacs-lisp
-;(with-eval-after-load
-;  (require 'exwm-outer-gaps))
-;  (exwm-outer-gaps-mode 1))
-#+end_src
-
-*** Add Window Dividers
-Could work as gaps, but can't change transparency
-#+begin_src emacs-lisp
-;(setq window-divider-default-places t)
-;(setq window-divider-default-right-width 50)
-;(setq window-divider-default-bottom-width 50)
-;(window-divider-mode 1)
-#+end_src
-
 ** Theme Configuration
 *** Setup Theme
 #+begin_src emacs-lisp
@@ -280,7 +258,7 @@ Could work as gaps, but can't change transparency
   (doom-modeline-gnus-timer nil)
   (doom-modeline-github-timer nil)
   (doom-modeline-buffer-encoding nil))
-(set-face-attribute 'mode-line nil :height 1.0)
+(set-face-attribute 'mode-line nil :height 0.9)
 #+end_src
 
 ** Desktop Environment
@@ -419,7 +397,7 @@ Could work as gaps, but can't change transparency
           ([?\s-L] . windsize-right)
 
           ;; Launch applications via shell command
-          ([?\s-&] . (lambda (command)
+          ([?\s-p] . (lambda (command)
                        (interactive (list (read-shell-command "$ ")))
                        (start-process-shell-command command nil command)))
           ([?\s-w] . exwm-workspace-switch)
@@ -440,14 +418,6 @@ Could work as gaps, but can't change transparency
           )))
 #+end_src
 
-***** Setup Resolution
-#+begin_src emacs-lisp
-(defun exwm/set-resolution ()
-  (require 'exwm-randr)
-  (exwm-randr-enable)
-  (start-process-shell-command "xrandr" nil "xrandr --output eDP-1 --primary --mode 3840x2160 --pos 0x0 --rotate normal --output DP-1 --off --output HDMI-1 --off"))
-#+end_src
-
 ***** EXWM Functions
 #+begin_src emacs-lisp
 (defun exwm/update-class ()
@@ -455,7 +425,7 @@ Could work as gaps, but can't change transparency
 
 (defun exwm/update-title ()
   (pcase exwm-class-name
-    ("Firefox" (exwm-workspace-rename-buffer
+    ("firefox" (exwm-workspace-rename-buffer
                 (format "Firefox: %s" exwm-title)))))
 
 (defun exwm/position-window (x y)
@@ -485,14 +455,8 @@ Could work as gaps, but can't change transparency
            (eq window-system 'x)) 
   (use-package exwm
   :config
-  (exwm/set-resolution)
-  (start-process-shell-command "picom" nil "picom")
-  (start-process-shell-command "xbindkeys" nil "xbindkeys")
-  (wallpaper/use-default)
   (add-hook 'exwm-update-class-hook #'exwm/update-class)
   (add-hook 'exwm-update-title-hook #'exwm/update-title)
-  (start-process-shell-command
-  "xmodmap" nil "xmodmap $XDG_CONFIG_HOME/xmodmap/config")
   (define-key exwm-mode-map [?\C-q] 'exwm-input-send-next-key)
   (setq exwm-workspace-number 5)
   ;(setq exwm-layout-show-all-buffers t)
@@ -529,6 +493,7 @@ Could work as gaps, but can't change transparency
   :config
   (evil-mode 1)
   (define-key evil-insert-state-map (kbd "C-;") 'evil-normal-state)
+  (define-key evil-normal-state-map (kbd "C-;") 'keyboard-quit)
   (define-key evil-insert-state-map (kbd "C-h")
     'evil-delete-backward-char-and-join)
 
@@ -682,9 +647,6 @@ Could work as gaps, but can't change transparency
 (use-package treemacs-projectile
   :after (treemacs projectile))
 
-;; (use-package treemacs-icons-dired
-;; :hook (dired-mode . treemacs-icons-dired-enable-once))
-
 (use-package treemacs-magit
   :after (treemacs magit))
 
@@ -776,6 +738,7 @@ Could work as gaps, but can't change transparency
    'org-babel-load-languages
    '((emacs-lisp . t)
      (python . t)
+     (haskell . t)
      (shell . t)))
   (push '("conf-unix" . conf-unix) org-src-lang-modes))
 #+end_src
@@ -788,7 +751,8 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
   (require 'org-tempo)
   (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
   (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-  (add-to-list 'org-structure-template-alist '("py" . "src python")))
+  (add-to-list 'org-structure-template-alist '("py" . "src python"))
+  (add-to-list 'org-structure-template-alist '("hs" . "src haskell")))
 #+end_src
 
 *** Auto-tangle Configuration Files
@@ -810,7 +774,6 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
   :ensure t
   :config
   (setq alert-default-style 'libnotify)
-  (setq org-alert-interval (* 60 60))
   (setq org-alert-notify-cutoff (* 2 24 60 60))
   (org-alert-enable))
 #+end_src
@@ -1016,27 +979,6 @@ Allows you to quckly find definitions.
   :config
   (setq vterm-shell "zsh")
   (setq vterm-max-scrollback 10000))
-#+end_src
-
-** WSL Config
-*** Copy and Paste
-#+begin_src emacs-lisp
-(defun wsl-copy (start end)
-  (interactive "r")
-  (shell-command-on-region start end "clip.exe")
-  (deactivate-mark))
-
-(defun wsl-paste ()
-  (interactive)
-  (let ((clipboard (shell-command-to-string
-                    "powershell.exe -command 'Get-Clipboard' 2> /dev/null")))
-    (setq clipboard (replace-regexp-in-string "\r" "" clipboard))
-    (setq clipboard (substring clipboard 0 -1))
-    (insert clipboard)))
-
-(my/leader-keys
-  "C-c" 'wsl-copy
-  "C-v" 'wsl-paste)
 #+end_src
 
 ** Closing Configuration
