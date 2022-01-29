@@ -28,6 +28,18 @@ HandleHibernateKey=hibernate
 #HandleLidSwitch=suspend
 #+end_src
 
+** XDG Defaults
+:PROPERTIES:
+:header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/mimeapps.list")
+:END:
+See https://www.freeformatter.com/mime-types-list.html for a list of schema.
+#+begin_src conf
+[Default Applications]
+x-scheme-handler/http=org.qutebrowser.qutebrowser.desktop
+x-scheme-handler/https=org.qutebrowser.qutebrowser.desktop
+application/pdf=org.qutebrowser.qutebrowser.desktop
+#+end_src
+
 ** ZSH Config
 :PROPERTIES:
 :header-args:bash: :tangle ~/.zshrc
@@ -147,20 +159,13 @@ DIR=$(realpath $(dirname $0))
 source $HOME/.profile
 #+end_src
 
-*** Clean Directories
-#+begin_src bash
-#rm -rf $XDG_CONFIG_HOME
-#rm -rf $XDG_CACHE_HOME
-#rm -rf $XDG_DATA_HOME
-#rm -rf $XDG_STATE_HOME
-#+end_src
-
 *** Make Directories
 #+begin_src bash
 mkdir -p $XDG_CONFIG_HOME
 mkdir -p $XDG_CACHE_HOME
 mkdir -p $XDG_DATA_HOME
 mkdir -p $XDG_STATE_HOME
+mkdir -p $REPOSITORIES
 #+end_src
 
 ** Setup Yay
@@ -168,13 +173,13 @@ mkdir -p $XDG_STATE_HOME
 #+begin_src bash
 if ! (pacman -Qs yay > /dev/null); then
     if (pacman -Qs fakeroot-tcp > /dev/null); then
-        sudo pacman -Syyu --needed git base-devel \ && git clone https://aur.archlinux.org/yay.git \ && cd yay && yes | makepkg -si
+        sudo pacman -Syyu --needed git base-devel \ && git clone https://aur.archlinux.org/yay.git $REPOSITORIES/yay \ && cd $REPOSITORIES/yay && yes | makepkg -si
     else # cannot use --noconfirm if fakeroot-tcp is installed
         sudo pacman -Syyu --needed --noconfirm git base-devel \
             && git clone https://aur.archlinux.org/yay.git \
             && cd yay && yes | makepkg -si
     fi
-    rm -rf yay
+    rm -rf $REPOSITORIES/yay
 fi
 #+end_src
 
@@ -222,6 +227,17 @@ $INSTALL rsync
 #+begin_src bash
 $INSTALL wget
 echo hsts-file \= "$XDG_CACHE_HOME"/wget-hsts >> "$XDG_CONFIG_HOME/wgetrc"
+#+end_src
+
+*** Inetutils
+Gives the hostname command
+#+begin_src bash
+$INSTALL inetutils
+#+end_src
+
+*** Python
+#+begin_src bash
+$INSTALL python
 #+end_src
 
 ** Terminal Emulators
@@ -283,9 +299,9 @@ $INSTALL alsa-utils pavucontrol
 *** Media
 **** Install
 #+begin_src bash
-$INSTALL playerctl
+$INSTALL playerctl mpv youtube-dl baka-mplayer
 #+end_src
-#
+
 **** Set XF86 Keys
 #+begin_src conf :tangle ~/.xbindkeysrc
 ### Media Control ###
@@ -300,17 +316,47 @@ $INSTALL playerctl
 #+end_src
 
 *** Brightness
-**** Install
+**** Setup Video Group
+#+begin_src bash
+sudo groupadd video && true
+sudo usermod +aG video mwglen && true
+sudo chgrp video /sys/class/backlight/intel_backlight/brightness && true
+#+end_src
+
+#+begin_src conf :tangle /sudo:://etc/udev/rules.d/backlight.rules
+ACTION=="add", SUBSYSTEM=="backlight", KERNEL=="<vendor>", RUN+="/bin/chgrp video /sys/class/backlight/%k/brightness"
+ACTION=="add", SUBSYSTEM=="backlight", KERNEL=="<vendor>", RUN+="/bin/chmod g+w /sys/class/backlight/%k/brightness"
+#+end_src
+
+**** Brightnessctl
+***** Install
 #+begin_src bash
 $INSTALL brightnessctl
 #+end_src
 
-**** Set XF86 Keys
-#+begin_src conf :tangle ~/.xbindkeysrc
+***** Set XF86 Keys
+#+begin_src conf :tangle no
+### +begin_src conf :tangle ~/.xbindkeysrc
 ### Brightness Control ###
 "brightnessctl set 10%+"
     XF86MonBrightnessUp
 "brightnessctl set 10%-"
+    XF86MonBrightnessDown
+#+end_src
+
+**** Brillo
+***** Install
+#+begin_src bash
+git clone https://github.com/CameronNemo/brillo $REPOSITORIES/brillo && true
+cd $REPOSITORIES/brillo && sudo make install
+#+end_src
+
+***** Set XF86 Keys
+#+begin_src conf :tangle ~/.xbindkeysrc
+### Brightness Control ###
+"brillo -q -u 150000 -A 5"
+    XF86MonBrightnessUp
+"brillo -q -u 150000 -U 5"
     XF86MonBrightnessDown
 #+end_src
 
@@ -352,6 +398,7 @@ export XDG_CACHE_HOME=$HOME/.cache
 export XDG_DATA_HOME=$HOME/.local/share
 export XDG_STATE_HOME=$HOME/.local/state
 export BACKGROUNDS=$HOME/backgrounds
+export REPOSITORIES=$HOME/repositories
 #+end_src
 
 **** Environment Config
@@ -369,7 +416,7 @@ alias spotify="spotify --force-device-scale-factor=2"
 **** Pure (ZSH Theme)
 #+begin_src bash
 if (mkdir "$XDG_CONFIG_HOME"/zsh/pure); then
-    git clone https://github.com/sindresorhus/pure.git "$XDG_CONFIG_HOME"/zsh/pure
+    git clone https://github.com/sindresorhus/pure.git "$XDG_CONFIG_HOME"/zsh/pure && true
 fi
 #+end_src
 
@@ -468,7 +515,8 @@ See [[https://tero.hasu.is/blog/org-icalendar-import/]] for more information.
 #+begin_src bash
 $INSTALL ruby
 gem install date icalendar optparse tzinfo
-git clone https://tero.hasu.is/repos/icalendar-to-org.git && true
+
+git clone https://tero.hasu.is/repos/icalendar-to-org.git $REPOSITORIES/icalendar-to-org && true
 #+end_src
 
 ***  To Use
@@ -973,9 +1021,14 @@ picom &
 feh --bg-scale $BACKGROUNDS/unit-01.jpg
 xbindkeys
 xmodmap $XDG_CONFIG_HOME/xmodmap/config
-
+export QT_AUTO_SCREEN_SCALE_FACTOR=1
 #+end_src
 
+
+** XBindKeys
+#+begin_src bash
+$INSTALL xbindkeys
+#+end_src
 
 ** Window Managers
 *** EXWM
@@ -1549,6 +1602,12 @@ sudo systemctl start virtlogd
 To create an OSX Virtual Machine check out the ~OSX-KVM~ project and follow the instructions in their git repository.
 
 ** Applications
+*** Mimeo
+Use =mimeo --mime2desk <schema>= to find what application is set as default for a certain schema. Use =mimeo --app2desk <app>= to find an applications corresponding desktop file.
+#+begin_src bash
+$INSTALL mimeo
+#+end_src
+
 *** Gotop
 #+begin_src bash
 $INSTALL gotop
@@ -1572,7 +1631,7 @@ $INSTALL emacs28-git
 
 **** Fonts
 #+begin_src bash
-$INSTALL cantarell-fonts ttf-fira-code
+$INSTALL cantarell-fonts ttf-fira-code noto-fonts
 #+end_src
 
 **** Apply Theme
@@ -1610,6 +1669,18 @@ $INSTALL firefox
 **** Install
 #+begin_src bash
 $INSTALL qutebrowser
+mkdir -p $XDG_DATA_HOME/qutebrowser/userscripts
+#+end_src
+
+*** Userscripts
+**** Qute-Bitwarden
+#+begin_src bash
+wget raw.githubusercontent.com/qutebrowser/qutebrowser/master/misc/userscripts/qute-bitwarden -O $XDG_DATA_HOME/qutebrowser/userscripts/qute-bitwarden
+
+sed -i 's/rofi -dmenu -i -p/ivy-read.sh/g' $XDG_DATA_HOME/qutebrowser/userscripts/qute-bitwarden
+
+chmod +x $XDG_DATA_HOME/qutebrowser/userscripts/qute-bitwarden
+$INSTALL python-tldextract
 #+end_src
 
 **** Configuration
@@ -1641,8 +1712,8 @@ c.fonts.prompts = 'default_size "Noto Sans"'
 c.fonts.statusbar = '11pt "Fira Code Retina"'
 
 # Use dmenu
-config.bind('o', 'spawn --userscript dmenu-open')
-config.bind('O', 'spawn --userscript dmenu-open --tab')
+#config.bind('o', 'spawn --userscript dmenu-open')
+#config.bind('O', 'spawn --userscript dmenu-open --tab')
 
 # Colors
 c.colors.completion.fg = ['#9cc4ff', 'white', 'white']
@@ -1687,7 +1758,8 @@ c.url.searchengines = {
 }
 
 # Normal Mode Keybindings
-config.bind('M', 'hint links spawn mpv {hint-url}')
+config.bind(';m', 'hint links spawn baka-mplayer {hint-url}')
+config.bind('M', 'spawn baka-mplayer {url}')
 config.bind('xb', 'config-cycle statusbar.show always never')
 config.bind('xt', 'config-cycle tabs.show always never')
 config.bind('xx', 'config-cycle statusbar.show always never;; config-cycle tabs.show always never')
@@ -1715,7 +1787,8 @@ config.set('content.javascript.enabled', True, 'qute://*/*')
 **** Solarized Themes
 #+begin_src bash
 mkdir -p $XDG_CONFIG_HOME/qutebrowser
-cd $XDG_CONFIG_HOME/qutebrowser && git clone https://github.com/alphapapa/solarized-everything-css
+mkdir -p ~/Downloads
+cd $XDG_CONFIG_HOME/qutebrowser && git clone https://github.com/alphapapa/solarized-everything-css && true
 #+end_src
 
 *** Bitwarden

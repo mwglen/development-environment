@@ -123,6 +123,11 @@
 (fset 'yes-or-no-p 'y-or-n-p)
 #+end_src
 
+*** Dont Ask to Kill Processes
+#+begin_src emacs-lisp
+(setq confirm-kill-processes nil)
+#+end_src
+
 *** Set UTF-8 Encoding
 #+begin_src emacs-lisp
 (setq locale-coding-system 'utf-8)
@@ -176,12 +181,12 @@
 #+end_src
 
 *** Edwina
-#+begi
+#+begin_src emacs-lisp
 (use-package edwina
   :config
   (setq display-buffer-base-action
         '(display-buffer-below-selected))
-  (edwina-setup-dwm-keys)
+  (edwina-setup-dwm-keys 'super)
   (edwina-mode 1))
 #+end_src
 
@@ -358,23 +363,21 @@
 #+begin_src emacs-lisp
 (defun exwm/set-prefix-keys ()
   (setq exwm-input-prefix-keys
-        '(?\C-x
-          ?\C-u
-          ?\C-h
-          ?\C-\;
-          ?\C-w
-          ?\C-c
-          ?\M-x
-          ?\M-`
-          ?\M-&
-          ?\M-:
-          ?\:
+        '(?\C-x   ;; Basic Emacs Prefix
+          ?\M-x   ;; Basic Emacs Prefix
+          ?\C-h   ;; Help Prefix
+          ?\C-\;  ;; Change Input Method
+          ?\C-u   ;;
+          ?\M-:   ;; Eval expression
           
           ;; Move Buffers
           ?\s-h
           ?\s-j
           ?\s-k
           ?\s-l
+          
+          ?\M-p   ;; Open X-Application
+          ?\s-P   ;; Open X-Application in new window
           
           escape
           ?\C-\M-j
@@ -386,21 +389,25 @@
 (defun exwm/set-global-keys ()
   (setq exwm-input-global-keys
         `(
-          ;; Reset to line-mode (C-c C-k switches to char-mode via
-          ;; exwm-input-release-keyboard)
+          ;; Reset to line-mode (C-c C-k switches to
+          ;; char-mode via exwm-input-release-keyboard)
           ([?\s-r] . exwm-reset)
 
           ;; Resize windows
-          ([?\s-H] . windsize-left)
-          ([?\s-J] . windsize-down)
-          ([?\s-K] . windsize-up)
-          ([?\s-L] . windsize-right)
+          ;([?\s-H] . windsize-left)
+          ;([?\s-J] . windsize-down)
+          ;([?\s-K] . windsize-up)
+          ;([?\s-L] . windsize-right)
 
           ;; Launch applications via shell command
           ([?\s-p] . (lambda (command)
-                       (interactive (list (read-shell-command "$ ")))
-                       (start-process-shell-command command nil command)))
+                       (interactive
+                        (list (read-shell-command "$ ")))
+                       (start-process-shell-command
+                        command nil command)))
           ([?\s-w] . exwm-workspace-switch)
+
+          ;; Fullscreen and Floating Windows
           ([?\s-f] . exwm-layout-toggle-fullscreen)
           ([?\s-F] . exwm-floating-toggle-floating)
 
@@ -425,6 +432,8 @@
 
 (defun exwm/update-title ()
   (pcase exwm-class-name
+    ("qutebrowser" (exwm-workspace-rename-buffer
+                (format "Qutebrowser: %s" exwm-title)))
     ("firefox" (exwm-workspace-rename-buffer
                 (format "Firefox: %s" exwm-title)))))
 
@@ -504,7 +513,9 @@
   (define-key evil-operator-state-map
     (kbd "<remap> <evil-next-line>") #'evil-next-line)
   (define-key evil-operator-state-map
-    (kbd "<remap> <evil-previous-line>") #'evil-previous-line))
+    (kbd "<remap> <evil-previous-line>") #'evil-previous-line)
+  (global-unset-key (kbd "C-x ESC"))
+  (global-unset-key (kbd "C-c ESC")))
 #+end_src
 
 **** Evil Collection
@@ -681,8 +692,7 @@
   (setq-default org-ellipsis " ▾"
                 org-pretty-entities t
                 org-hide-emphasis-markers t
-                org-edit-src-content-indentation 0)
-  (setq org-agenda-files '("~/personal-documents/OrgFiles/agenda")))
+                org-edit-src-content-indentation 0))
 #+end_src
 
 **** Nicer Heading Bullets

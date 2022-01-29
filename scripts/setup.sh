@@ -17,25 +17,21 @@ DIR=$(realpath $(dirname $0))
 
 source $HOME/.profile
 
-#rm -rf $XDG_CONFIG_HOME
-#rm -rf $XDG_CACHE_HOME
-#rm -rf $XDG_DATA_HOME
-#rm -rf $XDG_STATE_HOME
-
 mkdir -p $XDG_CONFIG_HOME
 mkdir -p $XDG_CACHE_HOME
 mkdir -p $XDG_DATA_HOME
 mkdir -p $XDG_STATE_HOME
+mkdir -p $REPOSITORIES
 
 if ! (pacman -Qs yay > /dev/null); then
     if (pacman -Qs fakeroot-tcp > /dev/null); then
-        sudo pacman -Syyu --needed git base-devel \ && git clone https://aur.archlinux.org/yay.git \ && cd yay && yes | makepkg -si
+        sudo pacman -Syyu --needed git base-devel \ && git clone https://aur.archlinux.org/yay.git $REPOSITORIES/yay \ && cd $REPOSITORIES/yay && yes | makepkg -si
     else # cannot use --noconfirm if fakeroot-tcp is installed
         sudo pacman -Syyu --needed --noconfirm git base-devel \
             && git clone https://aur.archlinux.org/yay.git \
             && cd yay && yes | makepkg -si
     fi
-    rm -rf yay
+    rm -rf $REPOSITORIES/yay
 fi
 
 export INSTALL="yay -S --noconfirm --needed"
@@ -62,6 +58,10 @@ $INSTALL rsync
 $INSTALL wget
 echo hsts-file \= "$XDG_CACHE_HOME"/wget-hsts >> "$XDG_CONFIG_HOME/wgetrc"
 
+$INSTALL inetutils
+
+$INSTALL python
+
 $INSTALL alacritty
 
 $INSTALL nvidia
@@ -74,9 +74,16 @@ sudo systemctl enable bluetooth
 $INSTALL networkmanager network-manager-applet
 sudo systemctl enable NetworkManager
 
-$INSTALL playerctl
+$INSTALL playerctl mpv youtube-dl baka-mplayer
+
+sudo groupadd video && true
+sudo usermod +aG video mwglen && true
+sudo chgrp video /sys/class/backlight/intel_backlight/brightness && true
 
 $INSTALL brightnessctl
+
+git clone https://github.com/CameronNemo/brillo $REPOSITORIES/brillo && true
+cd $REPOSITORIES/brillo && sudo make install
 
 $INSTALL cups sane python-pillow simple-scan
 sudo systemctl enable cups
@@ -90,7 +97,7 @@ $INSTALL zsh
 source $HOME/.zshenv
 
 if (mkdir "$XDG_CONFIG_HOME"/zsh/pure); then
-    git clone https://github.com/sindresorhus/pure.git "$XDG_CONFIG_HOME"/zsh/pure
+    git clone https://github.com/sindresorhus/pure.git "$XDG_CONFIG_HOME"/zsh/pure && true
 fi
 
 $INSTALL xorg-xmodmap
@@ -110,7 +117,8 @@ mkdir -p ~/personal-documents/Mail
 
 $INSTALL ruby
 gem install date icalendar optparse tzinfo
-git clone https://tero.hasu.is/repos/icalendar-to-org.git && true
+
+git clone https://tero.hasu.is/repos/icalendar-to-org.git $REPOSITORIES/icalendar-to-org && true
 
 $INSTALL linux-wifi-hotspot
 
@@ -136,6 +144,8 @@ $INSTALL lightdm-webkit-theme-litarvan
 $INSTALL picom-ibhagwan-git
 
 $INSTALL xorg dbus xorg-xrdb xorg-transset wmctrl
+
+$INSTALL xbindkeys
 
 cd ~/.config/emacs/lisp && wget https://raw.githubusercontent.com/mwglen/ivy-clipmenu.el/master/ivy-clipmenu.el
 
@@ -177,6 +187,8 @@ sudo systemctl start virtlogd
 
 # Make sure to set user = /etc/libvirt/qemu.conf
 
+$INSTALL mimeo
+
 $INSTALL gotop
 
 $INSTALL cava
@@ -185,7 +197,7 @@ $INSTALL alsi
 
 $INSTALL emacs28-git
 
-$INSTALL cantarell-fonts ttf-fira-code
+$INSTALL cantarell-fonts ttf-fira-code noto-fonts
 
 ln $DIR/doom-moonless-theme.el ~/.emacs.d/doom-moonless-theme.el
 
@@ -203,9 +215,18 @@ ln -s $DIR/backgrounds ~/backgrounds
 $INSTALL firefox
 
 $INSTALL qutebrowser
+mkdir -p $XDG_DATA_HOME/qutebrowser/userscripts
+
+wget raw.githubusercontent.com/qutebrowser/qutebrowser/master/misc/userscripts/qute-bitwarden -O $XDG_DATA_HOME/qutebrowser/userscripts/qute-bitwarden
+
+sed -i 's/rofi -dmenu -i -p/ivy-read.sh/g' $XDG_DATA_HOME/qutebrowser/userscripts/qute-bitwarden
+
+chmod +x $XDG_DATA_HOME/qutebrowser/userscripts/qute-bitwarden
+$INSTALL python-tldextract
 
 mkdir -p $XDG_CONFIG_HOME/qutebrowser
-cd $XDG_CONFIG_HOME/qutebrowser && git clone https://github.com/alphapapa/solarized-everything-css
+mkdir -p ~/Downloads
+cd $XDG_CONFIG_HOME/qutebrowser && git clone https://github.com/alphapapa/solarized-everything-css && true
 
 $INSTALL bitwarden bitwarden-cli
 
