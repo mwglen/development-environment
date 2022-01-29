@@ -432,10 +432,8 @@
 
 (defun exwm/update-title ()
   (pcase exwm-class-name
-    ("qutebrowser" (exwm-workspace-rename-buffer
-                (format "Qutebrowser: %s" exwm-title)))
-    ("firefox" (exwm-workspace-rename-buffer
-                (format "Firefox: %s" exwm-title)))))
+    ("qutebrowser" (exwm-workspace-rename-buffer exwm-title))
+    ("firefox" (exwm-workspace-rename-buffer exwm-title))))
 
 (defun exwm/position-window (x y)
   (interactive)

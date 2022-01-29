@@ -271,6 +271,24 @@ $INSTALL bluez bluez-utils pulseaudio-bluetooth
 sudo systemctl enable bluetooth
 #+end_src
 
+**** Configuration
+#+begin_src conf :tangle /sudo:://etc/bluetooth/main.conf
+[General]
+
+[BR]
+
+[LE]
+
+[GATT]
+
+[AVDTP]
+
+[Policy]
+AutoEnable=false
+
+[AdvMon]
+#+end_src
+
 *** Wifi
 #+begin_src bash
 $INSTALL networkmanager network-manager-applet
@@ -281,7 +299,7 @@ sudo systemctl enable NetworkManager
 **** Install
 #+begin_src bash
 $INSTALL alsa-utils pavucontrol
-#+end_src bash
+#+end_src
 
 **** Set XF86 Keys
 #+begin_src conf :tangle ~/.xbindkeysrc
@@ -377,7 +395,7 @@ $INSTALL hplip
 ** Setup Core Packages
 *** Latex
 #+begin_src bash
-$INSTALL texlive-core
+$INSTALL texlive-core texlive-latexextra
 #+end_src
 
 *** ZSH
@@ -851,16 +869,27 @@ format-padding = 1
 $INSTALL materia-gtk-theme
 #+end_src
 
-*** Configure GTK
+*** Configure GTK 3.0
 :PROPERTIES:
-:header-args:python: :tangle (concat (getenv "XDG_CONFIG_HOME") "/gtk-3.0/settings.ini")
+:header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/gtk-3.0/settings.ini")
 :END:
 #+begin_src conf
 [Settings]
 gtk-icon-theme-name = Materia
 gtk-theme-name = Materia
 gtk-application-prefer-dark-theme = true
-#+end_src conf
+#+end_src
+
+*** Configure GTK 2.0
+:PROPERTIES:
+:header-args:conf: :tangle ~/.gtkrc-2.0
+:END:
+#+begin_src conf
+[Settings]
+gtk-icon-theme-name = "Materia"
+gtk-theme-name = "Materia"
+gtk-application-prefer-dark-theme = "true"
+#+end_src
 
 ** Display Managers
 *** Configure X11
@@ -1631,7 +1660,12 @@ $INSTALL emacs28-git
 
 **** Fonts
 #+begin_src bash
-$INSTALL cantarell-fonts ttf-fira-code noto-fonts
+$INSTALL cantarell-fonts ttf-fira-code noto-fonts ttf-roboto ttf-roboto-mono
+#+end_src
+
+**** Ahoviewer
+#+begin_src bash
+$INSTALL ahoviewer-git
 #+end_src
 
 **** Apply Theme

@@ -74,6 +74,8 @@ sudo systemctl enable bluetooth
 $INSTALL networkmanager network-manager-applet
 sudo systemctl enable NetworkManager
 
+$INSTALL alsa-utils pavucontrol
+
 $INSTALL playerctl mpv youtube-dl baka-mplayer
 
 sudo groupadd video && true
@@ -90,7 +92,7 @@ sudo systemctl enable cups
 
 $INSTALL hplip
 
-$INSTALL texlive-core
+$INSTALL texlive-core texlive-latexextra
 
 $INSTALL zsh
 
@@ -197,7 +199,9 @@ $INSTALL alsi
 
 $INSTALL emacs28-git
 
-$INSTALL cantarell-fonts ttf-fira-code noto-fonts
+$INSTALL cantarell-fonts ttf-fira-code noto-fonts ttf-roboto ttf-roboto-mono
+
+$INSTALL ahoviewer-git
 
 ln $DIR/doom-moonless-theme.el ~/.emacs.d/doom-moonless-theme.el
 
