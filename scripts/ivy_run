@@ -1,0 +1,8 @@
+#!/bin/bash
+PROMPT="\"$1\""
+shift 1
+read -d '' CHOICES
+CHOICES=$(echo "$CHOICES" | tr '\n' ' ' | sed 's/ /" "/g')
+CHOICES=\'\(\"${CHOICES::-3}\"\)
+OUT=$(emacsclient --eval "(ivy-read $PROMPT $CHOICES)")
+echo ${OUT:1:-1}

@@ -60,7 +60,7 @@ echo hsts-file \= "$XDG_CACHE_HOME"/wget-hsts >> "$XDG_CONFIG_HOME/wgetrc"
 
 $INSTALL inetutils
 
-$INSTALL python
+$INSTALL python python-matplotlib poetry
 
 $INSTALL alacritty
 
@@ -68,7 +68,7 @@ $INSTALL nvidia
 
 $INSTALL usbutils usbip
 
-$INSTALL bluez bluez-utils pulseaudio-bluetooth
+$INSTALL bluez bluez-utils pulseaudio-bluetooth blueman-git
 sudo systemctl enable bluetooth
 
 $INSTALL networkmanager network-manager-applet
@@ -76,7 +76,7 @@ sudo systemctl enable NetworkManager
 
 $INSTALL alsa-utils pavucontrol
 
-$INSTALL playerctl mpv youtube-dl baka-mplayer
+$INSTALL playerctl mpv yt-dlp baka-mplayer
 
 sudo groupadd video && true
 sudo usermod +aG video mwglen && true
@@ -98,20 +98,26 @@ $INSTALL zsh
 
 source $HOME/.zshenv
 
-if (mkdir "$XDG_CONFIG_HOME"/zsh/pure); then
-    git clone https://github.com/sindresorhus/pure.git "$XDG_CONFIG_HOME"/zsh/pure && true
-fi
+$INSTALL nodejs npm
+sudo npm install --global pure-prompt
 
 $INSTALL xorg-xmodmap
 
 $INSTALL tlp
 sudo systemctl enable tlp
 
+$INSTALL autofs
+sudo mkdir -p /misc/android
+
 $INSTALL exfatprogs
 
 $INSTALL ntfs-3g
 
 $INSTALL libguestfs
+
+$INSTALL mtpfs
+
+$INSTALL udisks2
 
 $INSTALL isync
 
@@ -134,6 +140,8 @@ sudo usermod -a -G video $USER
 sudo chgrp video /sys/class/backlight/intel_backlight/brightness
 sudo chmod g+w /sys/class/backlight/intel_backlight/brightness
 
+$INSTALL materia-kde kvantum-theme-materia kvantum
+
 $INSTALL materia-gtk-theme
 
 echo "Xft.dpi: 200" > ~/.Xresources
@@ -141,7 +149,12 @@ echo "Xft.dpi: 200" > ~/.Xresources
 $INSTALL lightdm
 sudo systemctl enable lightdm
 
-$INSTALL lightdm-webkit-theme-litarvan
+$INSTALL lightdm-webkit2-greeter
+sudo mkdir -p /usr/share/lightdm-webkit/themes/litaravan
+
+wget https://github.com/Litarvan/lightdm-webkit-theme-litarvan/releases/download/v3.2.0/lightdm-webkit-theme-litarvan-3.2.0.tar.gz -O $REPOSITORIES/lightdm-webkit-theme-litarvan-3.2.0.tar.gz
+
+sudo tar -xf $REPOSITORIES/lightdm-webkit-theme-litarvan-3.2.0.tar.gz -C /usr/share/lightdm-webkit/themes/litarvan
 
 $INSTALL picom-ibhagwan-git
 
@@ -218,14 +231,16 @@ ln -s $DIR/backgrounds ~/backgrounds
 
 $INSTALL firefox
 
+$INSTALL blender blendnet
+
+$INSTALL flameshot
+
 $INSTALL qutebrowser
 mkdir -p $XDG_DATA_HOME/qutebrowser/userscripts
 
 wget raw.githubusercontent.com/qutebrowser/qutebrowser/master/misc/userscripts/qute-bitwarden -O $XDG_DATA_HOME/qutebrowser/userscripts/qute-bitwarden
-
-sed -i 's/rofi -dmenu -i -p/ivy-read.sh/g' $XDG_DATA_HOME/qutebrowser/userscripts/qute-bitwarden
-
 chmod +x $XDG_DATA_HOME/qutebrowser/userscripts/qute-bitwarden
+
 $INSTALL python-tldextract
 
 mkdir -p $XDG_CONFIG_HOME/qutebrowser
@@ -233,6 +248,10 @@ mkdir -p ~/Downloads
 cd $XDG_CONFIG_HOME/qutebrowser && git clone https://github.com/alphapapa/solarized-everything-css && true
 
 $INSTALL bitwarden bitwarden-cli
+
+$INSTALL sidequest-bin
+
+$INSTALL glxinfo
 
 $INSTALL spotify
 
@@ -249,6 +268,9 @@ echo "unqualified-search-registries = ['docker.io']" \
     | sudo tee /etc/containers/registries.conf
 
 $INSTALL feh
+
+mkdir -p $BACKGROUNDS
+cp -r $DIR/backgrounds/* $BACKGROUNDS
 
 $INSTALL neovim
 mkdir -p $XDG_CONFIG_HOME/nvim

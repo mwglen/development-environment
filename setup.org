@@ -1,6 +1,53 @@
 #+title: Guide to Setup Development Environment
 #+PROPERTY: header-args :results none :mkdirp yes
 * Configuration Files
+**  Function Key Fix
+Prevents volume keys from sticking.
+#+begin_src conf :tangle /sudo:://etc/udev/hwdb.d/70-keyboard-framework-fix.hwdb
+# Fix for Fn keys sticking on Framework laptop
+evdev:atkbd:dmi:bvn*:bvr*:bd*:svnFramework:pnLaptop:pvr*:*
+evdev:input:b0011v0001p0001*
+# Primary function fixes
+ KEYBOARD_KEY_3b=!F1           # F1
+ KEYBOARD_KEY_3c=!F2           # F2
+ KEYBOARD_KEY_3d=!F3           # F3
+ KEYBOARD_KEY_3e=!F4           # F4
+ KEYBOARD_KEY_3f=!F5           # F5
+ KEYBOARD_KEY_40=!F6           # F6
+ KEYBOARD_KEY_41=!F7           # F7
+ KEYBOARD_KEY_42=!F8           # F8
+ KEYBOARD_KEY_43=!F9           # F9
+ KEYBOARD_KEY_44=!F10          # F10
+ KEYBOARD_KEY_57=!F11          # F11
+ KEYBOARD_KEY_58=!F12          # F12
+ KEYBOARD_KEY_d3=!delete       # Delete key
+# Secondary function fixes
+ KEYBOARD_KEY_a0=!mute         # On F1 key
+ KEYBOARD_KEY_ae=!volumedown   # On F2 key
+ KEYBOARD_KEY_b0=!volumeup     # On F3 key
+ KEYBOARD_KEY_90=!previoussong # On F4 key
+ KEYBOARD_KEY_a2=!playpause    # On F5 key
+ KEYBOARD_KEY_99=!nextsong     # On F6 key
+ KEYBOARD_KEY_b7=!sysrq        # On F11 key
+ KEYBOARD_KEY_ed=!media        # On F12 key
+ KEYBOARD_KEY_d2=!insert       # On Delete key
+# Arrow keys
+ KEYBOARD_KEY_cb=!left         # Left Arrow key
+ KEYBOARD_KEY_cd=!right        # Right Arrow key
+ KEYBOARD_KEY_d0=!down         # Down Arrow
+ KEYBOARD_KEY_c8=!up           # Up Arrow
+ KEYBOARD_KEY_c7=!home         # On Left Arrow key
+ KEYBOARD_KEY_cf=!end          # On Right Arrow key
+ KEYBOARD_KEY_d1=!pagedown     # On Down Arrow key
+ KEYBOARD_KEY_c9=!pageup       # On Up Arrow key
+#+end_src
+
+*** Apply Changes
+#+begin_src bash :tangle no
+sudo systemd-hwdb update
+sudo udevadm trigger --verbose --sysname-match="event*"
+#+end_src
+
 ** Grub
 #+begin_src conf :tangle /sudo:://etc/default/grub
 GRUB_DEFAULT=saved
@@ -29,6 +76,7 @@ HandleHibernateKey=hibernate
 #+end_src
 
 ** XDG Defaults
+*** Default Applications
 :PROPERTIES:
 :header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/mimeapps.list")
 :END:
@@ -38,6 +86,34 @@ See https://www.freeformatter.com/mime-types-list.html for a list of schema.
 x-scheme-handler/http=org.qutebrowser.qutebrowser.desktop
 x-scheme-handler/https=org.qutebrowser.qutebrowser.desktop
 application/pdf=org.qutebrowser.qutebrowser.desktop
+#+end_src
+
+*** User Directories
+**** Assign User Directories
+:PROPERTIES:
+:header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/user-dirs.dirs")
+:END:
+#+begin_src conf
+XDG_DESKTOP_DIR="$HOME/Desktop"
+XDG_DOCUMENTS_DIR="$HOME/Documents"
+XDG_DOWNLOAD_DIR="$HOME/Downloads"
+XDG_MUSIC_DIR="$HOME/Music"
+XDG_PICTURES_DIR="$HOME/Pictures"
+XDG_PUBLICSHARE_DIR="$HOME/Public"
+XDG_TEMPLATES_DIR="$HOME/Templates"
+XDG_VIDEOS_DIR="$HOME/Videos"
+#+end_src
+
+**** Create User Directories
+#+begin_src bash
+mkdir -p $XDG_DESKTOP_DIR
+mkdir -p $XDG_DOCUMENTS_DIR
+mkdir -p $XDG_DOWNLOAD_DIR
+mkdir -p $XDG_MUSIC_DIR
+mkdir -p $XDG_PICTURES_DIR
+mkdir -p $XDG_PUBLICSHARE_DIR
+mkdir -p $XDG_TEMPLATES_DIR
+mkdir -p $XDG_VIDEOS_DIR
 #+end_src
 
 ** ZSH Config
@@ -61,7 +137,6 @@ mkdir -p "$(dirname "$HISTFILE")"
 
 *** Theme
 #+begin_src bash
-fpath+="$XDG_CONFIG_HOME"/zsh/pure
 autoload -U promptinit; promptinit
 zstyle :prompt:pure:prompt:success color green
 zstyle :prompt:pure:prompt:error color red
@@ -92,19 +167,20 @@ export VISUAL=nvim
 
 *** Audio
 #+begin_src bash
-playerctld daemon
+playerctld daemon &> /dev/null
 #+end_src
 
 *** Emacs
 #+begin_src bash
 vterm_printf(){
-    if [ -n "$TMUX" ] && ([ "${TERM%%-*}" = "tmux" ] \
-       || [ "${TERM%%-*}" = "screen" ] ); then
-        printf "\ePtmux;\e\e]%s\007\e\\\" "$1"
+    if [ -n "$TMUX" ] && ([ "${TERM%%-*}" = "tmux" ] || [ "${TERM%%-*}" = "screen" ] ); then
+        # Tell tmux to pass the escape sequences through
+        printf "\ePtmux;\e\e]%s\007\e\\" "$1"
     elif [ "${TERM%%-*}" = "screen" ]; then
-        printf "\eP\e]%s\007\e\\\" "$1"
+        # GNU screen (screen, screen-256color, screen-256color-bce)
+        printf "\eP\e]%s\007\e\\" "$1"
     else
-        printf "\e]%s\e\\\" "$1"
+        printf "\e]%s\e\\" "$1"
     fi
 }
 #+end_src
@@ -237,7 +313,7 @@ $INSTALL inetutils
 
 *** Python
 #+begin_src bash
-$INSTALL python
+$INSTALL python python-matplotlib poetry
 #+end_src
 
 ** Terminal Emulators
@@ -267,7 +343,7 @@ $INSTALL usbutils usbip
 
 *** Bluetooth
 #+begin_src bash
-$INSTALL bluez bluez-utils pulseaudio-bluetooth
+$INSTALL bluez bluez-utils pulseaudio-bluetooth blueman-git
 sudo systemctl enable bluetooth
 #+end_src
 
@@ -284,7 +360,7 @@ sudo systemctl enable bluetooth
 [AVDTP]
 
 [Policy]
-AutoEnable=false
+AutoEnable=true
 
 [AdvMon]
 #+end_src
@@ -315,10 +391,20 @@ $INSTALL alsa-utils pavucontrol
 #+end_src
 
 *** Media
-**** Install
+**** MPV
+***** Install
 #+begin_src bash
-$INSTALL playerctl mpv youtube-dl baka-mplayer
+$INSTALL playerctl mpv yt-dlp baka-mplayer
 #+end_src
+
+***** MPV Config
+:PROPERTIES:
+:header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/mpv/mpv.conf")
+:END:
+#+begin_src conf
+script-opts=ytdl_hook-ytdl_path=yt-dlp
+#+end_src
+
 
 **** Set XF86 Keys
 #+begin_src conf :tangle ~/.xbindkeysrc
@@ -415,8 +501,9 @@ export XDG_CONFIG_HOME=$HOME/.config
 export XDG_CACHE_HOME=$HOME/.cache
 export XDG_DATA_HOME=$HOME/.local/share
 export XDG_STATE_HOME=$HOME/.local/state
-export BACKGROUNDS=$HOME/backgrounds
-export REPOSITORIES=$HOME/repositories
+export BACKGROUNDS=$HOME/Backgrounds
+export REPOSITORIES=$HOME/Repositories
+export PATH="$PATH:$HOME/development-environment/scripts"
 #+end_src
 
 **** Environment Config
@@ -433,9 +520,8 @@ alias spotify="spotify --force-device-scale-factor=2"
 
 **** Pure (ZSH Theme)
 #+begin_src bash
-if (mkdir "$XDG_CONFIG_HOME"/zsh/pure); then
-    git clone https://github.com/sindresorhus/pure.git "$XDG_CONFIG_HOME"/zsh/pure && true
-fi
+$INSTALL nodejs npm
+sudo npm install --global pure-prompt
 #+end_src
 
 ** Xmodmap
@@ -466,6 +552,35 @@ add lock = Control_R
    #+end_src
 
 ** File System Support
+*** Auto Mount Daemon
+#+begin_src bash
+$INSTALL autofs
+sudo mkdir -p /misc/android
+#+end_src
+
+**** Autofs Config
+:PROPERTIES:
+:header-args:conf: :tangle /sudo:://etc/autofs/auto.misc
+:END:
+#+begin_src conf
+#
+# This is an automounter map and it has the following format
+# key [ -mount-options-separated-by-comma ] location
+# Details may be found in the autofs(5) manpage
+
+cd		-fstype=iso9660,ro,nosuid,nodev         :/dev/cdrom
+android         -fstype=fuse,allow_other,umask=000      :mtpfs
+
+# the following entries are samples to pique your imagination
+#linux		-ro,soft		ftp.example.org:/pub/linux
+#boot		-fstype=ext2		:/dev/hda1
+#floppy		-fstype=auto		:/dev/fd0
+#floppy		-fstype=ext2		:/dev/fd0
+#e2floppy	-fstype=ext2		:/dev/fd0
+#jaz		-fstype=ext2		:/dev/sdc1
+#removable	-fstype=ext2		:/dev/hdd
+#+end_src
+
 *** exFAT Support
 #+begin_src bash
 $INSTALL exfatprogs
@@ -479,6 +594,16 @@ $INSTALL ntfs-3g
 *** VHD and VHDX Support
 #+begin_src bash
 $INSTALL libguestfs
+#+end_src
+
+*** Media Transfer Protocol
+#+begin_src bash
+$INSTALL mtpfs
+#+end_src
+
+*** Udisks
+#+begin_src bash
+$INSTALL udisks2
 #+end_src
 
 ** Syncing Emails to a Local Directory
@@ -629,7 +754,7 @@ modules-left = date
 ;modules-center = cpu temperature memory
 modules-right = wireless-network pulseaudio backlight redshift battery
 
-tray-position = right
+tray-position = none
 tray-maxsize = 28
 
 cursor-click = pointer
@@ -863,6 +988,12 @@ initial = 1
 format-padding = 1
 #+end_src
 
+** QT/KDE Theme
+*** Install Theme
+#+begin_src bash
+$INSTALL materia-kde kvantum-theme-materia kvantum
+#+end_src
+
 ** GTK Theme
 *** Install Theme
 #+begin_src bash
@@ -906,7 +1037,12 @@ sudo systemctl enable lightdm
 
 **** Install LightDM Theme
 #+begin_src bash
-$INSTALL lightdm-webkit-theme-litarvan
+$INSTALL lightdm-webkit2-greeter
+sudo mkdir -p /usr/share/lightdm-webkit/themes/litaravan
+
+wget https://github.com/Litarvan/lightdm-webkit-theme-litarvan/releases/download/v3.2.0/lightdm-webkit-theme-litarvan-3.2.0.tar.gz -O $REPOSITORIES/lightdm-webkit-theme-litarvan-3.2.0.tar.gz
+
+sudo tar -xf $REPOSITORIES/lightdm-webkit-theme-litarvan-3.2.0.tar.gz -C /usr/share/lightdm-webkit/themes/litarvan
 #+end_src
 
 **** Configure LightDM
@@ -994,22 +1130,22 @@ fade-out-step = 0.03;
 #   Transparency / Opacity      #
 #################################
 inactive-opacity = 0.8;
-frame-opacity = 0.7;
+frame-opacity = 0.8;
 inactive-opacity-override = false;
 focus-exclude = [ "class_g = 'Cairo-clock'" ];
 opacity-rule = [
-  "100:fullscreen", "80:!fullscreen",
+  "100:fullscreen",
 ];
 
 #################################
 #     Background-Blurring       #
 #################################
-blur-method = "dual_kawase";
-blur-strength = 5;
-blur-background-exclude = [
-  "window_type = 'desktop'",
-  "_GTK_FRAME_EXTENTS@:c"
-];
+#blur-method = "dual_kawase";
+#blur-strength = 5;
+#blur-background-exclude = [
+#  "window_type = 'desktop'",
+#  "_GTK_FRAME_EXTENTS@:c"
+#];
 
 #################################
 #       General Settings        #
@@ -1030,7 +1166,7 @@ log-level = "warn";
 wintypes:
 {
   tooltip = { fade = true; shadow = true; opacity = 0.75; focus = true; full-shadow = false; };
-  dock = { shadow = false; }
+  dock = { shadow = false; opacity = 0.9}
   dnd = { shadow = false; }
   popup_menu = { opacity = 0.8; }
   dropdown_menu = { opacity = 0.8; }
@@ -1051,8 +1187,8 @@ feh --bg-scale $BACKGROUNDS/unit-01.jpg
 xbindkeys
 xmodmap $XDG_CONFIG_HOME/xmodmap/config
 export QT_AUTO_SCREEN_SCALE_FACTOR=1
+export QT_STYLE_OVERRIDE=kvantum
 #+end_src
-
 
 ** XBindKeys
 #+begin_src bash
@@ -1198,7 +1334,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- Restart xmonad
     , ((modm              , xK_q     ), spawn "xmonad --recompile; xmonad --restart")
 
-    -- Run xmessage with a summary of the default keybindings (useful for beginners)
+    -- Run xmessage with a summary of the default keybindings
     , ((modm .|. shiftMask, xK_slash ), spawn ("echo \"" ++ help ++ "\" | xmessage -file -"))
     ]
     ++
@@ -1562,7 +1698,7 @@ See [[https://dunst-project.org/documentation/]]
     #default_icon = /path/to/icon
 
 [urgency_normal]
-    background = "#285577"
+    background = "#222222"
     foreground = "#ffffff"
     timeout = 10
     # Icon for notifications with normal urgency, uncomment to enable
@@ -1699,6 +1835,71 @@ ln -s $DIR/backgrounds ~/backgrounds
 $INSTALL firefox
 #+end_src
 
+*** Blender
+#+begin_src bash
+$INSTALL blender blendnet
+#+end_src
+
+*** Flameshot
+**** Install
+#+begin_src bash
+$INSTALL flameshot
+#+end_src
+
+**** Config
+:PROPERTIES:
+:header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/flameshot/flameshot.ini")
+:END:
+#+begin_src conf
+[General]
+buttons=@Variant(\0\0\0\x7f\0\0\0\vQList<int>\0\0\0\0\x16\0\0\0\0\0\0\0\x1\0\0\0\x2\0\0\0\x3\0\0\0\x4\0\0\0\x5\0\0\0\x6\0\0\0\x12\0\0\0\xf\0\0\0\a\0\0\0\b\0\0\0\t\0\0\0\x10\0\0\0\n\0\0\0\v\0\0\0\f\0\0\0\r\0\0\0\xe\0\0\0\x11\0\0\0\x13\0\0\0\x14\0\0\0\x15)
+contrastOpacity=188
+contrastUiColor=#00789e
+disabledTrayIcon=false
+drawColor=#ffff00
+drawFontSize=8
+drawThickness=1
+ignoreUpdateToVersion=11.0.0
+savePath=/home/mwglen/Pictures
+savePathFixed=false
+showStartupLaunchMessage=true
+startupLaunch=true
+uiColor=#ffffff
+
+[Shortcuts]
+TYPE_ARROW=A
+TYPE_CIRCLE=C
+TYPE_CIRCLECOUNT=
+TYPE_COMMIT_CURRENT_TOOL=Ctrl+Return
+TYPE_COPY=Ctrl+C
+TYPE_DELETE_CURRENT_TOOL=Del
+TYPE_DRAWER=D
+TYPE_EXIT=Ctrl+Q
+TYPE_MARKER=M
+TYPE_MOVESELECTION=Ctrl+M
+TYPE_MOVE_DOWN=Down
+TYPE_MOVE_LEFT=Left
+TYPE_MOVE_RIGHT=Right
+TYPE_MOVE_UP=Up
+TYPE_OPEN_APP=Ctrl+O
+TYPE_PENCIL=P
+TYPE_PIN=
+TYPE_PIXELATE=B
+TYPE_RECTANGLE=R
+TYPE_REDO=Ctrl+Shift+Z
+TYPE_RESIZE_DOWN=Shift+Down
+TYPE_RESIZE_LEFT=Shift+Left
+TYPE_RESIZE_RIGHT=Shift+Right
+TYPE_RESIZE_UP=Shift+Up
+TYPE_SAVE=Ctrl+S
+TYPE_SELECTION=S
+TYPE_SELECTIONINDICATOR=
+TYPE_SELECT_ALL=Ctrl+A
+TYPE_TEXT=T
+TYPE_TOGGLE_PANEL=Space
+TYPE_UNDO=Ctrl+Z
+#+end_src
+
 *** Qutebrowser
 **** Install
 #+begin_src bash
@@ -1708,12 +1909,11 @@ mkdir -p $XDG_DATA_HOME/qutebrowser/userscripts
 
 **** Userscripts
 ***** Qute-Bitwarden
+A modified version of the code from official qutebrowser userscripts
 #+begin_src bash
 wget raw.githubusercontent.com/qutebrowser/qutebrowser/master/misc/userscripts/qute-bitwarden -O $XDG_DATA_HOME/qutebrowser/userscripts/qute-bitwarden
-
-sed -i 's/rofi -dmenu -i -p/ivy-read.sh/g' $XDG_DATA_HOME/qutebrowser/userscripts/qute-bitwarden
-
 chmod +x $XDG_DATA_HOME/qutebrowser/userscripts/qute-bitwarden
+
 $INSTALL python-tldextract
 #+end_src
 
@@ -1736,6 +1936,8 @@ c.completion.show = "auto"
 c.downloads.location.directory = '~/Downloads'
 c.tabs.show = 'never'
 c.statusbar.show = 'never'
+c.scrolling.bar = 'never'
+c.scrolling.smooth = True
 
 # Fonts
 c.fonts.default_family = '"Fira Code Retina"'
@@ -1749,6 +1951,8 @@ c.fonts.statusbar = '11pt "Fira Code Retina"'
 #config.bind('o', 'spawn --userscript dmenu-open')
 #config.bind('O', 'spawn --userscript dmenu-open --tab')
 
+config.bind('pw', 'spawn --userscript qute-bitwarden -p "ivy_run \\"Master Password: \\"" -d "ivy_run \\"Bitwarden: \\""')
+
 # Colors
 c.colors.completion.fg = ['#9cc4ff', 'white', 'white']
 c.colors.completion.odd.bg = '#1c1f24'
@@ -1761,7 +1965,7 @@ c.colors.completion.item.selected.fg = '#282c34'
 c.colors.completion.item.selected.bg = '#ecbe7b'
 c.colors.completion.item.selected.match.fg = '#c678dd'
 c.colors.completion.match.fg = '#c678dd'
-c.colors.completion.scrollbar.fg = 'white'
+c.colors.completion.scrollbar.fg = 'black'
 c.colors.downloads.bar.bg = '#282c34'
 c.colors.downloads.error.bg = '#ff6c6b'
 c.colors.hints.fg = '#282c34'
@@ -1797,25 +2001,6 @@ config.bind('M', 'spawn baka-mplayer {url}')
 config.bind('xb', 'config-cycle statusbar.show always never')
 config.bind('xt', 'config-cycle tabs.show always never')
 config.bind('xx', 'config-cycle statusbar.show always never;; config-cycle tabs.show always never')
-
-config.set('content.cookies.accept', 'all', 'chrome-devtools://*')
-config.set('content.cookies.accept', 'all', 'devtools://*')
-
-config.set('content.headers.accept_language', '', 'https://matchmaker.krunker.io/*')
-
-config.set('content.headers.user_agent', 'Mozilla/5.0 ({os_info}) AppleWebKit/{webkit_version} (KHTML, like Gecko) {upstream_browser_key}/{upstream_browser_version} Safari/{webkit_version}', 'https://web.whatsapp.com/')
-
-config.set('content.headers.user_agent', 'Mozilla/5.0 ({os_info}; rv:90.0) Gecko/20100101 Firefox/90.0', 'https://accounts.google.com/*')
-
-config.set('content.headers.user_agent', 'Mozilla/5.0 ({os_info}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99 Safari/537.36', 'https://*.slack.com/*')
-
-config.set('content.images', True, 'chrome-devtools://*')
-config.set('content.images', True, 'devtools://*')
-
-config.set('content.javascript.enabled', True, 'chrome-devtools://*')
-config.set('content.javascript.enabled', True, 'devtools://*')
-config.set('content.javascript.enabled', True, 'chrome://*/*')
-config.set('content.javascript.enabled', True, 'qute://*/*')
 #+end_src
 
 **** Solarized Themes
@@ -1828,6 +2013,16 @@ cd $XDG_CONFIG_HOME/qutebrowser && git clone https://github.com/alphapapa/solari
 *** Bitwarden
 #+begin_src bash
 $INSTALL bitwarden bitwarden-cli
+#+end_src
+
+*** Sidequest
+#+begin_src bash
+$INSTALL sidequest-bin
+#+end_src
+
+*** GlxInfo
+#+begin_src bash
+$INSTALL glxinfo
 #+end_src
 
 *** Spotify
@@ -1863,8 +2058,15 @@ echo "unqualified-search-registries = ['docker.io']" \
 #+end_src
 
 *** Feh
+**** Install
 #+begin_src bash
 $INSTALL feh
+#+end_src
+
+**** Copy Over Backgrounds
+#+begin_src bash
+mkdir -p $BACKGROUNDS
+cp -r $DIR/backgrounds/* $BACKGROUNDS
 #+end_src
 
 *** Neovim

@@ -70,6 +70,7 @@
   (auto-package-update-at-time "09:00"))
 #+end_src
 
+** Utilities
 *** No Littering
 #+begin_src emacs-lisp
 (use-package no-littering)
@@ -128,22 +129,15 @@
 (setq confirm-kill-processes nil)
 #+end_src
 
-*** Set UTF-8 Encoding
-#+begin_src emacs-lisp
-(setq locale-coding-system 'utf-8)
-(set-terminal-coding-system 'utf-8)
-(set-keyboard-coding-system 'utf-8)
-(set-selection-coding-system 'utf-8)
-(prefer-coding-system 'utf-8)
-#+end_src
-
 *** Line Numbers
 #+begin_src emacs-lisp
 (column-number-mode)
 (global-display-line-numbers-mode t)
 (setq display-line-numbers-type 'relative)
+#+end_src
 
-;; Disable line numbers for some modes
+****  Disable for some Modes
+#+begin_src emacs-lisp
 (dolist (mode '(term-mode-hook
                 org-mode-hook
                 shell-mode-hook
@@ -180,6 +174,45 @@
   :hook (text-mode . mixed-pitch-mode))
 #+end_src
 
+*** Default Theme
+#+begin_src emacs-lisp
+;; Good Dark Themes: doom-moonless doom-tomorrow-night
+;; Good Light Themes: doom-acario-light
+(use-package doom-themes
+  :init (load-theme 'doom-moonless t))
+#+end_src
+
+*** Use Transparent Frames
+#+begin_src emacs-lisp
+(defun transparency/on ()
+    (interactive)
+    (set-frame-parameter (selected-frame) 'alpha '(90 . 90))
+    (add-to-list 'default-frame-alist '(alpha . (90 . 90))))
+
+(defun transparency/off ()
+    (interactive)
+    (set-frame-parameter (selected-frame) 'alpha '(100 . 100))
+    (add-to-list 'default-frame-alist '(alpha . (100 . 100))))
+
+(transparency/on)
+#+end_src
+
+** Characters
+*** Set UTF-8 Encoding
+#+begin_src emacs-lisp
+(setq locale-coding-system 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(set-selection-coding-system 'utf-8)
+(prefer-coding-system 'utf-8)
+#+end_src
+
+*** All The Icons
+#+begin_src emacs-lisp
+(use-package all-the-icons)
+#+end_src
+
+** Window Management
 *** Edwina
 #+begin_src emacs-lisp
 (use-package edwina
@@ -193,7 +226,10 @@
 *** Buffer Move
 #+begin_src emacs-lisp
 (use-package buffer-move
-  :commands (buf-move-up buf-move-down buf-move-left buf-move-right))
+  :commands (buf-move-up
+             buf-move-down
+             buf-move-left
+             buf-move-right))
 (global-set-key [?\s-k] 'buf-move-up)
 (global-set-key [?\s-j] 'buf-move-down)
 (global-set-key [?\s-h] 'buf-move-left)
@@ -201,34 +237,6 @@
 #+end_src
 
 ** Theme Configuration
-*** Setup Theme
-#+begin_src emacs-lisp
-;; Good Dark Themes: doom-moonless doom-tomorrow-night
-;; Good Light Themes: doom-acario-light
-(use-package doom-themes
-  :init (load-theme 'doom-moonless t))
-#+end_src
-
-*** Use Transparent Frames
-#+begin_src emacs-lisp
-(defun transparency/on ()
-    (interactive)
-    (set-frame-parameter (selected-frame) 'alpha '(80 . 80))
-    (add-to-list 'default-frame-alist '(alpha . (80 . 80))))
-
-(defun transparency/off ()
-    (interactive)
-    (set-frame-parameter (selected-frame) 'alpha '(100 . 100))
-    (add-to-list 'default-frame-alist '(alpha . (100 . 100))))
-
-(transparency/on)
-#+end_src
-
-*** All The Icons
-#+begin_src emacs-lisp
-(use-package all-the-icons)
-#+end_src
-
 *** Doom Modeline
 *NOTE:* The first time you load your configuration on a new machine, you'll need to run `M-x all-the-icons-install-fonts` so that mode line icons display correctly.
 
@@ -263,10 +271,24 @@
   (doom-modeline-gnus-timer nil)
   (doom-modeline-github-timer nil)
   (doom-modeline-buffer-encoding nil))
-(set-face-attribute 'mode-line nil :height 0.9)
+;(set-face-attribute 'mode-line nil :height 0.9)
+;(set-face-attribute 'mode-line-inactive nil :height 0.9)
 #+end_src
 
 ** Desktop Environment
+*** Set Wallpaper
+#+begin_src emacs-lisp
+(defun wallpaper/use-default ()
+  (interactive)
+  (start-process-shell-command
+   "feh" nil "feh --bg-scale $BACKGROUNDS/unit-01.jpg"))
+
+(defun wallpaper/set ()
+  (interactive)
+  (start-process-shell-command
+   "feh" nil (concat "feh --bg-scale " (counsel-find-file))))
+#+end_src
+
 *** Polybar
 #+begin_src emacs-lisp
 (defvar polybar/process nil
@@ -282,24 +304,12 @@
 (defun polybar/start ()
   (interactive)
   (polybar/kill)
-  (setq polybar/process (start-process-shell-command
-                             "polybar" nil "polybar panel")))
-#+end_src
-  
-*** Setup EXWM
-**** Set Wallpaper
-#+begin_src emacs-lisp
-(defun wallpaper/use-default ()
-  (interactive)
-  (start-process-shell-command
-   "feh" nil "feh --bg-scale $BACKGROUNDS/unit-01.jpg"))
-
-(defun wallpaper/set ()
-  (interactive)
-  (start-process-shell-command
-   "feh" nil (concat "feh --bg-scale " (counsel-find-file))))
+  (setq polybar/process
+        (start-process-shell-command
+         "polybar" nil "polybar panel")))
 #+end_src
 
+*** EXWM
 **** Add Transparency
 #+begin_src emacs-lisp
 (defconst transsetDefault ".6")
@@ -311,7 +321,7 @@
                  "wmctrl -l | cut -f -1 -d ' '")
                 "\n")))
     (start-process "transset" nil
-                   "transset" "-i" id transsetDefault)))
+     "transset" "-i" id transsetDefault)))
 
 (defun transset/off ()
   (interactive)
@@ -328,7 +338,8 @@
 #+begin_src emacs-lisp
 (defun process/run-in-background (command)
   (let ((command-parts (split-string command "[ ]+")))
-    (apply #'call-process `(,(car command-parts) nil 0 nil ,@(cdr command-parts)))))
+    (apply #'call-process `(,(car command-parts) nil 0 nil
+                            ,@(cdr command-parts)))))
 #+end_src
 
 ****  Setup EXWM
@@ -350,13 +361,13 @@
 
 ***** Setup Pinentry
 #+begin_src emacs-lisp
-  ;; Let emacs handle queries for gpg passwords
-  (defun pinentry-emacs (desc prompt ok error)
-    (let ((str (read-passwd
-                (concat (replace-regexp-in-string
-                         "%22" "\"" (replace-regexp-in-string
-                                     "%OA" "\n" desc)) prompt ": "))))
-      str))
+;; Let emacs handle queries for gpg passwords
+(defun pinentry-emacs (desc prompt ok error)
+  (let ((str (read-passwd
+              (concat (replace-regexp-in-string
+                       "%22" "\"" (replace-regexp-in-string
+                                   "%OA" "\n" desc)) prompt ": "))))
+    str))
 #+end_src
 
 ***** Set Prefix Keys
@@ -368,17 +379,25 @@
           ?\C-h   ;; Help Prefix
           ?\C-\;  ;; Change Input Method
           ?\C-u   ;;
+          ?\C-w   ;; Change Window
           ?\M-:   ;; Eval expression
           
           ;; Move Buffers
-          ?\s-h
+          ?\s-J
+          ?\s-k
+
+          ;; Grow Window
+          ?\s-H
+          ?\s-l
+
+          ;; Switch Buffers
           ?\s-j
           ?\s-k
-          ?\s-l
           
           ?\M-p   ;; Open X-Application
           ?\s-P   ;; Open X-Application in new window
-          
+
+          ?\:
           escape
           ?\C-\M-j
           ?\C-\ )))
@@ -392,12 +411,6 @@
           ;; Reset to line-mode (C-c C-k switches to
           ;; char-mode via exwm-input-release-keyboard)
           ([?\s-r] . exwm-reset)
-
-          ;; Resize windows
-          ;([?\s-H] . windsize-left)
-          ;([?\s-J] . windsize-down)
-          ;([?\s-K] . windsize-up)
-          ;([?\s-L] . windsize-right)
 
           ;; Launch applications via shell command
           ([?\s-p] . (lambda (command)
@@ -433,6 +446,7 @@
 (defun exwm/update-title ()
   (pcase exwm-class-name
     ("qutebrowser" (exwm-workspace-rename-buffer exwm-title))
+    ("baka-mplayer" (exwm-workspace-rename-buffer exwm-title))
     ("firefox" (exwm-workspace-rename-buffer exwm-title))))
 
 (defun exwm/position-window (x y)
@@ -443,6 +457,14 @@
     (exwm-floating-move
      (+ (- pos-x) x) (+ (- pos-y) y))))
 
+(defun exwm/start-systray-applications ()
+  (interactive)
+  (start-process-shell-command
+   "nm-applet" nil "nm-applet")
+  (start-process-shell-command
+   "hp-systray" nil "hp-systray")
+  (start-process-shell-command
+   "nm-applet" nil "blueman-applet"))
 #+end_src
 
 ***** Check for Running Window Managers
@@ -452,8 +474,10 @@
 (when (get-buffer "*window-manager-error*")
   (kill-buffer "*window-manager-error*"))
 (when (executable-find "wmctrl")
-  (shell-command "wmctrl -m ; echo $?" "*window-manager*"
-                 "*window-manager-error*"))
+  (shell-command
+   "wmctrl -m ; echo $?"
+   "*window-manager*"
+   "*window-manager-error*"))
 #+end_src
 
 ***** Start EXWM
@@ -461,26 +485,39 @@
 (when (and (get-buffer "*window-manager-error*")
            (eq window-system 'x)) 
   (use-package exwm
-  :config
-  (add-hook 'exwm-update-class-hook #'exwm/update-class)
-  (add-hook 'exwm-update-title-hook #'exwm/update-title)
-  (define-key exwm-mode-map [?\C-q] 'exwm-input-send-next-key)
-  (setq exwm-workspace-number 5)
-  ;(setq exwm-layout-show-all-buffers t)
-  ;(setq exwm-workspace-show-all-buffers t)
-  (exwm/set-prefix-keys)
-  (exwm/set-global-keys)
-  (server-start)
-  (setf epg-pinentry-mode 'loopback)
-  (exwm/start-polybar)
-  (exwm-enable)))
+    :config
+    (add-hook 'exwm-update-class-hook #'exwm/update-class)
+    (add-hook 'exwm-update-title-hook #'exwm/update-title)
+    (define-key exwm-mode-map [?\C-q] 'exwm-input-send-next-key)
+    (setq exwm-workspace-number 5)
+    ;(setq exwm-layout-show-all-buffers t)
+    ;(setq exwm-workspace-show-all-buffers t)
+    (require 'exwm-systemtray)
+    (exwm-systemtray-enable)
+    (setq exwm-systemtray-height 32)
+
+    (custom-set-variables
+     '(exwm-manage-configurations
+       '(((and
+           (stringp exwm-class-name)
+           (string-match-p "qutebrowser" exwm-class-name))
+          floating-mode-line nil tiling-mode-line  nil))))
+    
+    (exwm/set-prefix-keys)
+    (exwm/set-global-keys)
+    (server-start)
+    (setf epg-pinentry-mode 'loopback)
+    (exwm/start-polybar)
+    (exwm-enable)
+    (exwm/start-systray-applications)))
 #+end_src
 
 *** exwm-evil-firefox
 #+begin_src emacs-lisp
 (use-package exwm-firefox-evil
   :after exwm
-  :hook (exwm-manage-finish-hook . exwm-firefox-evil-activate-if-firefox))
+  :hook (exwm-manage-finish-hook
+         . exwm-firefox-evil-activate-if-firefox))
 #+end_src
 
 *** Bluetooth Support
@@ -493,10 +530,10 @@
 #+begin_src emacs-lisp
 (use-package evil
   :init
-  (setq evil-want-integration t)
-  (setq evil-want-keybinding nil)
-  (setq evil-want-C-u-scroll t)
-  (setq evil-want-C-i-jump nil)
+  (setq evil-want-integration t
+        evil-want-keybinding nil
+        evil-want-C-u-scroll t
+        evil-want-C-i-jump nil)
   :config
   (evil-mode 1)
   (define-key evil-insert-state-map (kbd "C-;") 'evil-normal-state)
@@ -514,6 +551,20 @@
     (kbd "<remap> <evil-previous-line>") #'evil-previous-line)
   (global-unset-key (kbd "C-x ESC"))
   (global-unset-key (kbd "C-c ESC")))
+#+end_src
+
+**** Disable in Certain Modes
+#+begin_src emacs-lisp
+;; (dolist (mode '(term-mode-hook
+;;                 org-mode-hook
+;;                 shell-mode-hook
+;;                 treemacs-mode-hook
+;;                 eshell-mode-hook
+;;                 vterm-mode-hook))
+;;   (add-hook mode (lambda () (display-line-numbers-mode 0))))
+#+end_src
+
+*** Good Scrolling
 #+end_src
 
 **** Evil Collection
@@ -568,9 +619,10 @@
         ivy-posframe-height (/ (frame-height) 5))
   (setq ivy-posframe-display-functions-alist
         '((t . ivy-posframe-display-at-frame-bottom-left)))
-  (set-face-attribute 'ivy-posframe nil
-                      :foreground "white"
-                      :background "black")
+  (set-face-attribute
+   'ivy-posframe nil
+   :foreground "white"
+   :background "black")
   (ivy-posframe-mode 1))
 #+end_src
 
@@ -604,22 +656,19 @@
          :map minibuffer-local-map
          ("C-r" . 'counsel-minibuffer-history))
   :custom
-  (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
+  (counsel-linux-app-format-function
+   #'counsel-linux-app-format-function-name-only)
   :config
   (counsel-mode 1))
 #+end_src
 
 ** Other Modes
-*** Makefile Mode
-#+begin_src emacs-lisp
-(use-package make-mode
-  :mode (("Makefile" . makefile-gmake-mode)))
-#+end_src
-   
 *** Helpful
 #+begin_src emacs-lisp
 (use-package helpful
-  :commands (helpful-callable helpful-variable helpful-command helpful-key)
+  :commands (helpful-callable
+             helpful-variable
+             helpful-command helpful-key)
   :custom
   (counsel-describe-function-function #'helpful-callable)
   (counsel-describe-variable-function #'helpful-variable)
@@ -639,28 +688,7 @@
 #+begin_src emacs-lisp
 (use-package solaire-mode
   :config
-  (solaire-global-mode +1))
-#+end_src
-
-*** Treemacs
-#+begin_src emacs-lisp
-(use-package treemacs
-  :after general
-  :config
-  (my/leader-keys
-    "C-d" 'treemacs))
-
-(use-package treemacs-evil
-  :after (treemacs evil))
-
-(use-package treemacs-projectile
-  :after (treemacs projectile))
-
-(use-package treemacs-magit
-  :after (treemacs magit))
-
-(use-package treemacs-persp
-  :after (treemacs persp-mode))
+  (solaire-global-mode 1))
 #+end_src
 
 ** Org Mode
@@ -668,10 +696,12 @@
 #+begin_src emacs-lisp
 (defun org/font-setup ()
   ;; Replace list hyphen with dot
-  (font-lock-add-keywords 'org-mode '(("^ *\\([-]\\) "
-                                       (0 (prog1 () (compose-region
-                                                     (match-beginning 1)
-                                                     (match-end 1) "•")))))))
+  (font-lock-add-keywords
+   'org-mode
+   '(("^ *\\([-]\\) "
+      (0 (prog1 () (compose-region
+                    (match-beginning 1)
+                    (match-end 1) "•")))))))
 #+end_src
 
 *** Basic Config
@@ -687,10 +717,11 @@
   :hook (org-mode . org/setup)
   :config
   (org/font-setup)
-  (setq-default org-ellipsis " ▾"
-                org-pretty-entities t
-                org-hide-emphasis-markers t
-                org-edit-src-content-indentation 0))
+  (setq-default
+   org-ellipsis " ▾"
+   org-pretty-entities t
+   org-hide-emphasis-markers t
+   org-edit-src-content-indentation 0))
 #+end_src
 
 **** Nicer Heading Bullets
@@ -711,7 +742,7 @@
   :hook (org-mode . olivetti-mode))
 #+end_src
 
-**** Drag and Drop Images
+*** Drag and Drop Images
 #+begin_src emacs-lisp
 (use-package org-download
   :after org
@@ -724,19 +755,8 @@
 (use-package auctex
   :defer t
   :config
-  (setq TeX-auto-save t)
-  (setq TeX-parse-self t))
-  ;(setq org-format-latex-options
-  ;      (plist-put org-format-latex-options :scale 4.0))
-
-;(require 'quelpa)
-;(quelpa '(calctex :fetcher url
-;                  :url            "https://raw.githubusercontent.com/johnbcoughlin/calctex/master/calctex/calctex.el"))
-;(quelpa '(org-calctex :fetcher url
-;                      :url            "https://raw.githubusercontent.com/johnbcoughlin/calctex/master/org-calctex/org-calctex.el"))
-  ;:config
-  ;(setq org-format-latex-options
-  ;      (plist-put org-format-latex-options :scale 4.0)))
+  (setq TeX-auto-save t
+        TeX-parse-self t))
 #+end_src
 
 *** Configure Babel Languages
@@ -772,8 +792,7 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
     (let ((org-confirm-babel-evaluate nil)) (org-babel-tangle)))) 
 
 (add-hook 'org-mode-hook
-          (lambda () (add-hook 'after-save-hook
-                               #'babel/tangle-config)))
+          (lambda () (add-hook 'after-save-hook #'babel/tangle-config)))
 #+end_src
 
 *** Org-Alert
@@ -781,8 +800,8 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
 (use-package org-alert
   :ensure t
   :config
-  (setq alert-default-style 'libnotify)
-  (setq org-alert-notify-cutoff (* 2 24 60 60))
+  (setq alert-default-style 'libnotify
+        org-alert-notify-cutoff (* 2 24 60 60))
   (org-alert-enable))
 #+end_src
 
@@ -796,10 +815,8 @@ Org Mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
   :bind-keymap
   ("C-c p" . projectile-command-map)
   :init
-  ;; NOTE: Set this to the folder where you keep your Git repos!
-  (when (file-directory-p "~/")
-    (setq projectile-project-search-path '("~/")))
-  (setq projectile-switch-project-action #'projectile-dired))
+  (setq projectile-project-search-path '("~/Repositories")
+        projectile-switch-project-action #'projectile-dired))
 
 (use-package counsel-projectile
   :after projectile
@@ -893,7 +910,8 @@ Gives sidelines, documentation popups, and references popups
 *** LSP Ivy
 Allows you to quckly find definitions.
 #+begin_src emacs-lisp :tangle no
-(use-package lsp-ivy)
+(use-package lsp-ivy
+  :after lsp)
 #+end_src
 
 *** Company Mode
@@ -910,10 +928,85 @@ Allows you to quckly find definitions.
   (company-idle-delay 0.0))
 #+end_src
 
-***** Company Box Mode
+**** Company Box Mode
 #+begin_src emacs-lisp
 (use-package company-box
   :hook (company-mode . company-box-mode))
+#+end_src
+
+** File Managers
+*** Dired
+#+begin_src emacs-lisp
+(use-package dired
+  :ensure nil
+  :commands (dired dired-jump)
+  :bind (("C-x C-j" . dired-jump))
+  :custom ((dired-listing-switches "-alh --group-directories-first"))
+  :config
+  (evil-collection-define-key 'normal 'dired-mode-map
+    "h" 'dired-single-up-directory
+    "l" 'dired-single-buffer))
+#+end_src
+
+**** Prevent Dired from Creating Extra Buffers
+#+begin_src emacs-lisp
+(use-package dired-single
+  :after dired)
+#+end_src
+
+****  Dired Icons
+#+begin_src emacs-lisp
+(use-package all-the-icons-dired
+  :hook (dired-mode . all-the-icons-dired-mode))
+#+end_src
+
+****  Open Files in External Programs
+#+begin_src emacs-lisp
+(use-package dired-open
+  :after dired
+  :config
+  (setq dired-open-extensions
+        '(("png" . "feh")
+          ("mkv" . "mpv"))))
+
+#+end_src
+
+****  Hide/Show Dotfiles
+#+begin_src emacs-lisp
+(use-package dired-hide-dotfiles
+  :hook (dired-mode . dired-hide-dotfiles-mode)
+  :config
+  (evil-collection-define-key 'normal 'dired-mode-map
+    "H" 'dired-hide-dotfiles-mode))
+#+end_src
+
+*** Treemacs
+#+begin_src emacs-lisp
+(use-package treemacs
+  :after general
+  :config
+  (my/leader-keys
+    "C-d" 'treemacs))
+
+(use-package treemacs-evil
+  :after (treemacs evil))
+
+(use-package treemacs-projectile
+  :after (treemacs projectile))
+
+(use-package treemacs-magit
+  :after (treemacs magit))
+
+(use-package treemacs-persp
+  :after (treemacs persp-mode))
+#+end_src
+
+
+** Languages
+*** Haskell
+#+begin_src emacs-lisp
+(use-package haskell-mode
+  :mode "\\.rs\\'")
 #+end_src
 
 *** TypeScript
@@ -932,35 +1025,43 @@ Allows you to quckly find definitions.
   :hook (rust-mode-hook . lsp-deferred))
 #+end_src
 
-** File Management
-*** Dired
+*** Makefile
 #+begin_src emacs-lisp
-(use-package dired
-  :ensure nil
-  :bind (("C-x C-j" . dired-jump))
-  :custom ((dired-listing-switches "-alh --group-directories-first"))
+(use-package make-mode
+  :mode (("Makefile" . makefile-gmake-mode)))
+#+end_src
+
+*** Python
+**** Poetry
+#+begin_src emacs-lisp
+(use-package transient)
+(use-package pyvenv)
+(use-package poetry)
+#+end_src
+
+*** Verilog
+#+begin_src emacs-lisp
+(use-package verilog-mode
   :config
-  (evil-collection-define-key 'normal 'dired-mode-map
-    "h" 'dired-single-up-directory
-    "l" 'dired-single-buffer))
+  (setq verilog-indent-level 3
+        verilog-indent-level-module 3
+        verilog-indent-level-behavioral 3
+        verilog-indent-level-directive 3
+        verilog-auto-indent-on-newline t
+        verilog-tab-always-indent t)
+        verilog-case-indent
+        verilog-auto-newline
+        verilog-auto-endcomments
+        verilog-minimum-comment-distance
+        verilog-indent-begin-after-if
+        verilog-auto-lineup
+        verilog-linter)
+#+end_src
 
-(use-package dired-single
-  :after 'dired)
-
-(use-package all-the-icons-dired
-  :hook (dired-mode . all-the-icons-dired-mode))
-
-(use-package dired-open
-  :after 'dired
-  :config
-  (setq dired-open-extensions '(("png" . "feh")
-                                ("mkv" . "mpv"))))
-
-(use-package dired-hide-dotfiles
-  :hook (dired-mode . dired-hide-dotfiles-mode)
-  :config
-  (evil-collection-define-key 'normal 'dired-mode-map
-    "H" 'dired-hide-dotfiles-mode))
+*** Nim
+#+begin_src emacs-lisp
+(use-package make-mode
+  :mode (("Makefile" . makefile-gmake-mode)))
 #+end_src
 
 ** Terminals
