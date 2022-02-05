@@ -95,38 +95,19 @@
 #+end_src
 
 ** User Interface
-*** Clear Default UI
+*** Basic Configuration
 #+begin_src emacs-lisp
 (setq inhibit-startup-message t)
-(scroll-bar-mode -1)
-(tool-bar-mode -1)
-(tooltip-mode -1)
-(menu-bar-mode -1)
-#+end_src
-
-*** Set Fringe Mode Size
-#+begin_src emacs-lisp
-(set-fringe-mode 10)
-#+end_src
-
-*** Disable Cursor Blinking
-#+begin_src emacs-lisp
-(blink-cursor-mode -1)
-#+end_src
-
-*** Disable Bell
-#+begin_src emacs-lisp
-(setq ring-bell-function 'ignore)
-#+end_src
-
-*** Enable "y/n" Answers
-#+begin_src emacs-lisp
-(fset 'yes-or-no-p 'y-or-n-p)
-#+end_src
-
-*** Dont Ask to Kill Processes
-#+begin_src emacs-lisp
 (setq confirm-kill-processes nil)
+(fset 'yes-or-no-p 'y-or-n-p)
+(setq ring-bell-function 'ignore)
+(when window-system
+  (blink-cursor-mode 0)
+  (scroll-bar-mode 0)
+  (tool-bar-mode 0)
+  (tooltip-mode 0)
+  (menu-bar-mode 0))
+(set-fringe-mode 10)
 #+end_src
 
 *** Line Numbers
@@ -201,9 +182,11 @@
 *** Set UTF-8 Encoding
 #+begin_src emacs-lisp
 (setq locale-coding-system 'utf-8)
+(set-default-coding-systems 'utf-8)
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 (set-selection-coding-system 'utf-8)
+(set-language-environment "UTF-8")
 (prefer-coding-system 'utf-8)
 #+end_src
 
@@ -271,8 +254,8 @@
   (doom-modeline-gnus-timer nil)
   (doom-modeline-github-timer nil)
   (doom-modeline-buffer-encoding nil))
-;(set-face-attribute 'mode-line nil :height 0.9)
-;(set-face-attribute 'mode-line-inactive nil :height 0.9)
+(set-face-attribute 'mode-line nil :height 0.9)
+(set-face-attribute 'mode-line-inactive nil :height 0.9)
 #+end_src
 
 ** Desktop Environment
@@ -387,15 +370,16 @@
           ?\s-k
 
           ;; Grow Window
-          ?\s-H
+          ?\s-h
           ?\s-l
 
           ;; Switch Buffers
           ?\s-j
           ?\s-k
           
-          ?\M-p   ;; Open X-Application
-          ?\s-P   ;; Open X-Application in new window
+          ?\M-p       ;; Open X-Application
+          ?\s-P       ;; Open X-Application in new window
+          ;;?\C-<tab>   ;; Open X-Application in new window
 
           ?\:
           escape
@@ -423,6 +407,9 @@
           ;; Fullscreen and Floating Windows
           ([?\s-f] . exwm-layout-toggle-fullscreen)
           ([?\s-F] . exwm-floating-toggle-floating)
+
+          ;; Switch between line mode and char mode
+          ([?\s-i] . exwm-input-toggle-keyboard)
 
           ;; 's-N': Switch to certain workspacw with Super 
           ,@(mapcar (lambda (i)
@@ -706,7 +693,14 @@
 
 *** Basic Config
 #+begin_src emacs-lisp
-(setq-default indent-tabs-mode nil)
+(setq-default
+ help-window-select t
+ debug-on-error t
+ indent-tabs-mode nil
+ jit-lock-defer-time 0
+ window-combination-resize t
+ history-delete-duplicates t)
+
 (defun org/setup ()
   (org-indent-mode 1)
   (visual-line-mode 1))
@@ -1006,7 +1000,7 @@ Allows you to quckly find definitions.
 *** Haskell
 #+begin_src emacs-lisp
 (use-package haskell-mode
-  :mode "\\.rs\\'")
+  :mode "\\.hs\\'")
 #+end_src
 
 *** TypeScript
@@ -1032,7 +1026,6 @@ Allows you to quckly find definitions.
 #+end_src
 
 *** Python
-**** Poetry
 #+begin_src emacs-lisp
 (use-package transient)
 (use-package pyvenv)

@@ -62,6 +62,9 @@ $INSTALL inetutils
 
 $INSTALL python python-matplotlib poetry
 
+$INSTALL rustup
+rustup default nightly
+
 $INSTALL alacritty
 
 $INSTALL nvidia
@@ -94,7 +97,7 @@ $INSTALL hplip
 
 $INSTALL texlive-core texlive-latexextra
 
-$INSTALL zsh
+$INSTALL zsh zsh-completions zsh-syntax-highlighting zsh-autosuggestions
 
 source $HOME/.zshenv
 
@@ -212,7 +215,7 @@ $INSTALL alsi
 
 $INSTALL emacs28-git
 
-$INSTALL cantarell-fonts ttf-fira-code noto-fonts ttf-roboto ttf-roboto-mono
+$INSTALL cantarell-fonts ttf-fira-code noto-fonts ttf-roboto ttf-roboto-mono noto-fonts-emoji
 
 $INSTALL ahoviewer-git
 
@@ -235,7 +238,7 @@ $INSTALL blender blendnet
 
 $INSTALL flameshot
 
-$INSTALL qutebrowser
+$INSTALL qutebrowser python-qutescript-git
 mkdir -p $XDG_DATA_HOME/qutebrowser/userscripts
 
 wget raw.githubusercontent.com/qutebrowser/qutebrowser/master/misc/userscripts/qute-bitwarden -O $XDG_DATA_HOME/qutebrowser/userscripts/qute-bitwarden
@@ -256,6 +259,8 @@ $INSTALL glxinfo
 $INSTALL spotify
 
 $INSTALL discord
+
+$INSTALL libreoffice-fresh libreoffice-fresh-ru
 
 $INSTALL git-annex
 

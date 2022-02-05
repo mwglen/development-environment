@@ -133,11 +133,21 @@ HISTSIZE="10000"
 SAVEHIST="10000"
 HISTFILE="$XDG_STATE_HOME/zsh/history"
 mkdir -p "$(dirname "$HISTFILE")"
+
+zstyle :compinstall filename '~/.zshrc'
+autoload -Uz compinit; compinit
+source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 #+end_src
 
-*** Theme
+*** Keybindings
 #+begin_src bash
-autoload -U promptinit; promptinit
+bindkey -v
+#+end_src
+
+*** Prompt
+#+begin_src bash
+autoload -Uz promptinit; promptinit
 zstyle :prompt:pure:prompt:success color green
 zstyle :prompt:pure:prompt:error color red
 zstyle :prompt:pure:prompt:continuation color white
@@ -244,6 +254,11 @@ mkdir -p $XDG_STATE_HOME
 mkdir -p $REPOSITORIES
 #+end_src
 
+** System Time
+#+begin_src bash
+sudo timedatectl set-timezone America/New_York
+#+end_src bash
+
 ** Setup Yay
 *** Install
 #+begin_src bash
@@ -311,9 +326,16 @@ Gives the hostname command
 $INSTALL inetutils
 #+end_src
 
+** Languages
 *** Python
 #+begin_src bash
 $INSTALL python python-matplotlib poetry
+#+end_src
+
+*** Rust
+#+begin_src bash
+$INSTALL rustup
+rustup default nightly
 #+end_src
 
 ** Terminal Emulators
@@ -487,7 +509,7 @@ $INSTALL texlive-core texlive-latexextra
 *** ZSH
 **** Install
 #+begin_src bash
-$INSTALL zsh
+$INSTALL zsh zsh-completions zsh-syntax-highlighting zsh-autosuggestions
 #+end_src
 
 **** Source Config
@@ -512,8 +534,15 @@ export PATH="$PATH:$HOME/development-environment/scripts"
 :END:
 #+begin_src bash
 source $HOME/.profile
-alias ls="ls --color=auto -h"
+alias ls="ls --color=auto --group-directories"
+alias ll="ls -alh"
+alias la="ls -A"
+alias df="df -h"
+alias free="free -h"
 alias grep="grep --color=auto"
+alias egrep="egrep --color=auto"
+alias fgrep="fgrep --color=auto"
+alias services="systemctl list-unit-files --state=enabled"
 alias ip="ip -color=auto"
 alias spotify="spotify --force-device-scale-factor=2"
 #+end_src
@@ -733,22 +762,22 @@ width = 100%
 height = 70
 offset-x = 0
 offset-y = 0
+padding = 2
 fixed-center = true
 enable-ipc = true
 border-color = #c5c8c6
 border-bottom-size = 0
+line-size = 3
              
 background = ${colors.background}
 foreground = ${colors.foreground}
-
-padding-left = 2
-padding-right = 2
 
 module-margin = 1
 
 font-0 = "Noto Sans:size=25:weight=bold"
 font-1 = "Material Icons:size=35;5"
 font-2 = "Font Awesome:size=35;5"
+font-3 = "NotoColorEmoji:fontformat:truetype:scale=10:antialias=false;"
 
 modules-left = date
 ;modules-center = cpu temperature memory
@@ -1182,7 +1211,7 @@ $INSTALL xorg dbus xorg-xrdb xorg-transset wmctrl
 **** Xsession File
 #+begin_src bash :tangle ~/.xprofile
 xrandr --dpi 200 --output eDP-1 --primary --mode 3840x2160 --pos 0x0 --rotate normal --output DP-1 --off --output HDMI-1 --off
-picom &
+picom -b
 feh --bg-scale $BACKGROUNDS/unit-01.jpg
 xbindkeys
 xmodmap $XDG_CONFIG_HOME/xmodmap/config
@@ -1796,7 +1825,7 @@ $INSTALL emacs28-git
 
 **** Fonts
 #+begin_src bash
-$INSTALL cantarell-fonts ttf-fira-code noto-fonts ttf-roboto ttf-roboto-mono
+$INSTALL cantarell-fonts ttf-fira-code noto-fonts ttf-roboto ttf-roboto-mono noto-fonts-emoji
 #+end_src
 
 **** Ahoviewer
@@ -1903,7 +1932,7 @@ TYPE_UNDO=Ctrl+Z
 *** Qutebrowser
 **** Install
 #+begin_src bash
-$INSTALL qutebrowser
+$INSTALL qutebrowser python-qutescript-git
 mkdir -p $XDG_DATA_HOME/qutebrowser/userscripts
 #+end_src
 
@@ -2035,6 +2064,11 @@ $INSTALL spotify
 $INSTALL discord
 #+end_src
 
+*** Libreoffice
+#+begin_src bash
+$INSTALL libreoffice-fresh libreoffice-fresh-ru
+#+end_src
+
 *** Git-Annex
 #+begin_src bash
 $INSTALL git-annex
@@ -2101,6 +2135,9 @@ set tabstop=4                   " show existing tab as 4 spaces
 set shiftwidth=4                " use 4 spaces when indenting with '>'
 set expandtab                   " on pressing tab, insert 4 spaces
 set termguicolors               " use terminal colors
+set ignorecase
+set smartcase
+set nobackup
 let g:airline_powerlin_fonts=1  " set airline theme
 colorscheme tender              " change the colorscheme
 let g:airline_theme = 'tender'  " change airline colorscheme
