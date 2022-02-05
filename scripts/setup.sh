@@ -207,6 +207,10 @@ sudo systemctl start virtlogd
 
 $INSTALL mimeo
 
+$INSTALL dolphin
+
+$INSTALL ranger
+
 $INSTALL gotop
 
 $INSTALL cava

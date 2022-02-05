@@ -1802,6 +1802,17 @@ Use =mimeo --mime2desk <schema>= to find what application is set as default for 
 $INSTALL mimeo
 #+end_src
 
+*** File Managers
+**** Dolphin
+#+begin_src bash
+$INSTALL dolphin
+#+end_src
+
+**** Ranger
+#+begin_src bash
+$INSTALL ranger
+#+end_src
+
 *** Gotop
 #+begin_src bash
 $INSTALL gotop
