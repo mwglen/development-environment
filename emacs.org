@@ -101,12 +101,13 @@
 (setq confirm-kill-processes nil)
 (fset 'yes-or-no-p 'y-or-n-p)
 (setq ring-bell-function 'ignore)
-(when window-system
-  (blink-cursor-mode 0)
-  (scroll-bar-mode 0)
-  (tool-bar-mode 0)
-  (tooltip-mode 0)
-  (menu-bar-mode 0))
+
+(blink-cursor-mode 0)
+(scroll-bar-mode 0)
+(tool-bar-mode 0)
+(tooltip-mode 0)
+(menu-bar-mode 0)
+
 (set-fringe-mode 10)
 #+end_src
 
@@ -165,17 +166,23 @@
 
 *** Use Transparent Frames
 #+begin_src emacs-lisp
+(defconst frameTransparency 80)
+
 (defun transparency/on ()
     (interactive)
-    (set-frame-parameter (selected-frame) 'alpha '(90 . 90))
-    (add-to-list 'default-frame-alist '(alpha . (90 . 90))))
+    (set-frame-parameter
+     (selected-frame) 'alpha
+     '(90 . 100))
+    (add-to-list
+     'default-frame-alist
+     '(alpha . (90 . 100))))
 
 (defun transparency/off ()
     (interactive)
     (set-frame-parameter (selected-frame) 'alpha '(100 . 100))
     (add-to-list 'default-frame-alist '(alpha . (100 . 100))))
 
-(transparency/on)
+;(transparency/on)
 #+end_src
 
 ** Characters
@@ -264,7 +271,7 @@
 (defun wallpaper/use-default ()
   (interactive)
   (start-process-shell-command
-   "feh" nil "feh --bg-scale $BACKGROUNDS/unit-01.jpg"))
+   "feh" nil "feh --bg-scale $BACKGROUNDS/nge1.jpeg"))
 
 (defun wallpaper/set ()
   (interactive)
@@ -997,6 +1004,12 @@ Allows you to quckly find definitions.
 
 
 ** Languages
+*** Vimscript
+#+begin_src emacs-lisp
+(use-package vimrc-mode
+  :mode "\\.vim\\'")
+#+end_src
+
 *** Haskell
 #+begin_src emacs-lisp
 (use-package haskell-mode

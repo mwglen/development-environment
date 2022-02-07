@@ -147,8 +147,6 @@ $INSTALL materia-kde kvantum-theme-materia kvantum
 
 $INSTALL materia-gtk-theme
 
-echo "Xft.dpi: 200" > ~/.Xresources
-
 $INSTALL lightdm
 sudo systemctl enable lightdm
 
@@ -174,7 +172,7 @@ $INSTALL rofi
 rm -rf $XDG_CONFIG_HOME/rofi
 ln -s $DIR/rofi  $XDG_CONFIG_HOME/rofi
 
-$INSTALL xmobar
+$INSTALL xmobar trayer ttf-mononoki
 
 $INSTALL libnotify
 

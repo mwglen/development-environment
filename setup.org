@@ -350,6 +350,9 @@ $INSTALL alacritty
 :header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/alacritty/alacritty.yml")
 :END:
 #+begin_src conf
+colors:
+  primary:
+    background: "#000000"
 #+end_src
 
 ** Drivers
@@ -1053,8 +1056,10 @@ gtk-application-prefer-dark-theme = "true"
 
 ** Display Managers
 *** Configure X11
-#+begin_src bash
-echo "Xft.dpi: 200" > ~/.Xresources
+#+begin_src conf :tangle ~/.Xresources
+Xft.dpi: 200
+Xft.antialias: true
+Xft.rgba: rgb
 #+end_src
 
 *** LightDM
@@ -1158,23 +1163,26 @@ fade-out-step = 0.03;
 #################################
 #   Transparency / Opacity      #
 #################################
-inactive-opacity = 0.8;
-frame-opacity = 0.8;
-inactive-opacity-override = false;
-focus-exclude = [ "class_g = 'Cairo-clock'" ];
+# Only the first rule matching a window will be applied to that window
 opacity-rule = [
+  "100:class_g = 'dmenu'",
+  "100:class_g = 'Polybar'",
+  "100:class_g = 'xmobar'",
+  "100:class_g = 'Rofi'",
   "100:fullscreen",
+  "40:!focused && class_g != 'xmobar'",
+  "80:focused",
 ];
 
 #################################
 #     Background-Blurring       #
 #################################
-#blur-method = "dual_kawase";
-#blur-strength = 5;
-#blur-background-exclude = [
-#  "window_type = 'desktop'",
-#  "_GTK_FRAME_EXTENTS@:c"
-#];
+# blur-method = "dual_kawase";
+# blur-strength = 5;
+# blur-background-exclude = [
+#   "window_type = 'desktop'",
+#   "_GTK_FRAME_EXTENTS@:c"
+# ];
 
 #################################
 #       General Settings        #
@@ -1183,6 +1191,7 @@ backend = "glx";
 vsync = true
 mark-wmwin-focused = true;
 mark-ovredir-focused = true;
+use-ewmh-active-win = true;
 detect-rounded-corners = true;
 detect-client-opacity = true;
 refresh-rate = 0
@@ -1192,14 +1201,15 @@ glx-no-stencil = true;
 glx-no-rebind-pixmap = true;
 use-damage = true
 log-level = "warn";
-wintypes:
-{
-  tooltip = { fade = true; shadow = true; opacity = 0.75; focus = true; full-shadow = false; };
-  dock = { shadow = false; opacity = 0.9}
-  dnd = { shadow = false; }
-  popup_menu = { opacity = 0.8; }
-  dropdown_menu = { opacity = 0.8; }
-};
+#wintypes:
+#{
+  #tooltip = { fade = true; shadow = true; opacity = 0.75; focus = true; full-shadow = false; };
+  # dock = { shadow = false; opacity = 0.9; };
+  #dnd = { shadow = false; }
+  #popup_menu = { opacity = 0.8; }
+  #dropdown_menu = { opacity = 0.8; }
+  #utility = { opacity = 0.8; }
+#};
 #+end_src
 
 ** Xorg
@@ -1212,7 +1222,7 @@ $INSTALL xorg dbus xorg-xrdb xorg-transset wmctrl
 #+begin_src bash :tangle ~/.xprofile
 xrandr --dpi 200 --output eDP-1 --primary --mode 3840x2160 --pos 0x0 --rotate normal --output DP-1 --off --output HDMI-1 --off
 picom -b
-feh --bg-scale $BACKGROUNDS/unit-01.jpg
+feh --bg-scale $BACKGROUNDS/nge.jpeg
 xbindkeys
 xmodmap $XDG_CONFIG_HOME/xmodmap/config
 export QT_AUTO_SCREEN_SCALE_FACTOR=1
@@ -1278,7 +1288,7 @@ import XMonad.Layout.NoBorders
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
 
-myTerminal      = "emacsclient -c -a --eval vterm"
+myTerminal      = "alacritty"
 
 -- Whether focus follows the mouse pointer.
 myFocusFollowsMouse :: Bool
@@ -1538,24 +1548,26 @@ ln -s $DIR/rofi  $XDG_CONFIG_HOME/rofi
 *** XMobar
 **** Install
 #+begin_src bash
-$INSTALL xmobar
+$INSTALL xmobar trayer ttf-mononoki
 #+end_src
 
 **** Configuration
-#+begin_src conf :tangle (concat (getenv "XDG_CONFIG_HOME") "/xmobar/config")
+#+begin_src haskell :tangle (concat (getenv "XDG_CONFIG_HOME") "/xmobar/config")
 Config { 
    -- appearance
-     font =         "xft:Fira Code Retina:size=11:bold:antialias=true"
+     font =         "xft:Noto Sans Mono:size=11:bold:antialias=true"
+   , additionalFonts = ["xft:Mononoki Nerd Font:pixelsize=11:antialias=true:hinting=true"]
    , bgColor =      "black"
    , fgColor =      "#646464"
-   , position =     Top
+   , alpha =        255
+   , position =     BottomW C 80
    , border =       BottomB
    , borderColor =  "#646464"
 
    -- layout
    , sepChar =  "%"   -- delineator between plugin names and straight text
    , alignSep = "}{"  -- separator between left-right alignment
-   , template = "%battery% | %multicpu% | %coretemp% | %memory% | %dynnetwork% }{ %RJTT% | %date% || %kbd% "
+   , template = "%battery% | %cat0% | %multicpu% | %coretemp% | %memory% | %dynnetwork% } { %KRDU% | %date% | %kbd% "
 
    -- general behavior
    , lowerOnStart =     True    -- send to bottom of window stack on start
@@ -1565,24 +1577,24 @@ Config {
    , pickBroadest =     False   -- choose widest display (multi-monitor)
    , persistent =       True    -- enable/disable hiding (True = disabled)
 
-   -- plugins
-   --   Numbers can be automatically colored according to their value. xmobar
-   --   decides color based on a three-tier/two-cutoff system, controlled by
-   --   command options:
-   --     --Low sets the low cutoff
-   --     --High sets the high cutoff
-   --
-   --     --low sets the color below --Low cutoff
-   --     --normal sets the color between --Low and --High cutoffs
-   --     --High sets the color above --High cutoff
-   --
-   --   The --template option controls how the plugin is displayed. Text
-   --   color can be set by enclosing in <fc></fc> tags. For more details
-   --   see http://projects.haskell.org/xmobar/#system-monitor-plugins.
-   , commands = 
+   --, iconRoot = "/home/mwglen/.xmonad/xpm/"
+   , commands = [
+        -- time and date indicator 
+        Run Date "<fn=1>\xf133</fn> %b %d %Y - (%H:%M)" "date" 50
 
+        , Run Brightness
+          [ "-t", "<bar>"
+          , "-D", "intel_backlight"
+          ] 30
+
+        , Run CatInt 0
+          "/sys/class/backlight/intel_backlight/actual_brightness" [] 5
+
+        , Run CatInt 1
+          "/sys/class/backlight/intel_backlight/actual_brightness" [] 5
+        
         -- weather monitor
-        [ Run Weather "KRDU" [ "--template", "<skyCondition> | <fc=#4682B4><tempC></fc>°C | <fc=#4682B4><rh></fc>% | <fc=#4682B4><pressure></fc>hPa"
+        , Run Weather "KRDU" [ "--template", "<skyCondition> | <fc=#4682B4><tempC></fc>°C | <fc=#4682B4><rh></fc>% | <fc=#4682B4><pressure></fc>hPa"
                              ] 36000
 
         -- network activity monitor (dynamic interface resolution)
@@ -1630,7 +1642,7 @@ Config {
                              , "--high"     , "darkgreen"
 
                              , "--" -- battery specific options
-                                       -- discharging status
+                                    -- discharging status
                                        , "-o"	, "<left>% (<timeleft>)"
                                        -- AC "on" status
                                        , "-O"	, "<fc=#dAA520>Charging</fc>"
@@ -1638,16 +1650,31 @@ Config {
                                        , "-i"	, "<fc=#006000>Charged</fc>"
                              ] 50
 
-        -- time and date indicator 
-        --   (%F = y-m-d date, %a = day of week, %T = h:m:s time)
-        , Run Date           "<fc=#ABABAB>%F (%a) %T</fc>" "date" 10
-
         -- keyboard layout indicator
         , Run Kbd            [ ("us(dvorak)" , "<fc=#00008B>DV</fc>")
                              , ("us"         , "<fc=#8B0000>US</fc>")
                              ]
+        , Run UnsafeStdinReader
         ]
    }
+#+end_src
+
+**** Scripts
+#+begin_src bash :tangle (concat (getenv "XDG_CONFIG_HOME") "/xmobar/scripts/backlight.sh")
+get_bri() {
+cur_bri="$(cat /sys/class/backlight/intel_backlight/actual_brightness)"
+bri_pct="$(expr $cur_bri \* 100 / 120000)"
+}
+
+get_bri
+case $1 in
+    "up")
+        xbacklight -inc +2 > /dev/null ;;
+    "down")
+        xbacklight -dec +2- > /dev/null ;;
+    ,*)
+        exit 0 ;;
+esac
 #+end_src
 
 ** Notifications
@@ -2124,9 +2151,9 @@ curl -fLo $XDG_DATA_HOME/nvim/site/autoload/plug.vim --create-dirs https://raw.g
 
 **** Configuration
 :PROPERTIES:
-:header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/nvim/init.vim")
+:header-args:vimrc: :tangle (concat (getenv "XDG_CONFIG_HOME") "/nvim/init.vim")
 :END:
-#+begin_src conf
+#+begin_src vimrc
 call plug#begin('$XDG_CONFIG_HOME/nvim/plugged')
 Plug 'jacoborus/tender.vim'
 Plug 'LnL7/vim-nix'
@@ -2154,6 +2181,44 @@ colorscheme tender              " change the colorscheme
 let g:airline_theme = 'tender'  " change airline colorscheme
 #+end_src
 
+*****  Colors
+#+begin_src vimrc
+let bg = "#000000"
+let fg = "#d5d8d6"
+let base0 = "#0d0d0d"
+let base1 = "#1b1b1b"
+let base2 = "#212122"
+let base3 = "#292b2b"
+let base4 = "#3f4040"
+let base5 = "#5c5e5e"
+let base6 = "#757878"
+let base7 = "#969896"
+let base8 = "#ffffff"
+
+let black     = "#000000"
+let white     = "#ffffff"
+let grey      = "#5a5b5a" 
+let red       = "#cc6666" 
+let orange    = "#de935f"
+let yellow    = "#f0c674"
+let green     = "#b5bd68"
+let blue      = "#81a2be"
+let teal      = "#81a2be"
+let magenta   = "#c9b4cf"
+let violet    = "#b294bb"
+let cyan      = "#8abeb7"
+
+execute "hi! Normal guibg=" . bg
+execute "hi! String guifg=" . green
+execute "hi! Keyword guifg=" . violet
+execute "hi! Type guifg=" . yellow
+execute "hi! Operator guifg=" . fg
+execute "hi! Number guifg=" . orange
+execute "hi! Function guifg=" . blue
+execute "hi! Constant guifg=" . orange
+execute "hi! Comment guifg=" . grey
+execute "hi! Conditional guifg=" . violet
+#+end_src
 
 ** Change Shell
 #+begin_src bash

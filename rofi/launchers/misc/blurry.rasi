@@ -20,9 +20,9 @@ configuration {
 * {
 
     /* last two digits control transparency */
-    background:                     #00000011;
-    background-alt:              	#00000011;
-    foreground:                     #f2f2f2ee;
+    background:                     #000000ff;
+    background-alt:              	#000000ff;
+    foreground:                     #f2f2f2ff;
     selected:			            #aa1111ff;
 }
 
