@@ -1567,7 +1567,7 @@ Config {
    -- layout
    , sepChar =  "%"   -- delineator between plugin names and straight text
    , alignSep = "}{"  -- separator between left-right alignment
-   , template = "%battery% | %cat0% | %multicpu% | %coretemp% | %memory% | %dynnetwork% } { %KRDU% | %date% | %kbd% "
+   , template = "%battery% | %bright% | <action=pavucontrol>>%default:Master%</action> | %uptime% | %multicpu% | %coretemp% | %memory% | %wlan0wi% } { %KRDU% | %date% | %kbd% "
 
    -- general behavior
    , lowerOnStart =     True    -- send to bottom of window stack on start
@@ -1581,24 +1581,28 @@ Config {
    , commands = [
         -- time and date indicator 
         Run Date "<fn=1>\xf133</fn> %b %d %Y - (%H:%M)" "date" 50
-
+        -- Up Time
+        , Run Uptime ["-t", "Up: <days>d <hours>h <minutes>m"] 60
+        
         , Run Brightness
-          [ "-t", "<bar>"
+          [ "-t", "Br: <percent>%", "--"
           , "-D", "intel_backlight"
           ] 30
-
-        , Run CatInt 0
-          "/sys/class/backlight/intel_backlight/actual_brightness" [] 5
-
-        , Run CatInt 1
-          "/sys/class/backlight/intel_backlight/actual_brightness" [] 5
         
+        , Run Volume "default" "Master"
+          [ "-t", "<status>", "--"
+          , "--on", "<fc=#859900><fn=1>\xf028</fn>  <volume>%</fc>"
+          , "--onc", "#859900"
+          , "--off", "<fc=#dc322f><fn=1>\xf026</fn> MUTE</fc>"
+          , "--offc", "#dc322f"
+          ] 10
+
         -- weather monitor
         , Run Weather "KRDU" [ "--template", "<skyCondition> | <fc=#4682B4><tempC></fc>°C | <fc=#4682B4><rh></fc>% | <fc=#4682B4><pressure></fc>hPa"
                              ] 36000
 
         -- network activity monitor (dynamic interface resolution)
-        , Run DynNetwork     [ "--template" , "<dev>: <tx>kB/s|<rx>kB/s"
+        , Run Wireless "wlan0" [ "--template" , "<ssid> <quality>"
                              , "--Low"      , "1000"       -- units: B/s
                              , "--High"     , "5000"       -- units: B/s
                              , "--low"      , "darkgreen"
