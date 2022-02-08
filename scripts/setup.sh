@@ -167,7 +167,7 @@ cd ~/.config/emacs/lisp && wget https://raw.githubusercontent.com/mwglen/ivy-cli
 
 $INSTALL xmonad xmonad-contrib
 
-$INSTALL rofi
+$INSTALL rofi pinentry-rofi
 
 rm -rf $XDG_CONFIG_HOME/rofi
 ln -s $DIR/rofi  $XDG_CONFIG_HOME/rofi
@@ -252,7 +252,7 @@ mkdir -p $XDG_CONFIG_HOME/qutebrowser
 mkdir -p ~/Downloads
 cd $XDG_CONFIG_HOME/qutebrowser && git clone https://github.com/alphapapa/solarized-everything-css && true
 
-$INSTALL bitwarden bitwarden-cli
+$INSTALL bitwarden bitwarden-cli bitwarden-rofi
 
 $INSTALL sidequest-bin
 
