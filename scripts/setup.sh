@@ -95,6 +95,8 @@ sudo systemctl enable cups
 
 $INSTALL hplip
 
+$INSTALL msp430-elf-gcc-bin
+
 $INSTALL texlive-core texlive-latexextra
 
 $INSTALL zsh zsh-completions zsh-syntax-highlighting zsh-autosuggestions
