@@ -245,11 +245,6 @@ $INSTALL flameshot
 $INSTALL qutebrowser python-qutescript-git
 mkdir -p $XDG_DATA_HOME/qutebrowser/userscripts
 
-wget raw.githubusercontent.com/qutebrowser/qutebrowser/master/misc/userscripts/qute-bitwarden -O $XDG_DATA_HOME/qutebrowser/userscripts/qute-bitwarden
-chmod +x $XDG_DATA_HOME/qutebrowser/userscripts/qute-bitwarden
-
-$INSTALL python-tldextract
-
 mkdir -p $XDG_CONFIG_HOME/qutebrowser
 mkdir -p ~/Downloads
 cd $XDG_CONFIG_HOME/qutebrowser && git clone https://github.com/alphapapa/solarized-everything-css && true
