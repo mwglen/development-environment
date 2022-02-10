@@ -763,6 +763,8 @@ margin-bottom = 0
 [colors]
 background = #1d1f21
 foreground = #c5c8c6
+green = #3be012
+red = #e01212
 #+end_src
 
 ****** Doom Moonless Theme
@@ -770,6 +772,8 @@ foreground = #c5c8c6
 [colors]
 background = #000000
 foreground = #c5c8c6
+green = #3be012
+red = #e01212
 #+end_src
  
 ****** Doom-Acario-Light
@@ -779,9 +783,9 @@ background = #FF0000
 foreground = #c5c8c6
 #+end_src
 
-***** Panel
+***** EXWM Panel
 #+begin_src conf
-[bar/panel]
+[bar/exwm]
 width = 100%
 height = 70
 offset-x = 0
@@ -792,6 +796,7 @@ enable-ipc = true
 border-color = #c5c8c6
 border-bottom-size = 0
 line-size = 3
+bottom = false
              
 background = ${colors.background}
 foreground = ${colors.foreground}
@@ -805,13 +810,157 @@ font-3 = "NotoColorEmoji:fontformat:truetype:scale=10:antialias=false;"
 
 modules-left = date
 ;modules-center = cpu temperature memory
-modules-right = wireless-network pulseaudio backlight redshift battery
+modules-right = wireless pulseaudio backlight redshift battery
 
 tray-position = none
 tray-maxsize = 28
 
 cursor-click = pointer
 cursor-scroll = ns-resize
+#+end_src
+
+***** XMonad Panel
+#+begin_src conf
+[bar/xmonad]
+width = 100%
+height = 50
+offset-x = 0
+offset-y = 0
+padding = 2
+fixed-center = true
+enable-ipc = true
+border-color = #c5c8c6
+line-size = 3
+bottom = true
+       
+background = ${colors.background}
+foreground = ${colors.foreground}
+
+module-margin = 1
+
+font-0 = "Noto Sans:size=20:weight=bold"
+font-1 = "Material Icons:size=30;5"
+font-2 = "Font Awesome:size=30;5"
+font-3 = "NotoColorEmoji:fontformat:truetype:scale=10:antialias=false;"
+
+modules-left = date spotify
+modules-center = cpu div temperature div memory
+modules-right = wireless pulseaudio backlight redshift battery
+
+tray-position = right
+tray-maxsize = 28
+
+cursor-click = pointer
+cursor-scroll = ns-resize
+#+end_src
+
+***** XMonad Module
+#+begin_src conf
+[module/ff]
+
+#+end_src
+
+***** Xkeyboard
+#+begin_src conf
+[module/keyboard]
+type = internal/xkeyboard
+blacklist-0 = num lock
+blacklist-1 = scroll lock
+format-prefix = " "
+format-prefix-foreground = ${colors.foreground}
+format-prefix-background = ${colors.background}
+format-prefix-underline = #3ecfb2
+format-foreground = ${colors.foreground}
+format-background = ${colors.background}
+
+label-layout = %layout%
+label-layout-underline = #3ecfb2
+label-indicator-padding = 2
+label-indicator-margin = 1
+label-indicator-background = ${colors.background}
+label-indicator-foreground = ${colors.foreground}
+#+end_src
+
+***** Filesystem
+#+begin_src conf
+[module/filesystem]
+type = internal/fs
+mount-0 = /
+;mount-1 = /home
+;mount-2 = /var
+interval = 30
+fixed-values = false
+#+end_src
+
+***** Spotify
+#+begin_src conf
+[module/spotify]
+type = custom/script
+exec = ~/.config/polybar/scripts/spotify.sh
+interval = 1
+format-foreground = ${colors.foreground}
+format-background = ${colors.background}
+format-padding = 2
+format-underline = #0f0
+format-prefix = " "
+format-prefix-foreground = #0f0
+label = %output:0:150%
+#+end_src
+
+****** Script https://github.com/NicholasFeldman/dotfiles/blob/master/polybar/.config/polybar/spotify.sh
+:PROPERTIES:
+:header-args:sh: :tangle (concat (getenv "XDG_CONFIG_HOME") "/polybar/scripts/spotify.sh") :tangle-mode (identity #o755)
+:END:
+#+begin_src sh
+#!/bin/sh
+main() {
+  if ! pgrep -x spotify >/dev/null; then
+    echo ""; exit
+  fi  
+
+  cmd="org.freedesktop.DBus.Properties.Get"
+  domain="org.mpris.MediaPlayer2"
+  path="/org/mpris/MediaPlayer2"
+
+  meta=$(dbus-send --print-reply --dest=${domain}.spotify \
+    /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:${domain}.Player string:Metadata)
+
+  artist=$(echo "$meta" | sed -nr '/xesam:artist"/,+2s/^ +string "(.*)"$/\1/p' | tail -1  | sed 's/\&/\\&/g' | sed 's#\/#\\/#g')
+  album=$(echo "$meta" | sed -nr '/xesam:album"/,+2s/^ +variant +string "(.*)"$/\1/p' | tail -1| sed 's/\&/\\&/g'| sed 's#\/#\\/#g')
+  title=$(echo "$meta" | sed -nr '/xesam:title"/,+2s/^ +variant +string "(.*)"$/\1/p' | tail -1 | sed 's/\&/\\&/g'| sed 's#\/#\\/#g')
+
+  echo "${*:-%artist% - %title%}" | sed "s/%artist%/$artist/g;s/%title%/$title/g;s/%album%/$album/g"i | sed "s/\&/\&/g" | sed "s#\/#\/#g"
+
+}
+
+main "$@"
+#+end_src
+
+***** Compton
+#+begin_src conf
+[module/compton]
+type = custom/script
+exec = ~/.config/polybar/scripts/compton.sh
+click-left = ~/.config/polybar/scripts/compton-toggle.sh
+interval = 5
+format-foreground = ${colors.foreground}
+format-background = ${colors.background}
+format-underline = #00AF02
+#+end_src
+
+***** Weather
+#+begin_src conf
+[module/weather]
+type = custom/script
+interval = 10
+format = <label>
+format-prefix = "WTHR "
+format-prefix-foreground = #3EC13F
+format-underline = #3EC13F
+format-foreground = ${colors.foreground}
+format-background = ${colors.background}
+exec = python -u ~/.config/polybar/scripts/weather.py
+tail = true
 #+end_src
 
 ***** CPU Utilization
@@ -832,6 +981,7 @@ date = "%B %d, %Y"
 date-alt = "%A %B %d, %Y"
 time = %l:%M %p
 time-alt = %H:%M:%S
+format-underline = ${colors.foreground}
 
 label = %date% %time%
 #+end_src
@@ -846,30 +996,30 @@ full-at = 98
 time-format = %-l:%M
 
 label-charging = %percentage%%
-format-charging = <animation-charging> <label-charging>
-label-discharging = %percentage%%
-format-discharging = <ramp-capacity> <label-discharging>
+format-charging = <animation-charging> <label-charging>%{F-}
+underline-charging = #3be012
+format-discharging = <ramp-capacity> <label-discharging>%{F-}
+format-full = <ramp-capacity> <label-full>%{F-}
 
-format-full = <ramp-capacity> <label-full>
+ramp-capacity-0 = %{F#e01212}
+ramp-capacity-1 = %{F#e06912}
+ramp-capacity-2 = %{F#e0b412}
+ramp-capacity-3 = %{F#b7e012}
+ramp-capacity-4 = %{F#3be012}
 
-ramp-capacity-0 = 
-ramp-capacity-0-foreground = #FF0000
-ramp-capacity-1 = 
-ramp-capacity-1-foreground = #FF0000
-ramp-capacity-2 = 
-ramp-capacity-2-foreground = #BBBB00
-ramp-capacity-3 = 
-ramp-capacity-3-foreground = #007700
-ramp-capacity-4 = 
-ramp-capacity-4-foreground = #007700
+ramp-capacity-0-format-underline = #e01212
+ramp-capacity-1-format-underline = #e06912
+ramp-capacity-2-format-underline = #e0b412
+ramp-capacity-3-format-underline = #b7e012
+ramp-capacity-4-format-underline = #3be012
 
-animation-charging-foreground = #007700
-animation-charging-0 = 
-animation-charging-1 = 
-animation-charging-2 = 
-animation-charging-3 = 
-animation-charging-4 = 
+animation-charging-0 = %{F#3be012}
+animation-charging-1 = %{F#3be012}
+animation-charging-2 = %{F#3be012}
+animation-charging-3 = %{F#3be012}
+animation-charging-4 = %{F#3be012}
 animation-charging-framerate = 750
+animation-charging-underline = #3be012
 #+end_src
 
 ***** Temperature
@@ -895,6 +1045,7 @@ $INSTALL pulseaudio-control
 type = custom/script
 tail = true
 label-padding = 2
+format-underline = ${colors.foreground}
 
 exec = pulseaudio-control --icons-volume " , " --icon-muted " " --sink-nicknames-from "device.description" --sink-nickname "alsa_output.pci-0000_00_1f.3.analog-stereo: Built In Speakers" listen
 click-right = pavucontrol
@@ -906,19 +1057,29 @@ scroll-down = pulseaudio-control down
 
 ***** Wireless Network
 #+begin_src conf
-[module/wireless-network]
+[module/wireless]
 type = internal/network
 interface = wlan0
 
-format-connected =  <label-connected>
-format-disconnected = <label-disconnected>
-format-packetloss = <animation-packetloss label-connected>
-
 label-connected = %essid%
-label-connected-foreground = #eefafafa
-
 label-disconnected = not connected
-label-disconnected-foreground = #66ffffff
+
+format-connected =  <label-connected>
+format-connected-underline = ${colors.green}
+format-connected-foreground = ${colors.green}
+format-disconnected = <label-disconnected>
+format-disconnected-underline = ${colors.foreground}
+format-disconnected-foreground = ${colors.foreground}
+format-packetloss = <animation-packetloss> <label-connected>
+format-packetloss-underline = ${colors.red}
+format-packetloss-foreground = ${colors.red}
+#+end_src
+
+***** Divider                              
+#+begin_src conf
+[module/div]
+type = custom/text
+content = |
 #+end_src
 
 ***** Memory                              
@@ -948,13 +1109,34 @@ enable-scroll = true
 card = intel_backlight
 format = <ramp> <label>
 label = %percentage%%
-ramp-0 = 
-;ramp-0-foreground = #4455bb
-ramp-1 = 
+;ramp-0 = ""
 ;ramp-1-foreground = #888800
+;ramp-1 = ""
+;ramp-2-foreground = #888800
+;ramp-2 = ""
+;ramp-3-foreground = #888800
+;ramp-3 = ""
+;ramp-4-foreground = #888800
+;ramp-4 = ""
+;ramp-5-foreground = #888800
+;ramp-5 = ""
+;ramp-6-foreground = #888800
+;ramp-6 = ""
+;ramp-6-foreground = #888800
 #+end_src
 
 ***** Redshift
+****** Module
+#+begin_src conf
+[module/redshift]
+type = custom/script
+exec = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh temperature
+click-left = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh toggle
+scroll-up = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh increase
+scroll-down = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh decrease
+interval=1
+#+end_src
+
 ****** Scripts
 ******* env.sh
 :PROPERTIES:
@@ -971,7 +1153,6 @@ export REDSHIFT_TEMP=5600
 :END:
 #+begin_src sh
 #!/bin/sh
-
 envFile=$XDG_CONFIG_HOME/polybar/scripts/env.sh
 changeValue=300
 
@@ -1009,7 +1190,20 @@ case $1 in
   temperature)
     case $REDSHIFT in
       on)
-        printf "%dK" "$REDSHIFT_TEMP"
+        if (($REDSHIFT_TEMP > 5000)); then
+            COLOR="#dddddd"
+        elif (($REDSHIFT_TEMP > 4000)); then
+            COLOR="#deb4b4"
+        elif (($REDSHIFT_TEMP > 3000)); then
+            COLOR="#de8c8c"
+        elif (($REDSHIFT_TEMP > 2000)); then
+            COLOR="#df6363"
+        elif (($REDSHIFT_TEMP > 1500)); then
+            COLOR="#df3b3b"
+        else
+            COLOR="#e01212"
+        fi
+        echo "%{u$COLOR}%{+u}%{F$COLOR} $REDSHIFT_TEMP%{F-}%{u-}%{-u}"
         ;;
       off)
         printf "off"
@@ -1017,19 +1211,6 @@ case $1 in
     esac
     ;;
 esac
-#+end_src
-
-****** Module
-#+begin_src conf
-[module/redshift]
-type = custom/script
-format-prefix = ""
-;format-prefix-foreground = #888888
-exec = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh temperature
-click-left = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh toggle
-scroll-up = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh increase
-scroll-down = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh decrease
-interval=0.5
 #+end_src
 
 ***** Workspace Indicator
@@ -1196,7 +1377,7 @@ fade-out-step = 0.03;
 # Only the first rule matching a window will be applied to that window
 opacity-rule = [
   "100:class_g = 'dmenu'",
-  "100:class_g = 'Polybar'",
+  "60:class_g = 'Polybar'",
   "80:class_i = 'xmobar'",
   "60:class_g = 'Rofi'",
   "100:fullscreen",
@@ -1298,7 +1479,7 @@ cd ~/.config/emacs/lisp && wget https://raw.githubusercontent.com/mwglen/ivy-cli
 *** XMonad
 **** Install
 #+begin_src bash
-$INSTALL xmonad xmonad-contrib
+$INSTALL xmonad xmonad-contrib xmonad-log
 #+end_src
 
 **** Configuration
@@ -1338,6 +1519,11 @@ import XMonad.Hooks.ManageHelpers (isFullscreen, doFullFloat, doCenterFloat)
 import XMonad.Hooks.ServerMode
 import XMonad.Hooks.SetWMName
 import XMonad.Hooks.WorkspaceHistory
+
+-- Polybar
+import qualified DBus as D
+import qualified DBus.Client as D
+import qualified Codec.Binary.UTF8.String as UTF8
 
 -- Layouts
 import XMonad.Layout.GridVariants (Grid(Grid))
@@ -1402,8 +1588,24 @@ myClickJustFocuses = True
 
 myWorkspaces    = ["1","2","3","4","5","6","7","8","9"]
 myEventHook = ewmhDesktopsEventHook
-myLogHook = return ()
 
+-- Override the PP values as you would otherwise, adding colorts etc
+-- depending on the statusbar used
+myLogHook :: D.Client -> PP
+myLogHook dbus = def { ppOutput = dbusOutput dbus }
+
+-- Emit a DBus signal on log updates
+dbusOutput :: D.Client -> String -> IO ()
+dbusOutput dbus str = do
+    let signal = (D.signal objectPath interfaceName memberName) {
+            D.signalBody = [D.toVariant $ UTF8.decodeString str]
+        }
+    D.emit dbus signal
+  where
+    objectPath = D.objectPath_ "/org/xmonad/Log"
+    interfaceName = D.interfaceName_ "org.xmonad.Log"
+    memberName = D.memberName_ "Update"
+  
 --Makes setting the spacingRaw simpler to write. The spacingRaw module adds a configurable amount of space around windows.
 mySpacing :: Integer -> l a -> XMonad.Layout.LayoutModifier.ModifiedLayout Spacing l a
 mySpacing i = spacingRaw False (Border i i i i) True (Border i i i i) True
@@ -1567,9 +1769,17 @@ myKeys = [
 #+begin_src haskell :tangle ~/.xmonad/xmonad.hs
 main :: IO ()
 main = do
+  dbus <- D.connectSession
+  -- Request access to the DBus name
+  D.requestName dbus (D.busName_ "org.xmonad.Log")
+    [D.nameAllowReplacement, D.nameReplaceExisting, D.nameDoNotQueue]
+  
   -- Launch xmobar
-  xmproc <- spawnPipe ("xmobar $XDG_CONFIG_HOME/xmobar/config")
+  -- xmproc <- spawnPipe ("xmobar $XDG_CONFIG_HOME/xmobar/config")
     
+  -- Launch polybar
+  xmproc <- spawnPipe ("polybar xmonad")
+  
   -- Start xmonad
   xmonad $ ewmh . docks $ def {
     -- simple stuff
@@ -1585,7 +1795,7 @@ main = do
     layoutHook         = spacingWithEdge 30 $ myLayout,
     manageHook         = myManageHook,
     handleEventHook    = myEventHook,
-    logHook            = myLogHook,
+    logHook            = dynamicLogWithPP (myLogHook dbus),
     startupHook        = myStartupHook
     } `additionalKeysP` myKeys
 #+end_src
@@ -1681,7 +1891,7 @@ Config {
    -- layout
    , sepChar =  "%"   -- delineator between plugin names and straight text
    , alignSep = "}{"  -- separator between left-right alignment
-   , template = "%battery% | %bright% | <action=pavucontrol>>%default:Master%</action> | %uptime% | %multicpu% | %coretemp% | %memory% | %wlan0wi% } { %KRDU% | %date% | %kbd% "
+   , template = "%battery% | %bright% | <action=pavucontrol>%default:Master%</action> | %uptime% | %multicpu% | %coretemp% | %memory% | %wlan0wi% } { %KRDU% | %date% | %kbd% "
 
    -- general behavior
    , lowerOnStart =     True    -- send to bottom of window stack on start
@@ -1701,7 +1911,7 @@ Config {
         , Run Brightness
           [ "-t", "Br: <percent>%", "--"
           , "-D", "intel_backlight"
-          ] 30
+          ] 1
         
         , Run Volume "default" "Master"
           [ "-t", "<status>", "--"
@@ -1709,7 +1919,7 @@ Config {
           , "--onc", "#859900"
           , "--off", "<fc=#dc322f><fn=1>\xf026</fn> MUTE</fc>"
           , "--offc", "#dc322f"
-          ] 10
+          ] 1
 
         -- weather monitor
         , Run Weather "KRDU" [ "--template", "<skyCondition> | <fc=#4682B4><tempC></fc>°C | <fc=#4682B4><rh></fc>% | <fc=#4682B4><pressure></fc>hPa"
@@ -1725,7 +1935,7 @@ Config {
                              ] 10
 
         -- cpu activity monitor
-        , Run MultiCpu       [ "--template" , "Cpu: <total0>%|<total1>%"
+        , Run MultiCpu       [ "--template" , "Cpu: <total0>%"
                              , "--Low"      , "50"         -- units: %
                              , "--High"     , "85"         -- units: %
                              , "--low"      , "darkgreen"
@@ -1734,7 +1944,7 @@ Config {
                              ] 10
 
         -- cpu core temperature monitor
-        , Run CoreTemp       [ "--template" , "Temp: <core0>°C|<core1>°C"
+        , Run CoreTemp       [ "--template" , "Temp: <core0>°C"
                              , "--Low"      , "70"        -- units: °C
                              , "--High"     , "80"        -- units: °C
                              , "--low"      , "darkgreen"
@@ -2214,6 +2424,22 @@ $INSTALL glxinfo
 #+begin_src bash
 $INSTALL spotify
 #+end_src
+
+**** Desktop File (With Fix for HiDPI)
+#+begin_src conf :tangle /sudo:://usr/share/xsessions/spotify.desktop
+[Desktop Entry]
+Type=Application
+Name=Spotify
+GenericName=Music Player
+Icon=spotify-client
+TryExec=spotify
+Exec=spotify --uri=%U --force-device-scale-factor=2
+Terminal=false
+MimeType=x-scheme-handler/spotify;
+Categories=Audio;Music;Player;AudioVideo;
+StartupWMClass=spotify
+#+end_src
+
 
 *** Discord
 #+begin_src bash

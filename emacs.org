@@ -295,7 +295,7 @@
   (polybar/kill)
   (setq polybar/process
         (start-process-shell-command
-         "polybar" nil "polybar panel")))
+         "polybar" nil "polybar exwm")))
 #+end_src
 
 *** EXWM

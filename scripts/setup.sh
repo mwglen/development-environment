@@ -147,7 +147,7 @@ sudo chmod g+w /sys/class/backlight/intel_backlight/brightness
 
 $INSTALL materia-kde kvantum-theme-materia kvantum
 
-$INSTALL materia-gtk-theme
+$INSTALL materia-gtk-theme phinger-cursors
 
 $INSTALL lightdm
 sudo systemctl enable lightdm
@@ -167,7 +167,7 @@ $INSTALL xbindkeys
 
 cd ~/.config/emacs/lisp && wget https://raw.githubusercontent.com/mwglen/ivy-clipmenu.el/master/ivy-clipmenu.el
 
-$INSTALL xmonad xmonad-contrib
+$INSTALL xmonad xmonad-contrib xmonad-log
 
 $INSTALL rofi pinentry-rofi
 
