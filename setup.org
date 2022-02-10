@@ -997,9 +997,11 @@ time-format = %-l:%M
 
 label-charging = %percentage%%
 format-charging = <animation-charging> <label-charging>%{F-}
-underline-charging = #3be012
+format-charging-underline = #dddddd
 format-discharging = <ramp-capacity> <label-discharging>%{F-}
+format-discharging-underline = #dddddd
 format-full = <ramp-capacity> <label-full>%{F-}
+format-full-underline = #dddddd
 
 ramp-capacity-0 = %{F#e01212}
 ramp-capacity-1 = %{F#e06912}
@@ -1007,11 +1009,11 @@ ramp-capacity-2 = %{F#e0b412}
 ramp-capacity-3 = %{F#b7e012}
 ramp-capacity-4 = %{F#3be012}
 
-ramp-capacity-0-format-underline = #e01212
-ramp-capacity-1-format-underline = #e06912
-ramp-capacity-2-format-underline = #e0b412
-ramp-capacity-3-format-underline = #b7e012
-ramp-capacity-4-format-underline = #3be012
+;ramp-capacity-0-format-underline = #e01212
+;ramp-capacity-1-format-underline = #e06912
+;ramp-capacity-2-format-underline = #e0b412
+;ramp-capacity-3-format-underline = #b7e012
+;ramp-capacity-4-format-underline = #3be012
 
 animation-charging-0 = %{F#3be012}
 animation-charging-1 = %{F#3be012}
