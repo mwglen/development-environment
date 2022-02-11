@@ -139,17 +139,17 @@
 *** Font Configuration
 #+begin_src emacs-lisp
 (set-face-attribute 'default nil
-  :family "Fira Code Retina"
+  :family "Hack Nerd Font Mono"
   :height 120)
 
 ;; Set the fixed pitch face
 (set-face-attribute 'fixed-pitch nil
-  :family "Fira Code Retina"
+  :family "Hack Nerd Font Mono"
   :height 1.0)
 
 ;; Set the variable pitch face
 (set-face-attribute 'variable-pitch nil
-  :family "Noto Sans"
+  :family "NotoSans Nerd Font"
   :height 1.0)
 
 (use-package mixed-pitch

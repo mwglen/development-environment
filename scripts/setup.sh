@@ -60,6 +60,8 @@ echo hsts-file \= "$XDG_CACHE_HOME"/wget-hsts >> "$XDG_CONFIG_HOME/wgetrc"
 
 $INSTALL inetutils
 
+$INSTALL nerd-fonts-complete
+
 $INSTALL python python-matplotlib poetry
 
 $INSTALL rustup
@@ -70,6 +72,8 @@ $INSTALL alacritty
 $INSTALL nvidia
 
 $INSTALL usbutils usbip
+
+$INSTALL pulseaudio-control
 
 $INSTALL bluez bluez-utils pulseaudio-bluetooth blueman-git
 sudo systemctl enable bluetooth
@@ -136,8 +140,6 @@ git clone https://tero.hasu.is/repos/icalendar-to-org.git $REPOSITORIES/icalenda
 $INSTALL linux-wifi-hotspot
 
 $INSTALL polybar
-
-$INSTALL pulseaudio-control
 
 sudo mkdir -p /etc/udev/rules.d
 groupadd -r video && true
@@ -218,8 +220,6 @@ $INSTALL cava
 $INSTALL alsi
 
 $INSTALL emacs28-git
-
-$INSTALL cantarell-fonts ttf-fira-code noto-fonts ttf-roboto ttf-roboto-mono noto-fonts-emoji
 
 $INSTALL ahoviewer-git
 
