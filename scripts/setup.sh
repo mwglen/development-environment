@@ -139,7 +139,7 @@ git clone https://tero.hasu.is/repos/icalendar-to-org.git $REPOSITORIES/icalenda
 
 $INSTALL linux-wifi-hotspot
 
-$INSTALL polybar
+$INSTALL polybar-git
 
 sudo mkdir -p /etc/udev/rules.d
 groupadd -r video && true
