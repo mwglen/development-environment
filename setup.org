@@ -933,7 +933,6 @@ exec = ~/.config/polybar/scripts/compton.sh
 click-left = ~/.config/polybar/scripts/compton-toggle.sh
 interval = 5
 format-foreground = ${colors.foreground}
-format-background = ${colors.background}
 format-underline = #00AF02
 #+end_src
 
@@ -947,7 +946,6 @@ format-prefix = "WTHR "
 format-prefix-foreground = #3EC13F
 format-underline = #3EC13F
 format-foreground = ${colors.foreground}
-format-background = ${colors.background}
 exec = python -u ~/.config/polybar/scripts/weather.py
 tail = true
 #+end_src
@@ -958,7 +956,8 @@ tail = true
 type = internal/cpu
 interval = 2
 format = CPU <label>
-format-underline = ${colors.foreground}
+format-underline = ${colors.red}
+format-foreground = ${colors.red}
 label = %percentage:2%%
 #+end_src
 
@@ -971,7 +970,8 @@ date = "%B %d, %Y"
 date-alt = "%A %B %d, %Y"
 time = %l:%M %p
 time-alt = %H:%M:%S
-format-underline = ${colors.foreground}
+format-underline = ${colors.red}
+format-foreground = ${colors.red}
 
 label = %date% %time%
 #+end_src
@@ -1013,8 +1013,9 @@ warn-temperature = 70
 
 format = TEMP <label>
 format-warn = TEMP <label-warn>
-format-underline = ${colors.foreground}
-format-warn-underline = ${colors.foreground}
+format-underline = ${colors.red}
+format-warn-underline = ${colors.red}
+format-foreground = ${colors.red}
 
 label = %temperature-c%
 label-warn = %temperature-c%!
@@ -1065,7 +1066,8 @@ type = internal/memory
 interval = 3
 format = <label>
 label = MEM %percentage_used:2%%
-format-underline = ${colors.foreground}
+format-underline = ${colors.red}
+format-foreground = ${colors.red}
 #+end_src
 
 ***** Backlight
