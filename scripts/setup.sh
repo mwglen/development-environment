@@ -71,6 +71,8 @@ $INSTALL alacritty
 
 $INSTALL nvidia
 
+$INSTALL optimus-manager-qt
+
 $INSTALL usbutils usbip
 
 $INSTALL pulseaudio-control

@@ -450,14 +450,6 @@
     (exwm-floating-move
      (+ (- pos-x) x) (+ (- pos-y) y))))
 
-(defun exwm/start-systray-applications ()
-  (interactive)
-  (start-process-shell-command
-   "nm-applet" nil "nm-applet")
-  (start-process-shell-command
-   "hp-systray" nil "hp-systray")
-  (start-process-shell-command
-   "nm-applet" nil "blueman-applet"))
 #+end_src
 
 ***** Check for Running Window Managers
@@ -502,8 +494,7 @@
     (server-start)
     (setf epg-pinentry-mode 'loopback)
     (exwm/start-polybar)
-    (exwm-enable)
-    (exwm/start-systray-applications)))
+    (exwm-enable)))
 #+end_src
 
 *** exwm-evil-firefox

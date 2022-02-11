@@ -367,6 +367,23 @@ colors:
 $INSTALL nvidia
 #+end_src
 
+**** Optimus-Manager
+#+begin_src bash
+$INSTALL optimus-manager-qt
+#+end_src
+
+***** Config
+:PROPERTIES:
+:header-args:conf: :tangle /sudo:://etc/optimus-manager/optimus-manager.conf
+:END:
+#+begin_src conf :tangle no
+[optimus]
+switching=nouveau
+pci_power_control=yes
+pci_remove=no
+pci_reset=no
+#+end_src
+
 *** USB
 #+begin_src bash
 $INSTALL usbutils usbip
@@ -1412,14 +1429,24 @@ $INSTALL xorg dbus xorg-xrdb xorg-transset wmctrl
 
 **** Xsession File
 #+begin_src bash :tangle ~/.xprofile
-#setxkbmap -layout us,ru -option grp:toggle -option caps:ctrl_modifier
+# Display
 xrandr --dpi 200 --output eDP-1 --primary --mode 3840x2160 --pos 0x0 --rotate normal --output DP-1 --off --output HDMI-1 --off
 picom -b
 feh --bg-scale $BACKGROUNDS/nge.jpeg
+
+# Keybindings
 xbindkeys
 xmodmap $XDG_CONFIG_HOME/xmodmap/config
+#setxkbmap -layout us,ru -option grp:toggle -option caps:ctrl_modifier
+
+# QT Config
 export QT_AUTO_SCREEN_SCALE_FACTOR=1
 export QT_STYLE_OVERRIDE=kvantum
+
+# Systray Apllications
+optimus-manager-qt &
+nm-applet &
+hp-systray &
 #+end_src
 
 ** XBindKeys
