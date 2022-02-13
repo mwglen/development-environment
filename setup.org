@@ -3068,7 +3068,7 @@ $INSTALL spotify
 #+end_src
 
 **** Desktop File (With Fix for HiDPI)
-#+begin_src conf :tangle /sudo:://usr/share/xsessions/spotify.desktop
+#+begin_src conf :tangle /sudo:://usr/share/applications/spotify.desktop
 [Desktop Entry]
 Type=Application
 Name=Spotify
