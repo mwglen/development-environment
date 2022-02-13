@@ -117,9 +117,6 @@ $INSTALL xorg-xmodmap
 $INSTALL tlp
 sudo systemctl enable tlp
 
-$INSTALL autofs
-sudo mkdir -p /misc/android
-
 $INSTALL exfatprogs
 
 $INSTALL ntfs-3g
@@ -163,7 +160,15 @@ wget https://github.com/Litarvan/lightdm-webkit-theme-litarvan/releases/download
 
 sudo tar -xf $REPOSITORIES/lightdm-webkit-theme-litarvan-3.2.0.tar.gz -C /usr/share/lightdm-webkit/themes/litarvan
 
-$INSTALL picom-ibhagwan-git
+# The ibhagwan fork of picom has rounded corners and dual kawase blur
+# $INSTALL picom-ibhagwan-git
+
+# The ibhagwan fork of picom has rounded corners, dual kawase blur, and window animations
+# $INSTALL picom-jonaburg-git
+
+# My fork of jonaburg's fork of picom has an updated picom-trans binary that can be used to toggle transparency of a window
+git install https://github.com/mwglen/picom.git $REPOSITORIES/picom
+cd $REPOSITORIES/picom && meson --buildtype=release . build && sudo ninja -C build install
 
 $INSTALL xorg dbus xorg-xrdb xorg-transset wmctrl
 

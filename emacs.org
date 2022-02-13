@@ -689,6 +689,16 @@
                     (match-end 1) "•")))))))
 #+end_src
 
+*** Org-Roam
+#+begin_src emacs-lisp
+(use-package org-roam
+  :after org
+  :custom
+  (org-roam-directory "~/RoamNotes")
+  :config
+  (org-roam-setup))
+#+end_src
+
 *** Basic Config
 #+begin_src emacs-lisp
 (setq-default
