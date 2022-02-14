@@ -83,6 +83,8 @@ sudo systemctl enable bluetooth
 $INSTALL networkmanager network-manager-applet
 sudo systemctl enable NetworkManager
 
+$INSTALL networkmanager-dmenu-git
+
 $INSTALL alsa-utils pavucontrol
 
 $INSTALL playerctl mpv yt-dlp baka-mplayer
@@ -218,7 +220,7 @@ $INSTALL mimeo
 
 $INSTALL dolphin
 
-$INSTALL ranger
+$INSTALL ranger python-ueberzug-git
 
 $INSTALL gotop
 
