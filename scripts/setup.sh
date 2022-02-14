@@ -285,6 +285,9 @@ $INSTALL feh
 mkdir -p $BACKGROUNDS
 cp -r $DIR/backgrounds/* $BACKGROUNDS
 
+curl -L https://raw.githubusercontent.com/thomas10-10/foo-Wallpaper-Feh-Gif/master/install.sh | bash
+#back4.sh 0.010 gif/pixel.gif &
+
 $INSTALL neovim
 mkdir -p $XDG_CONFIG_HOME/nvim
 curl -fLo $XDG_DATA_HOME/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim

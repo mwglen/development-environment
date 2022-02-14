@@ -817,7 +817,7 @@ margin-bottom = 0
 ****** Moonless
 #+begin_src conf
 [colors]
-background = #000000
+background = #00000000
 foreground = #c5c8c6
 green = #b5bd68
 yellow = #f0c674
@@ -906,14 +906,12 @@ format-prefix-foreground = ${colors.foreground}
 format-prefix-background = ${colors.background}
 format-prefix-underline = #3ecfb2
 format-foreground = ${colors.foreground}
-format-background = ${colors.background}
 
 label-layout = %layout%
 label-layout-underline = #3ecfb2
 label-indicator-padding = 2
 label-indicator-margin = 1
 label-indicator-background = ${colors.background}
-label-indicator-foreground = ${colors.foreground}
 #+end_src
 
 ***** Filesystem
@@ -1509,7 +1507,6 @@ fade-exclude = [
 # only the first rule matching a window will be applied to that window
 opacity-rule = [
   "100:class_g = 'dmenu'",
-  "60:class_g = 'Polybar'",
   #"80:class_i = 'xmobar'",
   "60:class_g = 'Rofi'",
   "100:fullscreen",
@@ -1538,6 +1535,7 @@ blur: {
 }
 
 blur-background-exclude = [
+  "class_g = 'Polybar'",
   "class_g = 'slop'",
   "_GTK_FRAME_EXTENTS@:c"
 ];
@@ -2947,6 +2945,13 @@ $INSTALL feh
 mkdir -p $BACKGROUNDS
 cp -r $DIR/backgrounds/* $BACKGROUNDS
 #+end_src
+
+**** Gifs as Backgrounds
+#+begin_src bash
+curl -L https://raw.githubusercontent.com/thomas10-10/foo-Wallpaper-Feh-Gif/master/install.sh | bash
+#back4.sh 0.010 gif/pixel.gif &
+#+end_src
+
 
 *** Neovim
 **** Install
