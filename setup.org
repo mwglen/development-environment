@@ -589,6 +589,18 @@ export XDG_STATE_HOME=$HOME/.local/state
 export BACKGROUNDS=$HOME/Backgrounds
 export REPOSITORIES=$HOME/Repositories
 export PATH="$PATH:$HOME/development-environment/scripts"
+
+export XDG_DESKTOP_DIR="$HOME/Desktop"
+export XDG_DOCUMENTS_DIR="$HOME/Documents"
+export XDG_DOWNLOAD_DIR="$HOME/Downloads"
+export XDG_MUSIC_DIR="$HOME/Music"
+export XDG_PICTURES_DIR="$HOME/Pictures"
+export XDG_PUBLICSHARE_DIR="$HOME/Public"
+export XDG_TEMPLATES_DIR="$HOME/Templates"
+export XDG_VIDEOS_DIR="$HOME/Videos"
+#+end_src
+
+**** Create User Directories
 #+end_src
 
 **** Environment Config
@@ -1599,6 +1611,7 @@ export QT_STYLE_OVERRIDE=kvantum
 optimus-manager-qt &
 nm-applet &
 hp-systray &
+flameshot &
 #+end_src
 
 ** XBindKeys
@@ -1613,7 +1626,6 @@ $INSTALL xbindkeys
 "xdotool key BackSpace"
     Release+Control+h
 #+end_src
-
 
 ** Window Managers
 *** EXWM
@@ -1850,7 +1862,10 @@ myKeys = [
   ("M-S-q", io exitSuccess),
   -- run xmessage with a summary of the default keybindings
   ("M-S-/", spawn ("echo \"" ++ help ++ "\" | xmessage -file -")),
-  
+
+  -- EMACS --
+  ("M-e", spawn "emacsclient -c"),
+
   --  PINNING WINDOWS --
   -- pin current window
   ("M-a", windows copyToAll),
@@ -2894,13 +2909,27 @@ Name=Spotify
 GenericName=Music Player
 Icon=spotify-client
 TryExec=spotify
-Exec=spotify --uri=%U --force-device-scale-factor=2
+Exec=spotify --force-device-scale-factor=2 %U
 Terminal=false
 MimeType=x-scheme-handler/spotify;
 Categories=Audio;Music;Player;AudioVideo;
 StartupWMClass=spotify
 #+end_src
 
+**** Desktop File (With Fix for HiDPI)
+#+begin_src conf :tangle /sudo:://opt/spotify/spotify.desktop
+[Desktop Entry]
+Type=Application
+Name=Spotify
+GenericName=Music Player
+Icon=spotify-client
+TryExec=spotify
+Exec=spotify --force-device-scale-factor=2 %U
+Terminal=false
+MimeType=x-scheme-handler/spotify;
+Categories=Audio;Music;Player;AudioVideo;
+StartupWMClass=spotify
+#+end_src
 
 *** Discord
 #+begin_src bash
