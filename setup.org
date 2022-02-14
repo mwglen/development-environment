@@ -1472,6 +1472,7 @@ size-transition = true
 corner-radius = 10.0;
 rounded-corners-exclude = [
   "class_g = 'Polybar'",
+  "class_g = 'Rofi'",
 ];
 round-borders = 1;
 round-borders-exclude = [
@@ -3049,17 +3050,3 @@ pass init "62EC2C26" # Use the last 8 characters of your GPG key's ID
 
 The =passfs= addon for firefox allows you to use your password store while browsing in firefox
 The =Password Store= android app allows you to access your passwords on  
-
-** Mouse Sensitivity
-#+begin_src bash :tangle no
-Mouse=$(xinput list |grep -i M720 | awk -F= '{ print $2}'| awk '{print $1}'| awk 'BEGIN{ RS = "" ; FS = "\n" }{print $1}')
-
-xinput set-prop $Mouse "libinput Middle Emulation Enabled" 1
-xinput set-prop $Mouse "libinput Scroll Method Enabled" 0, 0, 1
-
-# Set mouse acceleration speed (0 is off, higher is slower)
-xinput set-prop $Mouse "libinput Accel Speed" 0.5
-
-# Set sensitivity with the last number (0 is off, higher is slower)
-xinput set-prop $Mouse "Coordinate Transformation Matrix" 1 0 0 0 1 0 0 0 1
-#+end_src
