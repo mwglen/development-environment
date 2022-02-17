@@ -25,3 +25,8 @@
 - If you reach a "unknown trust" error from pacman. Try running `pacman-key --refresh-keys`
 - If you reach a "unable to lock database" error when the script runs pacman, run `sudo rm /var/lib/pacman/db.lck` and try the script again. This usually happens after force closing the script while it is running.
 - To run EXWM (or any window manager) on WSL2 or in a podman container use Xephyr to create a nested X window. Specifically run `Xephyr -br -ac -noreset -screen 800x600 :1 &` followed by `DISPLAY=:1 emacs`
+- To Setup Samba:
+  - Setup a samba username and password by running `sudo smbpasswd -a <username>` and then entering your password
+  - Edit the config for samba in setup.org to share your directory and then retangle setup.org
+  - Enable the samba daemon by running `sudo systemctl enable --now samba`.
+  - To connect to shared folder on a windows machine create a shorcut to `\\IP-ADDRESS\SHARE-NAME`

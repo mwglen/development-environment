@@ -178,7 +178,7 @@ $INSTALL xbindkeys
 
 cd ~/.config/emacs/lisp && wget https://raw.githubusercontent.com/mwglen/ivy-clipmenu.el/master/ivy-clipmenu.el
 
-$INSTALL xmonad xmonad-contrib xmonad-log
+$INSTALL xmonad xmonad-contrib
 
 $INSTALL rofi pinentry-rofi
 

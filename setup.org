@@ -671,8 +671,157 @@ keycode 47 = semicolon colon Escape
    sudo systemctl enable tlp
    #+end_src
 
-** TODO File System Support
-*** Auto Mount Daemon
+** File System Support
+*** Zip Archives
+#+begin_src bash :tangle no
+$INSTALL zip unzip
+#+end_src
+
+*** Samba
+#+begin_src bash :tangle no
+$INSTALL samba
+#+end_src
+
+**** Config
+:PROPERTIES:
+:header-args:conf: :tangle /sudo:://etc/samba/smb.conf
+:END:
+#+begin_src conf
+# This is the main Samba configuration file. You should read the
+# smb.conf(5) manual page in order to understand the options listed
+# here. Samba has a huge number of configurable options (perhaps too
+# many!) most of which are not shown in this example
+#
+# For a step to step guide on installing, configuring and using samba, 
+# read the Samba-HOWTO-Collection. This may be obtained from:
+#  http://www.samba.org/samba/docs/Samba-HOWTO-Collection.pdf
+#
+# Many working examples of smb.conf files can be found in the 
+# Samba-Guide which is generated daily and can be downloaded from: 
+#  http://www.samba.org/samba/docs/Samba-Guide.pdf
+#
+# NOTE: Whenever you modify this file you should run the command "testparm"
+# to check that you have not made any basic syntactic errors. 
+#
+#======================= Global Settings =====================================
+[global]
+
+# workgroup = NT-Domain-Name or Workgroup-Name, eg: MIDEARTH
+   workgroup = WORKGROUP
+
+# server string is the equivalent of the NT Description field
+   server string = Samba Server
+
+# Server role. Defines in which mode Samba will operate. Possible
+# values are "standalone server", "member server", "classic primary
+# domain controller", "classic backup domain controller", "active
+# directory domain controller".
+#
+# Most people will want "standalone server" or "member server".
+# Running as "active directory domain controller" will require first
+# running "samba-tool domain provision" to wipe databases and create a
+# new domain.
+   server role = standalone server
+
+# This option is important for security. It allows you to restrict
+# connections to machines which are on your local network. The
+# following example restricts access to two C class networks and
+# the "loopback" interface. For more examples of the syntax see
+# the smb.conf man page
+;   hosts allow = 192.168.1. 192.168.2. 127.
+
+# Uncomment this if you want a guest account, you must add this to /etc/passwd
+# otherwise the user "nobody" is used
+;  guest account = pcguest
+
+# this tells Samba to use a separate log file for each machine
+# that connects
+   log file = /usr/local/samba/var/log.%m
+
+# Put a capping on the size of the log files (in Kb).
+   max log size = 50
+
+# Specifies the Kerberos or Active Directory realm the host is part of
+;   realm = MY_REALM
+
+# Backend to store user information in. New installations should 
+# use either tdbsam or ldapsam. smbpasswd is available for backwards 
+# compatibility. tdbsam requires no further configuration.
+;   passdb backend = tdbsam
+
+# Using the following line enables you to customise your configuration
+# on a per machine basis. The %m gets replaced with the netbios name
+# of the machine that is connecting.
+# Note: Consider carefully the location in the configuration file of
+#       this line.  The included file is read at that point.
+;   include = /usr/local/samba/lib/smb.conf.%m
+
+# Configure Samba to use multiple interfaces
+# If you have multiple network interfaces then you must list them
+# here. See the man page for details.
+;   interfaces = 192.168.12.2/24 192.168.13.2/24 
+
+# Where to store roving profiles (only for Win95 and WinNT)
+#        %L substitutes for this servers netbios name, %U is username
+#        You must uncomment the [Profiles] share below
+;   logon path = \\%L\Profiles\%U
+
+# Windows Internet Name Serving Support Section:
+# WINS Support - Tells the NMBD component of Samba to enable it's WINS Server
+;   wins support = yes
+
+# WINS Server - Tells the NMBD components of Samba to be a WINS Client
+#	Note: Samba can be either a WINS Server, or a WINS Client, but NOT both
+;   wins server = w.x.y.z
+
+# WINS Proxy - Tells Samba to answer name resolution queries on
+# behalf of a non WINS capable client, for this to work there must be
+# at least one	WINS Server on the network. The default is NO.
+;   wins proxy = yes
+
+# DNS Proxy - tells Samba whether or not to try to resolve NetBIOS names
+# via DNS nslookups. The default is NO.
+   dns proxy = no 
+
+# These scripts are used on a domain controller or stand-alone 
+# machine to add or delete corresponding unix accounts
+;  add user script = /usr/sbin/useradd %u
+;  add group script = /usr/sbin/groupadd %g
+;  add machine script = /usr/sbin/adduser -n -g machines -c Machine -d /dev/null -s /bin/false %u
+;  delete user script = /usr/sbin/userdel %u
+;  delete user from group script = /usr/sbin/deluser %u %g
+;  delete group script = /usr/sbin/groupdel %g
+
+
+#============================ Share Definitions ==============================
+[homes]
+   comment = Home Directories
+   browseable = no
+   writable = yes
+
+# NOTE: If you have a BSD-style print system there is no need to 
+# specifically define each individual printer
+[printers]
+   comment = All Printers
+   path = /usr/spool/samba
+   browseable = no
+# Set public = yes to allow user 'guest account' to print
+   guest ok = no
+   writable = no
+   printable = yes
+
+[Share]
+path = /home/mwglen/Share
+available = yes
+valid users = geek
+read only = no
+browsable = yes
+public = yes
+writable = yes
+
+#+end_src
+
+*** TODO Auto Mount Daemon
 #+begin_src bash :tangle no
 $INSTALL autofs
 sudo mkdir -p /misc/android
@@ -813,7 +962,7 @@ $INSTALL polybar-git
 
 **** Configuration
 :PROPERTIES:
-:header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/polybar/config")
+:header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/polybar/config.ini")
 :END:
 ***** Global Settings
 #+begin_src conf
@@ -890,7 +1039,7 @@ background = ${colors.background}
 foreground = ${colors.foreground}
 font-0 = "Ubuntu Nerd Font:size=20:weight=bold"
 
-modules-left = date spotify
+modules-left = xworkspaces date spotify
 modules-center = cpu temperature memory
 modules-right = pulseaudio redshift wireless backlight battery
 
@@ -901,9 +1050,23 @@ cursor-click = pointer
 cursor-scroll = ns-resize
 #+end_src
 
-***** XMonad Module
+***** XWorkspaces
 #+begin_src conf
-[module/ff]
+[module/xworkspaces]
+type = internal/xworkspaces
+
+icon-0 = 1;
+     
+label-active = %icon% [%name%]
+label-active-foreground = ${colors.red}
+label-active-underline = ${colors.red}
+
+label-occupied = %icon% %name%
+label-occupied-foreground = ${colors.red}
+label-occupied-underline = ${colors.red}
+
+label-empty = 
+label-empty-underline = ${colors.red}
 
 #+end_src
 
@@ -1650,7 +1813,7 @@ cd ~/.config/emacs/lisp && wget https://raw.githubusercontent.com/mwglen/ivy-cli
 *** XMonad
 **** Install
 #+begin_src bash
-$INSTALL xmonad xmonad-contrib xmonad-log
+$INSTALL xmonad xmonad-contrib
 #+end_src
 
 **** Configuration
@@ -1690,11 +1853,6 @@ import XMonad.Hooks.ManageHelpers (isFullscreen, doFullFloat, doCenterFloat, doR
 import XMonad.Hooks.ServerMode
 import XMonad.Hooks.SetWMName
 import XMonad.Hooks.WorkspaceHistory
-
--- Polybar
-import qualified DBus as D
-import qualified DBus.Client as D
-import qualified Codec.Binary.UTF8.String as UTF8
 
 -- Layouts
 import XMonad.Layout.GridVariants (Grid(Grid))
@@ -1757,24 +1915,9 @@ myClickJustFocuses :: Bool
 myClickJustFocuses = True
 
 myWorkspaces    = ["1","2","3","4","5","6","7","8","9"]
-myEventHook = ewmhDesktopsEventHook
+myEventHook = ewmhDesktopsEventHook <+> fullscreenEventHook
 
--- Override the PP values as you would otherwise, adding colorts etc
--- depending on the statusbar used
-myLogHook :: D.Client -> PP
-myLogHook dbus = def { ppOutput = dbusOutput dbus }
-
--- Emit a DBus signal on log updates
-dbusOutput :: D.Client -> String -> IO ()
-dbusOutput dbus str = do
-    let signal = (D.signal objectPath interfaceName memberName) {
-            D.signalBody = [D.toVariant $ UTF8.decodeString str]
-        }
-    D.emit dbus signal
-  where
-    objectPath = D.objectPath_ "/org/xmonad/Log"
-    interfaceName = D.interfaceName_ "org.xmonad.Log"
-    memberName = D.memberName_ "Update"
+logHook = ewmhDesktopsLogHook
   
 --Makes setting the spacingRaw simpler to write. The spacingRaw module adds a configurable amount of space around windows.
 mySpacing :: Integer -> l a -> XMonad.Layout.LayoutModifier.ModifiedLayout Spacing l a
@@ -1863,8 +2006,9 @@ myKeys = [
   -- run xmessage with a summary of the default keybindings
   ("M-S-/", spawn ("echo \"" ++ help ++ "\" | xmessage -file -")),
 
-  -- EMACS --
+  -- APPLICATIONS --
   ("M-e", spawn "emacsclient -c"),
+  ("M-S-s", spawn "flameshot gui"),
 
   --  PINNING WINDOWS --
   -- pin current window
@@ -1941,11 +2085,6 @@ myKeys = [
 #+begin_src haskell :tangle ~/.xmonad/xmonad.hs
 main :: IO ()
 main = do
-  dbus <- D.connectSession
-  -- Request access to the DBus name
-  D.requestName dbus (D.busName_ "org.xmonad.Log")
-    [D.nameAllowReplacement, D.nameReplaceExisting, D.nameDoNotQueue]
-  
   -- Launch xmobar
   -- xmproc <- spawnPipe ("xmobar $XDG_CONFIG_HOME/xmobar/config")
     
@@ -1953,7 +2092,7 @@ main = do
   xmproc <- spawnPipe ("polybar xmonad")
   
   -- Start xmonad
-  xmonad $ ewmh . docks $ def {
+  xmonad $ ewmh $ docks $ def {
     -- simple stuff
     terminal           = myTerminal,
     focusFollowsMouse  = myFocusFollowsMouse,
@@ -1967,7 +2106,7 @@ main = do
     layoutHook         = spacingWithEdge 30 $ myLayoutHook,
     manageHook         = myManageHook,
     handleEventHook    = myEventHook,
-    logHook            = dynamicLogWithPP (myLogHook dbus),
+    logHook            = dynamicLogWithPP (myLogHook),
     startupHook        = myStartupHook
     } `additionalKeysP` myKeys
 #+end_src
@@ -2809,12 +2948,12 @@ c.scrolling.bar = 'never'
 c.scrolling.smooth = True
 
 # Fonts
-c.fonts.default_family = '"NotoSans Nerd Font Mono"'
+c.fonts.default_family = '"NotoSans Nerd Font"'
 c.fonts.default_size = '11pt'
-c.fonts.completion.entry = '11pt "NotoSans Nerd Font Mono"'
-c.fonts.debug_console = '11pt "NotoSans Nerd Font Mono"'
+c.fonts.completion.entry = '11pt "NotoSans Nerd Font"'
+c.fonts.debug_console = '11pt "NotoSans Nerd Font"'
 c.fonts.prompts = 'default_size "NotoSans Nerd Font"'
-c.fonts.statusbar = '11pt "NotoSans Nerd Font Mono"'
+c.fonts.statusbar = '11pt "NotoSans Nerd Font"'
 
 # Use dmenu
 #config.bind('o', 'spawn --userscript dmenu-open')
