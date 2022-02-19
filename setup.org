@@ -229,7 +229,8 @@ set -v
 #+begin_src bash
 export DISTRO=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
 if ! [ "$DISTRO" = "\"Arch Linux\"" ] \
-    && ! [ "$DISTRO" = "\"Arch Linux ARM\"" ]; then echo "Unsupported Platform"
+    && ! [ "$DISTRO" = "\"Arch Linux ARM\"" ]; then
+    echo "Unsupported Platform"
     echo "Currently only Arch Linux is supported"
     return 1
 fi
@@ -499,6 +500,73 @@ script-opts=ytdl_hook-ytdl_path=yt-dlp
     XF86AudioStop
 #+end_src
 
+
+** Power Management
+*** ACPI
+#+begin_src bash
+$INSTALL acpi
+#+end_src
+
+*** Hibernate
+**** Hibernate on low battery level
+This might not work if your device doesn't send an alert with each change in battery percentage. Check ~udevadm monitor --property~ to watch for this event.
+
+This doesn't work for my computer, but it doesn't hurt to always tangle it.
+
+#+begin_src bash :tangle /sudo:://etc/udev/rules.d/99-lowbat.rules
+SUBSYSTEM=="power_supply", ATTR{status}=="Discharging", ATTR{capacity}=="[0-48]", RUN+="/usr/bin/systemctl hibernate"
+#+end_src
+
+If the above doesn't work we have to frequently run a script that checks the battery level using acpi and chooses whether or not to hibernate. The next sections do just that.
+
+**** Hibernate If Low Script
+:PROPERTIES:
+:header-args:sh: :tangle /sudo:://bin/hibernate_if_low.sh :tangle-mode (identity #o755)
+:END:
+#+begin_src sh
+#!/bin/sh
+acpi -b | awk -F'[,:%]' '{print $2, $3}' | {
+    read -r status capacity
+  
+    if [ "$status" = Discharging -a "$capacity" -lt 50 ]; then
+        logger "Critical battery threshold"
+        sudo systemctl hibernate
+    fi
+}
+#+end_src
+
+**** Auto Hibernate Service
+#+begin_src bash :tangle /sudo:://etc/systemd/system/auto-hibernate.service
+[Unit]
+Description=Hibernate system when the battery is low
+
+[Service]
+Type=oneshot
+ExecStart=/bin/hibernate-if-low.sh
+
+[Install]
+WantedBy=multi-user.target
+#+end_src
+
+**** Auto Hibernate Timer
+#+begin_src bash :tangle /sudo:://etc/systemd/system/auto-hibernate.timer
+[Unit]
+Description=Auto hibernate system when the battery is low
+
+[Timer]
+OnCalendar=*:*:0/10
+AccuracySec=1
+
+[Install]
+WantedBy=timers.target
+#+end_src
+
+**** Enable Auto Hibernation
+#+begin_src bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now auto_hibernate.timer
+#+end_src
+
 *** Brightness
 **** Setup Video Group
 #+begin_src bash
@@ -600,9 +668,6 @@ export XDG_TEMPLATES_DIR="$HOME/Templates"
 export XDG_VIDEOS_DIR="$HOME/Videos"
 #+end_src
 
-**** Create User Directories
-#+end_src
-
 **** Environment Config
 :PROPERTIES:
 :header-args:bash: :tangle ~/.zshenv
@@ -687,138 +752,41 @@ $INSTALL samba
 :header-args:conf: :tangle /sudo:://etc/samba/smb.conf
 :END:
 #+begin_src conf
-# This is the main Samba configuration file. You should read the
-# smb.conf(5) manual page in order to understand the options listed
-# here. Samba has a huge number of configurable options (perhaps too
-# many!) most of which are not shown in this example
-#
-# For a step to step guide on installing, configuring and using samba, 
-# read the Samba-HOWTO-Collection. This may be obtained from:
-#  http://www.samba.org/samba/docs/Samba-HOWTO-Collection.pdf
-#
-# Many working examples of smb.conf files can be found in the 
-# Samba-Guide which is generated daily and can be downloaded from: 
-#  http://www.samba.org/samba/docs/Samba-Guide.pdf
-#
-# NOTE: Whenever you modify this file you should run the command "testparm"
-# to check that you have not made any basic syntactic errors. 
-#
-#======================= Global Settings =====================================
 [global]
+workgroup = WORKGROUP
+server string = MattArch - Samba Server
+server role = standalone server
+log file = /usr/local/samba/var/log.%m
+max log size = 50
+dns proxy = no 
 
-# workgroup = NT-Domain-Name or Workgroup-Name, eg: MIDEARTH
-   workgroup = WORKGROUP
-
-# server string is the equivalent of the NT Description field
-   server string = Samba Server
-
-# Server role. Defines in which mode Samba will operate. Possible
-# values are "standalone server", "member server", "classic primary
-# domain controller", "classic backup domain controller", "active
-# directory domain controller".
-#
-# Most people will want "standalone server" or "member server".
-# Running as "active directory domain controller" will require first
-# running "samba-tool domain provision" to wipe databases and create a
-# new domain.
-   server role = standalone server
-
-# This option is important for security. It allows you to restrict
-# connections to machines which are on your local network. The
-# following example restricts access to two C class networks and
-# the "loopback" interface. For more examples of the syntax see
-# the smb.conf man page
-;   hosts allow = 192.168.1. 192.168.2. 127.
-
-# Uncomment this if you want a guest account, you must add this to /etc/passwd
-# otherwise the user "nobody" is used
-;  guest account = pcguest
-
-# this tells Samba to use a separate log file for each machine
-# that connects
-   log file = /usr/local/samba/var/log.%m
-
-# Put a capping on the size of the log files (in Kb).
-   max log size = 50
-
-# Specifies the Kerberos or Active Directory realm the host is part of
-;   realm = MY_REALM
-
-# Backend to store user information in. New installations should 
-# use either tdbsam or ldapsam. smbpasswd is available for backwards 
-# compatibility. tdbsam requires no further configuration.
-;   passdb backend = tdbsam
-
-# Using the following line enables you to customise your configuration
-# on a per machine basis. The %m gets replaced with the netbios name
-# of the machine that is connecting.
-# Note: Consider carefully the location in the configuration file of
-#       this line.  The included file is read at that point.
-;   include = /usr/local/samba/lib/smb.conf.%m
-
-# Configure Samba to use multiple interfaces
-# If you have multiple network interfaces then you must list them
-# here. See the man page for details.
-;   interfaces = 192.168.12.2/24 192.168.13.2/24 
-
-# Where to store roving profiles (only for Win95 and WinNT)
-#        %L substitutes for this servers netbios name, %U is username
-#        You must uncomment the [Profiles] share below
-;   logon path = \\%L\Profiles\%U
-
-# Windows Internet Name Serving Support Section:
-# WINS Support - Tells the NMBD component of Samba to enable it's WINS Server
-;   wins support = yes
-
-# WINS Server - Tells the NMBD components of Samba to be a WINS Client
-#	Note: Samba can be either a WINS Server, or a WINS Client, but NOT both
-;   wins server = w.x.y.z
-
-# WINS Proxy - Tells Samba to answer name resolution queries on
-# behalf of a non WINS capable client, for this to work there must be
-# at least one	WINS Server on the network. The default is NO.
-;   wins proxy = yes
-
-# DNS Proxy - tells Samba whether or not to try to resolve NetBIOS names
-# via DNS nslookups. The default is NO.
-   dns proxy = no 
-
-# These scripts are used on a domain controller or stand-alone 
-# machine to add or delete corresponding unix accounts
-;  add user script = /usr/sbin/useradd %u
-;  add group script = /usr/sbin/groupadd %g
-;  add machine script = /usr/sbin/adduser -n -g machines -c Machine -d /dev/null -s /bin/false %u
-;  delete user script = /usr/sbin/userdel %u
-;  delete user from group script = /usr/sbin/deluser %u %g
-;  delete group script = /usr/sbin/groupdel %g
-
-
-#============================ Share Definitions ==============================
 [homes]
-   comment = Home Directories
-   browseable = no
-   writable = yes
-
-# NOTE: If you have a BSD-style print system there is no need to 
-# specifically define each individual printer
-[printers]
-   comment = All Printers
-   path = /usr/spool/samba
-   browseable = no
-# Set public = yes to allow user 'guest account' to print
-   guest ok = no
-   writable = no
-   printable = yes
-
-[Share]
-path = /home/mwglen/Share
-available = yes
-valid users = geek
-read only = no
-browsable = yes
-public = yes
+comment = Home Directories
+browseable = no
 writable = yes
 
+#[printers]
+#comment = All Printers
+#path = /usr/spool/samba
+#browseable = no
+#guest ok = no
+#writable = no
+#printable = yes
+
+[Public Files]
+# general config
+comment = read-only and public
+path = /home/mwglen/Share/Public
+force user = smbuser
+force group = smbuser
+
+# set permissions
+create mask = 0777
+directory mask = 0777 # directories need executable permission to enter
+force create mode = 777
+force directory mode = 777
+force security mode = 777
+force directorry security mode = 777
 #+end_src
 
 *** TODO Auto Mount Daemon
@@ -1205,6 +1173,7 @@ full-at = 98
 time-format = %-l:%M
 
 label-charging = %percentage%%
+label-discharging = %percentage%%
 format-charging = <animation-charging>   <label-charging>%{F-}
 format-discharging = <ramp-capacity>   <label-discharging>%{F-}
 format-full = <ramp-capacity>   <label-full>%{F-}
@@ -2462,6 +2431,19 @@ sudo systemctl start virtlogd
 
 *** OSX Machine
 To create an OSX Virtual Machine check out the ~OSX-KVM~ project and follow the instructions in their git repository.
+
+*** Windows Machine
+1. Download the Windows ISO
+2. Create a new VM based off of that ISO
+   
+For Windows 11:
+- In the VM's config add a TPM2 module and set the VM to use UEFI (with secure boot)
+- If you want to use a Windows 7 Product Key, you must start with a Windows 10 VM and then upgrade to Windows 11 after activation.
+
+*** Vagrant
+#+begin_src bash
+$INTSALL vagrant
+#+end_src
 
 ** Applications
 *** Mimeo

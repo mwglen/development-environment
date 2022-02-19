@@ -8,7 +8,8 @@ set -v
 
 export DISTRO=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
 if ! [ "$DISTRO" = "\"Arch Linux\"" ] \
-    && ! [ "$DISTRO" = "\"Arch Linux ARM\"" ]; then echo "Unsupported Platform"
+    && ! [ "$DISTRO" = "\"Arch Linux ARM\"" ]; then
+    echo "Unsupported Platform"
     echo "Currently only Arch Linux is supported"
     return 1
 fi
@@ -88,6 +89,11 @@ $INSTALL networkmanager-dmenu-git
 $INSTALL alsa-utils pavucontrol
 
 $INSTALL playerctl mpv yt-dlp baka-mplayer
+
+$INSTALL acpi
+
+sudo systemctl daemon-reload
+sudo systemctl enable --now auto_hibernate.timer
 
 sudo groupadd video && true
 sudo usermod +aG video mwglen && true
@@ -215,6 +221,8 @@ sudo systemctl enable --now libvirtd # Also enables virtlogd and virtlockd
 sudo systemctl start virtlogd
 
 # Make sure to set user = /etc/libvirt/qemu.conf
+
+$INTSALL vagrant
 
 $INSTALL mimeo
 
