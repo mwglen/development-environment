@@ -284,7 +284,7 @@ $INSTALL redshift
 
 $INSTALL obs-studio
 
-$INSTALL podman
+$INSTALL podman podman-compose podman-docker
 echo "unqualified-search-registries = ['docker.io']" \
     | sudo tee /etc/containers/registries.conf
 
