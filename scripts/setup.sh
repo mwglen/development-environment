@@ -68,6 +68,8 @@ $INSTALL python python-matplotlib poetry
 $INSTALL rustup
 rustup default nightly
 
+$INSTALL gprolog
+
 $INSTALL alacritty
 
 $INSTALL nvidia
@@ -229,6 +231,8 @@ $INSTALL mimeo
 $INSTALL dolphin
 
 $INSTALL ranger python-ueberzug-git
+
+$INSTALL minecraft-launcher steam
 
 $INSTALL gotop
 

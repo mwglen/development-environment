@@ -345,6 +345,11 @@ $INSTALL rustup
 rustup default nightly
 #+end_src
 
+*** Prolog
+#+begin_src bash
+$INSTALL gprolog
+#+end_src
+
 ** Terminal Emulators
 *** Alacritty
 **** Install
@@ -2477,6 +2482,11 @@ set draw_borders both
 set display_size_in_main_column false
 set show_hidden false
 set colorscheme default
+#+end_src
+
+*** Games
+#+begin_src bash
+$INSTALL minecraft-launcher steam
 #+end_src
 
 *** Gotop
