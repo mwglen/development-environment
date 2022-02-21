@@ -194,9 +194,6 @@ $INSTALL xmonad xmonad-contrib
 
 $INSTALL rofi pinentry-rofi
 
-rm -rf $XDG_CONFIG_HOME/rofi
-ln -s $DIR/rofi  $XDG_CONFIG_HOME/rofi
-
 $INSTALL xmobar trayer ttf-mononoki
 
 $INSTALL libnotify

@@ -1,7 +1,0 @@
-* {
-  al:  #00000000;   /* background */
-  bg:  #000000ff;      /* search font */
-  se:  #101010ff;  /* selected */
-  fg:  #FFFFFFff;      /* text */
-  ac:  #6C77BB;  /* top color */
-}
