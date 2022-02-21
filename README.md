@@ -1,6 +1,14 @@
 # development-environment
 ## Complete configuration and setup scripts for my current linux environment.
 
+## Introduction
+Originally this was a repository to hold my WSL configuration, but then I started to daily drive Arch Linux and this became a place to document, manage, and distribute my current desktop environment. As such the name development-environment doesn't fit as much as it used to and I might later change it to desktop-environment.
+
+Currently, I use XMonad as my window manager (although I sometimes switch to EXWM). Picom is used for transparency, window animations, and blurring. Feh is used to set my background. Qutebrowser and Firefox are my web browsers of choice. For editing text, I use Emacs and Neovim. Polybar is used for my system panel. Many other applications are also used and these can be seen in `setup.org`.
+
+## Screenshots
+![image](https://user-images.githubusercontent.com/10079472/154896328-05ddd9bf-d218-4511-b7b6-81b398def00a.png)
+
 ## Loading my configuration on a clean Arch Linux install:
 - Download this repository to a thumb drive
 - Follow the Arch wiki's installation instructions. Stop following the instructions after running `arch-chroot /mnt`
@@ -13,7 +21,7 @@
 - Run `./setup.sh` from inside the repository
 - Reboot the system
 
-## Loading my configuration on a Podman Container:
+## Loading my configuration on a Podman Container (most likely broken):
 - Run `./podman.sh` from inside the repository
 
 ## Important Information:
