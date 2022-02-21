@@ -80,6 +80,8 @@ $INSTALL usbutils usbip
 
 $INSTALL pulseaudio-control
 
+$INSTALL galaxybudsclient-bin
+
 $INSTALL bluez bluez-utils pulseaudio-bluetooth blueman-git
 sudo systemctl enable bluetooth
 
@@ -112,6 +114,8 @@ sudo systemctl enable cups
 $INSTALL hplip
 
 $INSTALL msp430-elf-gcc-bin
+
+$INSTALL kdocker
 
 $INSTALL texlive-core texlive-latexextra
 

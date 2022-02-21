@@ -401,8 +401,14 @@ $INSTALL usbutils usbip
 #+end_src
 
 *** Audio
+**** Pulse Audio
 #+begin_src bash
 $INSTALL pulseaudio-control
+#+end_src
+
+**** Galaxy Live Buds
+#+begin_src bash
+$INSTALL galaxybudsclient-bin
 #+end_src
 
 *** Bluetooth
@@ -634,6 +640,12 @@ $INSTALL hplip
 *** MSP430 Launchpad
 #+begin_src bash
 $INSTALL msp430-elf-gcc-bin
+#+end_src
+
+** System Tray
+*** KDocker
+#+begin_src bash
+$INSTALL kdocker
 #+end_src
 
 ** Setup Core Packages
