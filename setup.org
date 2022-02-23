@@ -1050,9 +1050,9 @@ label-occupied = %icon% %name%
 label-occupied-foreground = ${colors.red}
 label-occupied-underline = ${colors.red}
 
-label-empty = 
+label-empty = %icon%
 label-empty-underline = ${colors.red}
-
+label-empty-foreground = ${colors.red}
 #+end_src
 
 ***** Xkeyboard
