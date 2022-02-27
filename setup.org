@@ -939,6 +939,7 @@ violet = #b294bb
 blue = #81a2be
 red = #cc6666
 grey = #6b6b6b
+darkgrey = #222222
 #+end_src
 
 ***** EXWM Panel
@@ -1128,8 +1129,8 @@ tail = true
 type = internal/cpu
 interval = 2
 format = CPU <label>
-format-underline = ${colors.red}
-format-foreground = ${colors.red}
+format-underline = ${colors.darkgrey}
+format-foreground = ${colors.darkgrey}
 label = %percentage:2%%
 #+end_src
 
@@ -1187,8 +1188,8 @@ warn-temperature = 70
 format = TEMP <label>
 format-warn = TEMP <label-warn>
 format-underline = ${colors.red}
-format-warn-underline = ${colors.red}
-format-foreground = ${colors.red}
+format-warn-underline = ${colors.darkgrey}
+format-foreground = ${colors.darkgrey}
 
 label = %temperature-c%
 label-warn = %temperature-c%!
@@ -1239,8 +1240,8 @@ type = internal/memory
 interval = 3
 format = <label>
 label = MEM %percentage_used:2%%
-format-underline = ${colors.red}
-format-foreground = ${colors.red}
+format-underline = ${colors.darkgrey}
+format-foreground = ${colors.darkgrey}
 #+end_src
 
 ***** Backlight
@@ -1636,7 +1637,7 @@ fade-exclude = [
 # only the first rule matching a window will be applied to that window
 opacity-rule = [
   "100:class_g = 'dmenu'",
-  #"80:class_i = 'xmobar'",
+  "100:class_g = 'Polybar'",
   "60:class_g = 'Rofi'",
   "100:fullscreen",
   "60:!focused",
