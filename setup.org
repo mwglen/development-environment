@@ -143,6 +143,7 @@ source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 *** Keybindings
 #+begin_src bash
 bindkey -v
+bindkey "^?" backward-delete-char # Fix backspace
 #+end_src
 
 *** Prompt
@@ -711,39 +712,6 @@ sudo npm install --global pure-prompt
 #+end_src
 
 ** Xmodmap
-*** Install
-#+begin_src bash
-$INSTALL xorg-xmodmap
-#+end_src
-
-*** Configuration
-:PROPERTIES:
-:header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/xmodmap/config")
-:END:
-Moves caps lock to right control and left control to caps lock
-#+begin_src conf
-clear lock
-clear control
-keycode 66 = Control_L NoSymbol Control_L
-add control = Control_L
-add lock = Control_R
-#+end_src
-
-Moves left alt to right alt and left super to left alt
-#+begin_src conf
-clear mod1
-clear mod4
-keycode 64 = Super_L
-keycode 108 = Alt_L
-add mod1 = Alt_L
-add mod4 =  Super_L
-#+end_src
-
-Output Escape when Ctrl+; is pressed
-#+begin_src conf
-keycode 47 = semicolon colon Escape 
-#+end_src
-
 
 ** Power Saving Mode using TLP
 1. Run the following commands to start using TLP:
@@ -1734,6 +1702,116 @@ wintypes:
 };
 #+end_src
 
+** Keyboard Layouts
+*** Fcitx
+**** Install
+#+begin_src bash
+$INSTALL fcitx-im fcitx-configtool fcitx-qt4
+sudo locale-gen
+#+end_src
+
+**** Add to .zshenv
+#+begin_src bash :tangle ~/.xprofile
+export GTK_IM_MODULE="fcitx"
+export QT_IM_MODULE="fcitx"
+export SDL_IM_MODULE="fcitx"
+export XMODIFIERS="@im=fcitx"
+#+end_src
+
+**** Configuration
+***** Profile
+:PROPERTIES:
+:header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/fcitx/profile")
+:END:
+#+begin_src conf
+[Profile]
+IMName=fcitx-keyboard-ru
+EnabledIMList=fcitx-keyboard-us:True,fcitx-keyboard-ru:True,fcitx-keyboard-ara:True,mozc:True
+#+end_src
+
+***** X Keyboard
+:PROPERTIES:
+:header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/fcitx/conf/fcitx-xkb.config")
+:END:
+#+begin_src conf
+[X Keyboard]
+CustomXModmapScript=xmodmap
+#+end_src
+
+***** Classic UI
+:PROPERTIES:
+:header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/fcitx/conf/fcitx-classic-ui.config")
+:END:
+#+begin_src conf
+[ClassicUI]
+SkinType=dark
+#+end_src
+
+*** XModmap
+**** Install
+#+begin_src bash
+$INSTALL xorg-xmodmap
+#+end_src
+**** Configuration
+:PROPERTIES:
+:header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/fcitx/data/xmodmap")
+:END:
+Moves caps lock to right control and left control to caps lock
+#+begin_src conf
+clear lock
+clear control
+keycode 66 = Control_L NoSymbol Control_L
+add control = Control_L
+add lock = Control_R
+#+end_src
+
+Moves left alt to right alt and left super to left alt
+#+begin_src conf
+clear mod1
+clear mod4
+keycode 64 = Super_L
+keycode 108 = Alt_L
+add mod1 = Alt_L
+add mod4 =  Super_L
+#+end_src
+
+Output Escape when Ctrl+; is pressed
+#+begin_src conf
+keycode 47 = semicolon colon Escape 
+#+end_src
+
+*** English
+**** Add to /etc/locale.gen
+:PROPERTIES:
+:header-args:bash: :tangle /sudo:://etc/locale.gen
+:END:
+#+begin_src bash :tangle no
+en_US.UTF-8 UTF-8
+#+end_src
+
+*** Russian
+**** Add to /etc/locale.gen
+:PROPERTIES:
+:header-args:bash: :tangle /sudo:://etc/locale.gen
+:END:
+#+begin_src bash :tangle no
+ru_RU.UTF-8 UTF-8
+#+end_src
+
+*** Japanese
+**** Download IME
+#+begin_src bash
+$INSTALL fcitx-mozc
+#+end_src
+
+**** Add to /etc/locale.gen
+:PROPERTIES:
+:header-args:bash: :tangle /sudo:://etc/locale.gen
+:END:
+#+begin_src bash :tangle no
+ja_JP.UTF-8 UTF-8
+#+end_src
+
 ** Xorg
 *** Install
 #+begin_src bash
@@ -1749,8 +1827,9 @@ feh --bg-scale $BACKGROUNDS/nge.jpeg
 
 # Keybindings
 xbindkeys
+#setxkbmap -layout us,ru,jp,ara -option grp:alt_space_toggle
 xmodmap $XDG_CONFIG_HOME/xmodmap/config
-#setxkbmap -layout us,ru -option grp:toggle -option caps:ctrl_modifier
+fcitx -d &
 
 # QT Config
 export QT_AUTO_SCREEN_SCALE_FACTOR=1

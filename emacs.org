@@ -217,6 +217,14 @@
                           (agenda . 5))))
 #+end_src
 
+*** Fcitx
+#+begin_src emacs-lisp
+(use-package fcitx
+  :config
+  (fcitx-aggressive-setup)
+  (setq fcitx-use-dbus t))
+#+end_src
+
 ** Window Management
 *** Edwina
 #+begin_src emacs-lisp
@@ -1067,19 +1075,26 @@ Allows you to quckly find definitions.
 #+begin_src emacs-lisp
 (use-package verilog-mode
   :config
-  (setq verilog-indent-level 3
-        verilog-indent-level-module 3
-        verilog-indent-level-behavioral 3
-        verilog-indent-level-directive 3
-        verilog-auto-indent-on-newline t
-        verilog-tab-always-indent t)
-        verilog-case-indent
-        verilog-auto-newline
-        verilog-auto-endcomments
-        verilog-minimum-comment-distance
-        verilog-indent-begin-after-if
-        verilog-auto-lineup
-        verilog-linter)
+  (setq verilog-align-ifelse nil
+        verilog-auto-delete-trailing-whitespace nil
+        verilog-auto-inst-param-value nil
+        verilog-auto-inst-vector nil
+        verilog-auto-lineup 'all
+        verilog-auto-newline nil
+        verilog-auto-save-policy nil
+        verilog-auto-template-warn-unused nil
+        verilog-highlight-grouping-keywords nil
+        verilog-highlight-modules nil
+        verilog-tab-to-comment nil))
+
+(eval-after-load 'verilog-mode
+    '(progn
+        ;; same for all the electric-verilog-* commands in                
+        ;; the mode's map (see verilog-mode.el)                      
+        (define-key verilog-mode-map (kbd ";") 'self-insert-command)
+        (define-key verilog-mode-map (kbd ":") 'self-insert-command)
+        (define-key verilog-mode-map (kbd "RET") 'evil-ret)
+        (define-key verilog-mode-map (kbd "TAB") 'tab-to-tab-stop)))
 #+end_src
 
 *** Nim

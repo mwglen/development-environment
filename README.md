@@ -31,6 +31,7 @@ Currently, I use XMonad as my window manager (although I sometimes switch to EXW
 - After running `setup.sh` make sure to run `M-x all-the-icons-install-fonts` in emacs.
 - After running `setup.sh` make sure to run `bw login` so that bitwarden can be used in other applications such as bitwarden-rofi
 - If you reach a "unknown trust" error from pacman. Try running `pacman-key --refresh-keys`
+- If you reach a "corrupted GPG key" error from pacman. Try running `pacman -Sy archlinux-keyring`
 - If you reach a "unable to lock database" error when the script runs pacman, run `sudo rm /var/lib/pacman/db.lck` and try the script again. This usually happens after force closing the script while it is running.
 - To run EXWM (or any window manager) on WSL2 or in a podman container use Xephyr to create a nested X window. Specifically run `Xephyr -br -ac -noreset -screen 800x600 :1 &` followed by `DISPLAY=:1 emacs`
 - To Setup Samba:

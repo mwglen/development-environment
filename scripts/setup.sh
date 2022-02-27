@@ -126,8 +126,6 @@ source $HOME/.zshenv
 $INSTALL nodejs npm
 sudo npm install --global pure-prompt
 
-$INSTALL xorg-xmodmap
-
 $INSTALL tlp
 sudo systemctl enable tlp
 
@@ -183,6 +181,13 @@ sudo tar -xf $REPOSITORIES/lightdm-webkit-theme-litarvan-3.2.0.tar.gz -C /usr/sh
 # My fork of jonaburg's fork of picom has an updated picom-trans binary that can be used to toggle transparency of a window
 git install https://github.com/mwglen/picom.git $REPOSITORIES/picom
 cd $REPOSITORIES/picom && meson --buildtype=release . build && sudo ninja -C build install
+
+$INSTALL fcitx-im fcitx-configtool fcitx-qt4
+sudo locale-gen
+
+$INSTALL xorg-xmodmap
+
+$INSTALL fcitx-mozc
 
 $INSTALL xorg dbus xorg-xrdb xorg-transset wmctrl
 
