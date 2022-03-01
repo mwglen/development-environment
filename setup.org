@@ -306,6 +306,11 @@ git config --global init.defaultBranch master
 $INSTALL man-db man-pages
 #+end_src
 
+*** Bazel
+#+begin_src bash
+$INSTALL bazel
+#+end_src
+
 *** cmake
 #+begin_src bash
 $INSTALL cmake
@@ -939,7 +944,6 @@ violet = #b294bb
 blue = #81a2be
 red = #cc6666
 grey = #6b6b6b
-darkgrey = #222222
 #+end_src
 
 ***** EXWM Panel
@@ -963,7 +967,6 @@ foreground = ${colors.foreground}
 font-0 = "NotoSans Nerd Font:size=20:weight=bold"
 
 modules-left = date
-;modules-center = cpu temperature memory
 modules-right = wireless pulseaudio backlight redshift battery
 
 tray-position = none
@@ -994,7 +997,6 @@ foreground = ${colors.foreground}
 font-0 = "Ubuntu Nerd Font:size=20:weight=bold"
 
 modules-left = xworkspaces date spotify
-modules-center = cpu temperature memory
 modules-right = pulseaudio redshift wireless backlight battery
 
 tray-position = right
@@ -1002,6 +1004,18 @@ tray-maxsize = 28
 
 cursor-click = pointer
 cursor-scroll = ns-resize
+#+end_src
+
+***** Playerctl
+#+begin_src conf
+[module/playerctl]
+type = custom/script
+interval = 2
+exec = echo $(playerctl metadata -f '{{artist}} - {{title}}' 2>/dev/null | sed -E 's/(.{30}).+/\1.../')
+exec-if = playerctl metadata -f {{playerName}} 2>/dev/null | grep -Ev 'mopidy' >/dev/null
+format-prefix = "喇 "
+format-foreground = ${colors.green}
+format-underline = ${colors.green}
 #+end_src
 
 ***** XWorkspaces
@@ -1129,8 +1143,8 @@ tail = true
 type = internal/cpu
 interval = 2
 format = CPU <label>
-format-underline = ${colors.darkgrey}
-format-foreground = ${colors.darkgrey}
+format-underline = ${colors.violet}
+format-foreground = ${colors.violet}
 label = %percentage:2%%
 #+end_src
 
@@ -1187,9 +1201,10 @@ warn-temperature = 70
 
 format = TEMP <label>
 format-warn = TEMP <label-warn>
-format-underline = ${colors.red}
-format-warn-underline = ${colors.darkgrey}
-format-foreground = ${colors.darkgrey}
+format-underline = ${colors.yellow}
+format-warn-underline = ${colors.yellow}
+format-foreground = ${colors.yellow}
+format-warn-foreground = ${colors.yellow}
 
 label = %temperature-c%
 label-warn = %temperature-c%!
@@ -1240,8 +1255,8 @@ type = internal/memory
 interval = 3
 format = <label>
 label = MEM %percentage_used:2%%
-format-underline = ${colors.darkgrey}
-format-foreground = ${colors.darkgrey}
+format-underline = ${colors.blue}
+format-foreground = ${colors.blue}
 #+end_src
 
 ***** Backlight
@@ -1816,7 +1831,7 @@ ja_JP.UTF-8 UTF-8
 ** Xorg
 *** Install
 #+begin_src bash
-$INSTALL xorg dbus xorg-xrdb xorg-transset wmctrl
+$INSTALL xorg dbus xorg-xrdb xorg-transset wmctrl xorg-xmessage
 #+end_src
 
 **** Xsession File
@@ -1945,6 +1960,7 @@ import XMonad.Util.Dmenu
 import XMonad.Util.EZConfig (additionalKeysP)
 import XMonad.Util.Run (runProcessWithInput, safeSpawn, spawnPipe)
 import XMonad.Util.SpawnOnce
+import XMonad.Util.NamedScratchpad
 #+end_src
 
 ***** Variables
@@ -1953,8 +1969,11 @@ myModMask :: KeyMask
 myModMask = mod4Mask
 
 myTerminal :: String
-myTerminal = "alacritty"
+myTerminal = "alacritty "
 
+myXMessage :: String
+myXMessage = "xmessage -default okay -bg black -fg white "
+  
 myBrowser :: String
 myBrowser = "qutebrowser "
 
@@ -1982,7 +2001,7 @@ myClickJustFocuses = True
 myWorkspaces    = ["1","2","3","4","5","6","7","8","9"]
 myEventHook = ewmhDesktopsEventHook <+> fullscreenEventHook
 
-logHook = ewmhDesktopsLogHook
+myLogHook = ewmhDesktopsLogHook
   
 --Makes setting the spacingRaw simpler to write. The spacingRaw module adds a configurable amount of space around windows.
 mySpacing :: Integer -> l a -> XMonad.Layout.LayoutModifier.ModifiedLayout Spacing l a
@@ -2023,6 +2042,19 @@ myLayoutHook = avoidStruts
 
 #+end_src
 
+***** Scratchpads
+#+begin_src haskell :tangle ~/.xmonad/xmonad.hs
+scratchpads :: [NamedScratchpad]
+scratchpads = [
+  NS "terminal" "alacritty -t ScratchT"
+     (title =? "ScratchT")
+     (customFloating $ W.RationalRect 0.05 0.05 0.9 0.9),
+  NS "spotify" "psst-gui"
+     (className =? "Psst-gui")
+     (customFloating $ W.RationalRect 0.05 0.05 0.9 0.9)
+  ]
+#+end_src
+
 ***** Managehook
 #+begin_src haskell :tangle ~/.xmonad/xmonad.hs
 myManageHook = composeAll
@@ -2048,7 +2080,7 @@ myManageHook = composeAll
     , className =? "toolbar"        --> doFloat 
     , resource  =? "download"       --> doIgnore
     , (className =? "firefox" <&&> resource =? "Dialog") --> doFloat 
-    ]
+    ] <+> namedScratchpadManageHook scratchpads
 #+end_src
 
 ***** Startup Hook
@@ -2063,98 +2095,67 @@ myStartupHook = do
 -- START_KEYS
 myKeys :: [(String, X ())]
 myKeys = [
-  -- KB_GROUP Xmonad --
-  -- recompile and restart xmonad
-  ("M-q", spawn "xmonad --recompile; xmonad --restart"),
-  -- exit xmonad
-  ("M-S-q", io exitSuccess),
-  -- run xmessage with a summary of the default keybindings
-  ("M-S-/", spawn ("echo \"" ++ help ++ "\" | xmessage -file -")),
+  -- Xmonad --
+  ("M-q", spawn "xmonad --recompile; xmonad --restart")
+  , ("M-S-q", io exitSuccess)
 
-  -- APPLICATIONS --
-  ("M-e", spawn "emacsclient -c"),
-  ("M-S-s", spawn "flameshot gui"),
+  -- Applications --
+  , ("M-C-<Return>", spawn myTerminal)
+  , ("M-e", spawn "emacsclient -c")
+  , ("M-S-s", spawn "flameshot gui")
 
-  --  PINNING WINDOWS --
-  -- pin current window
-  ("M-a", windows copyToAll),
-  -- unpin current window
-  ("M-S-a", killAllOtherCopies),
+  -- Scratch Pads --
+  , ("M-C-t", namedScratchpadAction scratchpads "terminal")
+  , ("M-C-s", namedScratchpadAction scratchpads "spotify")
   
-  -- ROFI --
-  -- launch application with rofi
-  ("M-p", spawn "rofi -show run"),
-  -- goto window with rofi
-  ("M-S-p", spawn "rofi -show window"),
-  -- launch bitwarden-rofi 
-  ("M-b", spawn "bwmenu"),
+  -- Rofi --
+  , ("M-p", spawn "rofi -show run")
+  , ("M-C-p", spawn "rofi -show window")
+  , ("M-C-b", spawn "rofi-bluetooth")
+  , ("M-b", spawn "bwmenu")
   
-  -- TERMINAL --
-  --("M-S-<Return>", spawn $ XMonad.terminal conf),
-  -- CHANGE FOCUS --
-  -- Move focus to the next window
-  ("M-<Tab>", windows W.focusDown),
-  -- Move focus to the next window
-  ("M-<Tab>", windows W.focusDown),
-  ("M-j", windows W.focusDown),
-  -- Move focus to the previous window
-  ("M-k", windows W.focusUp),
-  -- Move focus to the master window
-  ("M-m", windows W.focusMaster),
+  -- Change Focus --
+  , ("M-j", windows W.focusDown)
+  , ("M-k", windows W.focusUp)
+  , ("M-m", windows W.focusMaster)
 
   -- Swap Windows --
-  -- Swap the focused window and the master window
-  ("M-<Return>", windows W.swapMaster),
-  -- Swap the focused window with the next window
-  ("M-S-j", windows W.swapDown),
-  -- Swap the focused window with the previous window
-  ("M-S-k", windows W.swapUp),
+  , ("M-<Return>", windows W.swapMaster)
+  , ("M-S-j", windows W.swapDown)
+  , ("M-S-k", windows W.swapUp)
 
   -- Resize Windows --
-  -- Resize viewed windows to the correct size
-  ("M-n", refresh),
-  -- Shrink the master area
-  ("M-h", sendMessage Shrink),
-  -- Expand the master area
-  ("M-l", sendMessage Expand),
+  , ("M-n", refresh)
+  , ("M-h", sendMessage Shrink)
+  , ("M-l", sendMessage Expand)
+
+  --  Pin Windows --
+  , ("M-a", windows copyToAll)
+  , ("M-S-a", killAllOtherCopies)
 
   -- Act On Windows --
-  -- make current window opaque
-  ("M-S-t", spawn "picom-trans -t -c 100"),
-  -- toggle noborder/full
-  ("M-f", sendMessage $ MT.Toggle NBFULL),
-  ("M-g",  sendMessage ToggleStruts),
-
-  ("M-S-f", toggleScreenSpacingEnabled
+  , ("M-S-t", spawn "picom-trans -t -c 100")
+  , ("M-f", sendMessage $ MT.Toggle NBFULL)
+  , ("M-g",  sendMessage ToggleStruts)
+  , ("M-S-f", toggleScreenSpacingEnabled
             >> toggleWindowSpacingEnabled
             >> sendMessage (MT.Toggle NBFULL)
-            >> sendMessage ToggleStruts),
-  
-  -- close focused window
-  ("M-S-c", kill),
+            >> sendMessage ToggleStruts)
+  , ("M-S-c", kill)
 
-  --  MODIFY LAYOUT --
-  -- Rotate through the available layout algorithms
-  ("M-<Space>", sendMessage NextLayout),
-  --  Reset the layouts on the current workspace to default
-  --("M-S-<Space>", setLayout $ XMonad.layoutHook conf),
-  -- Push window back into tiling
-  ("M-t", withFocused $ windows . W.sink),
-  -- Increment the number of windows in the master area
-  ("M-,", sendMessage (IncMasterN 1)),
-  -- Deincrement the number of windows in the master area
-  ("M-.", sendMessage (IncMasterN (-1)))]
+  -- Layouts --
+  , ("M-<Space>", sendMessage NextLayout)
+  , ("M-t", withFocused $ windows . W.sink)
+  , ("M-,", sendMessage (IncMasterN 1))
+  , ("M-.", sendMessage (IncMasterN (-1)))]
 #+end_src
 
 ***** Main
 #+begin_src haskell :tangle ~/.xmonad/xmonad.hs
 main :: IO ()
 main = do
-  -- Launch xmobar
-  -- xmproc <- spawnPipe ("xmobar $XDG_CONFIG_HOME/xmobar/config")
-    
   -- Launch polybar
-  xmproc <- spawnPipe ("polybar xmonad")
+  xmproc <- spawnPipe ("pkill polybar || true && polybar xmonad")
   
   -- Start xmonad
   xmonad $ ewmh $ docks $ def {
@@ -2171,7 +2172,7 @@ main = do
     layoutHook         = spacingWithEdge 30 $ myLayoutHook,
     manageHook         = myManageHook,
     handleEventHook    = myEventHook,
-    logHook            = dynamicLogWithPP (myLogHook),
+    logHook            = myLogHook,
     startupHook        = myStartupHook
     } `additionalKeysP` myKeys
 #+end_src
@@ -2235,7 +2236,19 @@ help = unlines [
 *** Rofi
 **** Install
 #+begin_src bash
-$INSTALL rofi pinentry-rofi
+$INSTALL rofi pinentry-rofi rofi-bluetooth-git
+#+end_src
+
+**** Keybindings
+#+begin_src conf :tangle ~/.Xresources
+rofi.kb-row-up:           Up,Control+k,Shift+Tab,Shift+ISO_Left_Tab
+rofi.kb-row-down:         Down,Control+j
+rofi.kb-accept-entry:     Control+m,Return,KP_Enter
+rofi.terminal:            mate-terminal
+rofi.kb-remove-to-eol:    Control+Shift+e
+rofi.kb-mode-next:        Shift+Right,Control+Tab,Control+l
+rofi.kb-mode-previous:    Shift+Left,Control+Shift+Tab,Control+h
+rofi.kb-remove-char-back: BackSpace
 #+end_src
 
 **** Basic Confirguration
@@ -2709,6 +2722,21 @@ $INTSALL vagrant
 Use =mimeo --mime2desk <schema>= to find what application is set as default for a certain schema. Use =mimeo --app2desk <app>= to find an applications corresponding desktop file.
 #+begin_src bash
 $INSTALL mimeo
+#+end_src
+
+*** Manuskript
+#+begin_src bash
+$INSTALL manuskript
+#+end_src
+
+*** Indicator StickyNotes
+#+begin_src bash
+$INSTALL indicator-stickynotes
+#+end_src
+
+*** Anki
+#+begin_src bash
+$INSTALL anki
 #+end_src
 
 *** File Managers
@@ -3283,7 +3311,7 @@ $INSTALL glxinfo
 
 *** Spotify
 #+begin_src bash
-$INSTALL spotify
+$INSTALL spotify psst-git-bin
 #+end_src
 
 **** Desktop File (With Fix for HiDPI)

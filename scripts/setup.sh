@@ -52,6 +52,8 @@ git config --global init.defaultBranch master
 
 $INSTALL man-db man-pages
 
+$INSTALL bazel
+
 $INSTALL cmake
 
 $INSTALL rsync
@@ -189,7 +191,7 @@ $INSTALL xorg-xmodmap
 
 $INSTALL fcitx-mozc
 
-$INSTALL xorg dbus xorg-xrdb xorg-transset wmctrl
+$INSTALL xorg dbus xorg-xrdb xorg-transset wmctrl xorg-xmessage
 
 $INSTALL xbindkeys
 
@@ -197,7 +199,7 @@ cd ~/.config/emacs/lisp && wget https://raw.githubusercontent.com/mwglen/ivy-cli
 
 $INSTALL xmonad xmonad-contrib
 
-$INSTALL rofi pinentry-rofi
+$INSTALL rofi pinentry-rofi rofi-bluetooth-git
 
 $INSTALL xmobar trayer ttf-mononoki
 
@@ -233,6 +235,12 @@ sudo systemctl start virtlogd
 $INTSALL vagrant
 
 $INSTALL mimeo
+
+$INSTALL manuskript
+
+$INSTALL indicator-stickynotes
+
+$INSTALL anki
 
 $INSTALL dolphin
 
@@ -282,7 +290,7 @@ $INSTALL sidequest-bin
 
 $INSTALL glxinfo
 
-$INSTALL spotify
+$INSTALL spotify psst-git-bin
 
 $INSTALL discord
 
