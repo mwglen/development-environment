@@ -353,8 +353,14 @@ rustup default nightly
 
 *** Prolog
 #+begin_src bash
-$INSTALL gprolog
+$INSTALL gprolog swi-prolog
 #+end_src
+
+**** Pyswip
+#+begin_src bash
+pip install git+https://github.com/yuce/pyswip@master#egg=pyswip
+#+end_src
+
 
 ** Terminal Emulators
 *** Alacritty

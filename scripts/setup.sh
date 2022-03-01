@@ -70,7 +70,9 @@ $INSTALL python python-matplotlib poetry
 $INSTALL rustup
 rustup default nightly
 
-$INSTALL gprolog
+$INSTALL gprolog swi-prolog
+
+pip install git+https://github.com/yuce/pyswip@master#egg=pyswip
 
 $INSTALL alacritty
 
