@@ -361,6 +361,10 @@ $INSTALL gprolog swi-prolog
 pip install git+https://github.com/yuce/pyswip@master#egg=pyswip
 #+end_src
 
+*** PHP
+#+begin_src bash
+$INSTALL php
+#+end_src
 
 ** Terminal Emulators
 *** Alacritty
@@ -425,7 +429,7 @@ $INSTALL galaxybudsclient-bin
 
 *** Bluetooth
 #+begin_src bash
-$INSTALL bluez bluez-utils pulseaudio-bluetooth blueman-git
+$INSTALL bluez bluez-utils pulseaudio-bluetooth
 sudo systemctl enable bluetooth
 #+end_src
 
@@ -735,7 +739,7 @@ sudo npm install --global pure-prompt
 ** File System Support
 *** Zip Archives
 #+begin_src bash :tangle no
-$INSTALL zip unzip
+$INSTALL zip unzip unrar
 #+end_src
 
 *** Samba
@@ -1774,6 +1778,7 @@ SkinType=dark
 #+begin_src bash
 $INSTALL xorg-xmodmap
 #+end_src
+
 **** Configuration
 :PROPERTIES:
 :header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/fcitx/data/xmodmap")
@@ -1940,6 +1945,7 @@ import XMonad.Hooks.ServerMode
 import XMonad.Hooks.SetWMName
 import XMonad.Hooks.WorkspaceHistory
 
+  
 -- Layouts
 import XMonad.Layout.GridVariants (Grid(Grid))
 import XMonad.Layout.SimplestFloat
@@ -2037,10 +2043,10 @@ floats   = renamed [Replace "floats"]
            $ limitWindows 20 simplestFloat
   
 myLayoutHook = avoidStruts
-            $ mouseResize
-            $ windowArrange
-            $ T.toggleLayouts floats
-            $ mkToggle (NBFULL ?? NOBORDERS ?? EOT) myDefaultLayout
+             $ mouseResize
+             $ windowArrange
+             $ T.toggleLayouts floats
+             $ mkToggle (NBFULL ?? NOBORDERS ?? EOT) myDefaultLayout
   where
     myDefaultLayout =     withBorder myBorderWidth tall
                       ||| noBorders monocle
@@ -2050,6 +2056,7 @@ myLayoutHook = avoidStruts
 
 ***** Scratchpads
 #+begin_src haskell :tangle ~/.xmonad/xmonad.hs
+
 scratchpads :: [NamedScratchpad]
 scratchpads = [
   NS "terminal" "alacritty -t ScratchT"
@@ -2832,6 +2839,11 @@ ln -s $DIR/backgrounds ~/backgrounds
 *** Firefox
 #+begin_src bash
 $INSTALL firefox
+#+end_src
+
+**** Enable  Touchscreen Scrolling
+#+begin_src bash :tangle ~/.xprofile
+export MOZ_USE_XINPUT2=1
 #+end_src
 
 *** Blender

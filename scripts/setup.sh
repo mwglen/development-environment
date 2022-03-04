@@ -74,6 +74,8 @@ $INSTALL gprolog swi-prolog
 
 pip install git+https://github.com/yuce/pyswip@master#egg=pyswip
 
+$INSTALL php
+
 $INSTALL alacritty
 
 $INSTALL nvidia
@@ -86,7 +88,7 @@ $INSTALL pulseaudio-control
 
 $INSTALL galaxybudsclient-bin
 
-$INSTALL bluez bluez-utils pulseaudio-bluetooth blueman-git
+$INSTALL bluez bluez-utils pulseaudio-bluetooth
 sudo systemctl enable bluetooth
 
 $INSTALL networkmanager network-manager-applet
