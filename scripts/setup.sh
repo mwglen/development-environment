@@ -195,7 +195,7 @@ $INSTALL xorg-xmodmap
 
 $INSTALL fcitx-mozc
 
-$INSTALL xorg dbus xorg-xrdb xorg-transset wmctrl xorg-xmessage
+$INSTALL xorg dbus xorg-xrdb xorg-transset wmctrl xorg-xmessage xclip
 
 $INSTALL xbindkeys
 
@@ -237,6 +237,8 @@ sudo systemctl start virtlogd
 # Make sure to set user = /etc/libvirt/qemu.conf
 
 $INTSALL vagrant
+
+$INSTALL rmtrash
 
 $INSTALL mimeo
 
@@ -309,6 +311,8 @@ $INSTALL obs-studio
 $INSTALL podman podman-compose podman-docker
 echo "unqualified-search-registries = ['docker.io']" \
     | sudo tee /etc/containers/registries.conf
+
+$INSTALL nsxiv
 
 $INSTALL feh
 
