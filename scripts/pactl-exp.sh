@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Change volume exponentially so that there are more steps closer to zero
 # Currently not working
 set -e
