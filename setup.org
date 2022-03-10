@@ -560,7 +560,7 @@ If the above doesn't work we have to frequently run a script that checks the bat
 :PROPERTIES:
 :header-args:sh: :tangle /sudo:://bin/hibernate-if-low.sh :tangle-mode (identity #o755)
 :END:
-#+begin_src sh
+#+begin_src bash
 #!/bin/bash
 acpi -b | awk -F'[,:%]' '{print $2, $3}' | {
     read -r status capacity
@@ -966,24 +966,24 @@ grey = #6b6b6b
 #+begin_src conf
 [bar/exwm]
 width = 100%
-height = 70
+height = 45
 offset-x = 0
 offset-y = 0
 padding = 2
 fixed-center = true
 enable-ipc = true
 border-color = #c5c8c6
-border-bottom-size = 0
 line-size = 3
 bottom = false
 module-margin = 1
+wm-restack = generic
              
-background = ${colors.background}
+background = #ff000000
 foreground = ${colors.foreground}
-font-0 = "NotoSans Nerd Font:size=20:weight=bold"
+font-0 = "Ubuntu Nerd Font:size=20:weight=bold"
 
-modules-left = date
-modules-right = wireless pulseaudio backlight redshift battery
+modules-left = date spotify
+modules-right = pulseaudio redshift wireless backlight battery
 
 tray-position = none
 tray-maxsize = 28

@@ -102,6 +102,16 @@ $INSTALL playerctl mpv yt-dlp baka-mplayer
 
 $INSTALL acpi
 
+#!/bin/bash
+acpi -b | awk -F'[,:%]' '{print $2, $3}' | {
+    read -r status capacity
+  
+    if [ "$status" = Discharging -a "$capacity" -lt 10 ]; then
+        logger "Critical battery threshold"
+        systemctl hibernate
+    fi
+}
+
 sudo systemctl daemon-reload
 sudo systemctl enable --now auto-hibernate.timer
 
