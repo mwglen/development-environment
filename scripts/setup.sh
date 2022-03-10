@@ -103,7 +103,7 @@ $INSTALL playerctl mpv yt-dlp baka-mplayer
 $INSTALL acpi
 
 sudo systemctl daemon-reload
-sudo systemctl enable --now auto_hibernate.timer
+sudo systemctl enable --now auto-hibernate.timer
 
 sudo groupadd video && true
 sudo usermod +aG video mwglen && true

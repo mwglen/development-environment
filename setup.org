@@ -72,7 +72,13 @@ GRUB_DISABLE_RECOVERY=true
 HandlePowerKey=hibernate
 HandleSuspendKey=hibernate
 HandleHibernateKey=hibernate
-#HandleLidSwitch=suspend
+HandleLidSwitch=suspend-then-hibernate
+#+end_src
+
+*** Sleep Configuration
+#+begin_src conf :tangle /sudo:://etc/systemd/sleep.conf
+[Sleep]
+HibernateDelaySec=30min
 #+end_src
 
 ** XDG Defaults
@@ -552,16 +558,16 @@ If the above doesn't work we have to frequently run a script that checks the bat
 
 **** Hibernate If Low Script
 :PROPERTIES:
-:header-args:sh: :tangle /sudo:://bin/hibernate_if_low.sh :tangle-mode (identity #o755)
+:header-args:sh: :tangle /sudo:://bin/hibernate-if-low.sh :tangle-mode (identity #o755)
 :END:
 #+begin_src sh
-#!/bin/sh
+#!/bin/bash
 acpi -b | awk -F'[,:%]' '{print $2, $3}' | {
     read -r status capacity
   
-    if [ "$status" = Discharging -a "$capacity" -lt 50 ]; then
+    if [ "$status" = Discharging -a "$capacity" -lt 10 ]; then
         logger "Critical battery threshold"
-        sudo systemctl hibernate
+        systemctl hibernate
     fi
 }
 #+end_src
@@ -573,10 +579,7 @@ Description=Hibernate system when the battery is low
 
 [Service]
 Type=oneshot
-ExecStart=/bin/hibernate-if-low.sh
-
-[Install]
-WantedBy=multi-user.target
+ExecStart=/bin/bash /bin/hibernate-if-low.sh
 #+end_src
 
 **** Auto Hibernate Timer
@@ -585,8 +588,8 @@ WantedBy=multi-user.target
 Description=Auto hibernate system when the battery is low
 
 [Timer]
-OnCalendar=*:*:0/10
-AccuracySec=1
+OnUnitActiveSec=1min
+OnBootSec=10s
 
 [Install]
 WantedBy=timers.target
@@ -595,7 +598,7 @@ WantedBy=timers.target
 **** Enable Auto Hibernation
 #+begin_src bash
 sudo systemctl daemon-reload
-sudo systemctl enable --now auto_hibernate.timer
+sudo systemctl enable --now auto-hibernate.timer
 #+end_src
 
 *** Brightness
@@ -2616,27 +2619,6 @@ See [[https://dunst-project.org/documentation/]]
     #default_icon = /path/to/icon
 #+end_src
 
-*** Battery Alerts (Might be Broken)
-#+begin_src bash :tangle no
-$INSTALL batsignal
-sudo systemctl enable batsignal
-#+end_src
-
-**** Systemd Service
-:PROPERTIES:
-:header-args:conf: :tangle /sudo:://usr/lib/systemd/system/batsignal.service)
-:END:
-#+begin_src conf :tangle /sudo:://usr/lib/systemd/system/batsignal.service
-[Unit]
-Description=Lightweight battery daemon
-
-[Service]
-ExecStart=/usr/bin/batsignal -f 90 -w 30 -c 20 -d 10
-
-[Install]
-WantedBy=multi-user.target
-#+end_src
-
 ** Virtualization
 *** General
 #+begin_src bash
@@ -3310,21 +3292,6 @@ alias spotify="spotify --force-device-scale-factor=2"
 
 **** Desktop File (With Fix for HiDPI)
 #+begin_src conf :tangle /sudo:://usr/share/applications/spotify.desktop
-[Desktop Entry]
-Type=Application
-Name=Spotify
-GenericName=Music Player
-Icon=spotify-client
-TryExec=spotify
-Exec=spotify --force-device-scale-factor=2 %U
-Terminal=false
-MimeType=x-scheme-handler/spotify;
-Categories=Audio;Music;Player;AudioVideo;
-StartupWMClass=spotify
-#+end_src
-
-**** Desktop File (With Fix for HiDPI)
-#+begin_src conf :tangle /sudo:://opt/spotify/spotify.desktop
 [Desktop Entry]
 Type=Application
 Name=Spotify
