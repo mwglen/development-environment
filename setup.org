@@ -927,8 +927,166 @@ create_ap wlan0 eth0 MyAccessPoint MyPassPhrase
 wihotspot
 #+end_src
 
-** Polybar Panel
-*** Install Polybar
+** Waybar
+*** Install
+#+begin_src bash
+$INSTALL waybar
+#+end_src
+
+*** Configuration
+:PROPERTIES:
+:header-args:json: :tangle (concat (getenv "XDG_CONFIG_HOME") "/waybar/config")
+:END:
+#+begin_src json
+{
+    "layer": "top",
+    "position": "bottom",
+    "fixed-center": "true",
+    "exclusive": "true",
+    "spacing": 10,
+    "margin-left": 10, 
+    "margin-right": 10,
+    "modules-left": ["workspaces", "clock"],
+    "modules-right": ["network", "backlight", "battery", "tray"],
+    "battery": {
+        "interval": 10,
+        "bat": "BAT0",
+        "adapter": "ADP1",
+        "states": {
+            "s4": 100,
+            "s3":  80,
+            "s2":  60,
+            "s1":  40,
+            "s0":  20,
+        },
+        "format": "{icon}   {capacity}%",
+        "format-icons": ["", "", "", "", ""],
+    },
+    "backlight": {
+        "format": "{icon} {percent}%",
+        "states": {
+            "s6":   15,
+            "s5":   30,
+            "s4":   45,
+            "s3":   60,
+            "s2":   75,
+            "s1":   90,
+            "s0":  100,
+        },
+        "format-icons": ["", "", "", "", "", "", ""],
+    },
+    "clock": {
+        "format": "{:%B %d, %Y}",
+        "format-alt": "{:%A %B %d, %Y}",
+    },
+    "network": {
+        "format-wifi": "  {essid}",
+
+    },
+}
+// modules-left = xworkspaces date spotify
+// modules-right = pulseaudio redshift wireless backlight battery
+#+end_src
+
+*** Styling
+:PROPERTIES:
+:header-args:css: :tangle (concat (getenv "XDG_CONFIG_HOME") "/waybar/style.css")
+:END:
+#+begin_src css
+@define-color my_red    #cc6666;
+@define-color my_green  #b5bd68;
+@define-color my_blue   #81a2be;
+@define-color my_yellow #f0c674;
+@define-color my_violet #b294bb;
+@define-color my_grey   #6b6b6b;
+
+,* {
+    font-family: "Ubuntu Nerd Font";
+    font-weight: bold;
+    font-size: 15px;
+    background-color: rgba(0, 0, 0, 0);
+    padding: 2px 2px;
+ }
+
+/* Left Modules */
+#workspaces {
+    color: @my_red;
+    border-bottom: 1px solid @my_red;
+}
+
+#clock {
+    color: @my_red;
+    border-bottom: 1px solid @my_red;
+}
+
+/* Right Modules */
+#network {
+    color: @my_green;
+    border-bottom: 1px solid @my_green;
+}
+
+#backlight.s0 {
+    color: @my_yellow;
+    border-bottom: 1px solid @my_yellow;
+}
+#backlight.s1 {
+    color: @my_yellow;
+    border-bottom: 1px solid @my_yellow;
+}
+#backlight.s2 {
+    color: @my_yellow;
+    border-bottom: 1px solid @my_yellow;
+}
+#backlight.s3 {
+    color: @my_blue;
+    border-bottom: 1px solid @my_blue;
+}
+#backlight.s4 {
+    color: @my_blue;
+    border-bottom: 1px solid @my_blue;
+}
+#backlight.s5 {
+    color: @my_blue;
+    border-bottom: 1px solid @my_blue;
+}
+#backlight.s6 {
+    color: @my_blue;
+    border-bottom: 1px solid @my_blue;
+}
+
+#battery.discharging.s0 {
+    color: #cc6666;
+    border-bottom: 1px solid #cc6666;
+}
+#battery.discharging.s1 {
+    color: #c67c67;
+    border-bottom: 1px solid #c67c67;
+}
+#battery.discharging.s2 {
+    color: #c19267;
+    border-bottom: 1px solid #c19267;
+}
+#battery.discharging.s3 {
+    color: #bba768;
+    border-bottom: 1px solid #bba768;
+}
+#battery.discharging.s4 {
+    color: #b5bd68;
+    border-bottom: 1px solid #b5bd68;
+}
+#battery.charging {
+    color: @my_green;
+    border-bottom: 1px solid @my_green;
+}
+    
+#tray {
+}
+    /* "modules-left": ["workspaces", "clock"], */
+    /* "modules-right": ["network", "backlight", "battery", "tray"], */
+#+end_src
+
+** Polybar
+*** Install
 Polybar-git is used for the wm-restack=generic feature
 #+begin_src bash
 $INSTALL polybar-git
@@ -976,7 +1134,6 @@ border-color = #c5c8c6
 line-size = 3
 bottom = false
 module-margin = 1
-wm-restack = generic
              
 background = #ff000000
 foreground = ${colors.foreground}
@@ -1847,6 +2004,29 @@ $INSTALL fcitx-mozc
 ja_JP.UTF-8 UTF-8
 #+end_src
 
+** Wayland
+*** Install
+#+begin_src bash
+$INTSALL wlroots python-pywlroots
+#+end_src
+
+*** Kanshi
+**** Install
+#+begin_src bash
+$INSTALL kanshi
+#+end_src
+
+**** Configuration
+:PROPERTIES:
+:header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/kanshi/config")
+:END:
+#+begin_src bash
+profile {
+    output eDP-1 enable mode 3840x2160 scale 2 position 0,0
+}
+#+end_src
+
+
 ** Xorg
 *** Install
 #+begin_src bash
@@ -1891,6 +2071,164 @@ $INSTALL xbindkeys
 #+end_src
 
 ** Window Managers
+*** Qtile
+**** Install
+#+begin_src bash
+$INSTALL qtile
+#+end_src
+
+**** Configuration
+:PROPERTIES:
+:header-args:python: :tangle (concat (getenv "XDG_CONFIG_HOME") "/qtile/config.py")
+:END:
+#+begin_src python
+from typing import List  # noqa: F401
+
+from libqtile import bar, layout, widget, hook
+from libqtile.config import Click, Drag, Group, Key, Match, Screen
+from libqtile.lazy import lazy
+from libqtile.utils import guess_terminal
+
+mod = "mod4"
+terminal = guess_terminal()
+
+keys = [
+    # A list of available commands that can be bound to keys can be found
+    # at https://docs.qtile.org/en/latest/manual/config/lazy.html
+    # Switch between windows
+    Key([mod], "h", lazy.layout.left(), desc="Move focus to left"),
+    Key([mod], "l", lazy.layout.right(), desc="Move focus to right"),
+    Key([mod], "j", lazy.layout.down(), desc="Move focus down"),
+    Key([mod], "k", lazy.layout.up(), desc="Move focus up"),
+    # Move windows between left/right columns or move up/down in current stack.
+    # Moving out of range in Columns layout will create new column.
+    Key([mod, "shift"], "h", lazy.layout.shuffle_left(), desc="Move window to the left"),
+    Key([mod, "shift"], "l", lazy.layout.shuffle_right(), desc="Move window to the right"),
+    Key([mod, "shift"], "j", lazy.layout.shuffle_down(), desc="Move window down"),
+    Key([mod, "shift"], "k", lazy.layout.shuffle_up(), desc="Move window up"),
+    # Grow windows. If current window is on the edge of screen and direction
+    # will be to screen edge - window would shrink.
+    Key([mod, "control"], "h", lazy.layout.grow_left(), desc="Grow window to the left"),
+    Key([mod, "control"], "l", lazy.layout.grow_right(), desc="Grow window to the right"),
+    Key([mod, "control"], "j", lazy.layout.grow_down(), desc="Grow window down"),
+    Key([mod, "control"], "k", lazy.layout.grow_up(), desc="Grow window up"),
+    Key([mod], "n", lazy.layout.normalize(), desc="Reset all window sizes"),
+    # Toggle between split and unsplit sides of stack.
+    # Split = all windows displayed
+    # Unsplit = 1 window displayed, like Max layout, but still with
+    # multiple stack panes
+    # Key(
+    #     [mod, "shift"],
+    #     "Return",
+    #     lazy.layout.toggle_split(),
+    #     desc="Toggle between split and unsplit sides of stack",
+    # ),
+    Key([mod, "shift"], "Return", lazy.spawn(terminal), desc="Launch terminal"),
+    # Toggle between different layouts as defined below
+    Key([mod], "space", lazy.next_layout(), desc="Toggle between layouts"),
+    Key([mod, "shift"], "c", lazy.window.kill(), desc="Kill focused window"),
+    Key([mod], "q", lazy.reload_config(), desc="Reload the config"),
+    Key([mod, "shift"], "q", lazy.shutdown(), desc="Shutdown Qtile"),
+    Key([mod], "r", lazy.spawncmd(), desc="Spawn a command using a prompt widget"),
+    Key([mod], "p", lazy.spawn('rofi -show run'), desc="Run a command through rofi"),
+    Key([mod, "control"], "p", lazy.spawn('rofi -show window'), desc="Go to a window through rofi"),
+    Key([mod], "b", lazy.spawn('bwmenu'), desc="Access bitwarden vault using rofi"),
+]
+
+groups = [Group(i) for i in "123456789"]
+
+for i in groups:
+    keys.extend(
+        [
+            # mod1 + letter of group = switch to group
+            Key(
+                [mod],
+                i.name,
+                lazy.group[i.name].toscreen(),
+                desc="Switch to group {}".format(i.name),
+            ),
+            # mod1 + shift + letter of group = switch to & move focused window to group
+            Key(
+                [mod, "shift"],
+                i.name,
+                lazy.window.togroup(i.name, switch_group=True),
+                desc="Switch to & move focused window to group {}".format(i.name),
+            ),
+        ]
+    )
+
+layouts = [
+    layout.MonadTall(margin = 50),
+    layout.Max(margin = 50),
+]
+
+widget_defaults = dict(
+    font="sans",
+    fontsize=12,
+    padding=3,
+)
+extension_defaults = widget_defaults.copy()
+
+screens = [
+    Screen(
+        wallpaper='~/Backgrounds/nge.jpeg',
+        wallpaper_mode='fill',
+    ),
+]
+
+# Drag floating layouts.
+mouse = [
+    Drag([mod], "Button1", lazy.window.set_position_floating(), start=lazy.window.get_position()),
+    Drag([mod], "Button3", lazy.window.set_size_floating(), start=lazy.window.get_size()),
+    Click([mod], "Button2", lazy.window.bring_to_front()),
+]
+
+dgroups_key_binder = None
+dgroups_app_rules = []  # type: List
+follow_mouse_focus = True
+bring_front_click = False
+cursor_warp = False
+floating_layout = layout.Floating(
+    float_rules=[
+        # Run the utility of `xprop` to see the wm class and name of an X client.
+        ,*layout.Floating.default_float_rules,
+        Match(wm_class="confirmreset"),  # gitk
+        Match(wm_class="makebranch"),  # gitk
+        Match(wm_class="maketag"),  # gitk
+        Match(wm_class="ssh-askpass"),  # ssh-askpass
+        Match(title="branchdialog"),  # gitk
+        Match(title="pinentry"),  # GPG key password entry
+    ]
+)
+auto_fullscreen = False
+focus_on_window_activation = "smart"
+reconfigure_screens = True
+
+# If things like steam games want to auto-minimize themselves when losing
+# focus, should we respect this or not?
+auto_minimize = True
+
+# Startup Applications
+@hook.subscribe.startup
+def autostart():
+    # Restart Waybar
+    subprocess.Popen(['pkill', 'waybar'])
+    subprocess.Popen(['waybar'])
+    # Restart Kanshi
+    subprocess.Popen(['pkill', 'kanshi'])
+    subprocess.Popen(['kanshi'])
+
+# XXX: Gasp! We're lying here. In fact, nobody really uses or cares about this
+# string besides java UI toolkits; you can see several discussions on the
+# mailing lists, GitHub issues, and other WM documentation that suggest setting
+# this string if your java app doesn't work correctly. We may as well just lie
+# and say that we're a working one by default.
+#
+# We choose LG3D to maximize irony: it is a 3D non-reparenting WM written in
+# java that happens to be on java's whitelist.
+wmname = "LG3D"
+#+end_src
+
 *** EXWM
 **** Desktop Entry
 #+begin_src conf :tangle /sudo:://usr/share/xsessions/exwm.desktop

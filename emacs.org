@@ -172,10 +172,10 @@
     (interactive)
     (set-frame-parameter
      (selected-frame) 'alpha
-     '(90 . 100))
+     '(80 . 100))
     (add-to-list
      'default-frame-alist
-     '(alpha . (90 . 100))))
+     '(alpha . (80 . 100))))
 
 (defun transparency/off ()
     (interactive)
@@ -405,13 +405,14 @@
           ?\s-h
           ?\s-l
 
+          ?\s-C
+
           ;; Switch Buffers
           ?\s-j
           ?\s-k
           
           ?\M-p       ;; Open X-Application
           ?\s-P       ;; Open X-Application in new window
-          ;;?\C-<tab>   ;; Open X-Application in new window
 
           ?\:
           escape
@@ -573,9 +574,6 @@
 ;;                 eshell-mode-hook
 ;;                 vterm-mode-hook))
 ;;   (add-hook mode (lambda () (display-line-numbers-mode 0))))
-#+end_src
-
-*** Good Scrolling
 #+end_src
 
 **** Evil Collection
@@ -1045,6 +1043,11 @@ Allows you to quckly find definitions.
 #+begin_src emacs-lisp
 (use-package haskell-mode
   :mode "\\.hs\\'")
+#+end_src
+
+*** JSON
+#+begin_src emacs-lisp
+(use-package json-mode)
 #+end_src
 
 *** TypeScript

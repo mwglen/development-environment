@@ -166,6 +166,8 @@ git clone https://tero.hasu.is/repos/icalendar-to-org.git $REPOSITORIES/icalenda
 
 $INSTALL linux-wifi-hotspot
 
+$INSTALL waybar
+
 $INSTALL polybar-git
 
 sudo mkdir -p /etc/udev/rules.d
@@ -205,9 +207,19 @@ $INSTALL xorg-xmodmap
 
 $INSTALL fcitx-mozc
 
+$INTSALL wlroots python-pywlroots
+
+$INSTALL kanshi
+
+profile {
+    output eDP-1 enable mode 3840x2160 scale 2 position 0,0
+}
+
 $INSTALL xorg dbus xorg-xrdb xorg-transset wmctrl xorg-xmessage xclip
 
 $INSTALL xbindkeys
+
+$INSTALL qtile
 
 cd ~/.config/emacs/lisp && wget https://raw.githubusercontent.com/mwglen/ivy-clipmenu.el/master/ivy-clipmenu.el
 
