@@ -129,8 +129,6 @@ sudo systemctl enable cups
 
 $INSTALL hplip
 
-$INSTALL msp430-elf-gcc-bin
-
 $INSTALL kdocker
 
 $INSTALL texlive-core texlive-latexextra
@@ -193,7 +191,7 @@ sudo tar -xf $REPOSITORIES/lightdm-webkit-theme-litarvan-3.2.0.tar.gz -C /usr/sh
 # The ibhagwan fork of picom has rounded corners and dual kawase blur
 # $INSTALL picom-ibhagwan-git
 
-# The ibhagwan fork of picom has rounded corners, dual kawase blur, and window animations
+# The jonaburg fork of picom has rounded corners, dual kawase blur, and window animations
 # $INSTALL picom-jonaburg-git
 
 # My fork of jonaburg's fork of picom has an updated picom-trans binary that can be used to toggle transparency of a window
@@ -219,11 +217,11 @@ $INSTALL xorg dbus xorg-xrdb xorg-transset wmctrl xorg-xmessage xclip
 
 $INSTALL xbindkeys
 
-$INSTALL qtile
-
 cd ~/.config/emacs/lisp && wget https://raw.githubusercontent.com/mwglen/ivy-clipmenu.el/master/ivy-clipmenu.el
 
 $INSTALL xmonad xmonad-contrib
+
+$INSTALL qtile
 
 $INSTALL rofi pinentry-rofi rofi-bluetooth-git rofi-dmenu
 
@@ -260,11 +258,11 @@ sudo systemctl start virtlogd
 
 $INTSALL vagrant
 
+$INSTALL wine-staging wine-gecko wine-mono
+
 $INSTALL rmtrash
 
 $INSTALL mimeo
-
-$INSTALL manuskript
 
 $INSTALL indicator-stickynotes
 
@@ -296,7 +294,6 @@ rm -rf ~/.emacs.d
 ln -s $XDG_CONFIG_HOME/emacs ~/.emacs.d
 rm -rf ~/backgrounds
 ln -s $DIR/backgrounds ~/backgrounds
-
 #sudo systemctl enable --now --user emacs
 
 $INSTALL firefox
@@ -306,7 +303,6 @@ $INSTALL blender blendnet
 $INSTALL flameshot
 
 $INSTALL qutebrowser python-qutescript-git
-mkdir -p $XDG_DATA_HOME/qutebrowser/userscripts
 
 mkdir -p $XDG_CONFIG_HOME/qutebrowser
 mkdir -p ~/Downloads
@@ -334,6 +330,8 @@ $INSTALL podman podman-compose podman-docker
 echo "unqualified-search-registries = ['docker.io']" \
     | sudo tee /etc/containers/registries.conf
 
+$INSTALL devour
+
 $INSTALL nsxiv
 
 $INSTALL feh
@@ -343,6 +341,14 @@ cp -r $DIR/backgrounds/* $BACKGROUNDS
 
 curl -L https://raw.githubusercontent.com/thomas10-10/foo-Wallpaper-Feh-Gif/master/install.sh | bash
 #back4.sh 0.010 gif/pixel.gif &
+
+$INSTALL python-pywal python-colorthief
+
+$INSTALL python-pywalfox
+sudo pywalfox install
+
+$INSTALL betterdiscord-installer-bin pywal-discord-git
+pywal-discord -d
 
 $INSTALL neovim
 mkdir -p $XDG_CONFIG_HOME/nvim

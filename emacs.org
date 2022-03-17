@@ -160,8 +160,13 @@
 #+begin_src emacs-lisp
 ;; Good Dark Themes: doom-moonless doom-tomorrow-night
 ;; Good Light Themes: doom-acario-light
-(use-package doom-themes
-  :init (load-theme 'doom-moonless t))
+(use-package doom-themes)
+(use-package ewal-doom-themes
+  :config (progn
+    (load-theme 'ewal-doom-vibrant t)
+    (enable-theme 'ewal-doom-vibrant)))
+(use-package ewal-evil-cursors
+  :after ewal-doom-themes)
 #+end_src
 
 *** Use Transparent Frames
@@ -251,6 +256,13 @@
 (global-set-key [?\s-l] 'buf-move-right)
 #+end_src
 
+*** Frames Only Mode
+Makes popup windows appear in new windows rather than frames
+#+begin_src emacs-lisp
+(use-package frames-only-mode
+  :config
+  (frames-only-mode))
+#+end_src
 ** Theme Configuration
 *** Doom Modeline
 *NOTE:* The first time you load your configuration on a new machine, you'll need to run `M-x all-the-icons-install-fonts` so that mode line icons display correctly.

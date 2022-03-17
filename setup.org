@@ -387,7 +387,7 @@ $INSTALL alacritty
 :PROPERTIES:
 :header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/alacritty/alacritty.yml")
 :END:
-#+begin_src conf
+#+begin_src conf 
 colors:
   primary:
     background: "#000000"
@@ -523,7 +523,6 @@ $INSTALL playerctl mpv yt-dlp baka-mplayer
 script-opts=ytdl_hook-ytdl_path=yt-dlp
 #+end_src
 
-
 **** Set XF86 Keys
 #+begin_src conf :tangle ~/.xbindkeysrc
 ### Media Control ###
@@ -536,7 +535,6 @@ script-opts=ytdl_hook-ytdl_path=yt-dlp
 "playerctl stop"
     XF86AudioStop
 #+end_src
-
 
 ** Power Management
 *** ACPI
@@ -620,16 +618,6 @@ ACTION=="add", SUBSYSTEM=="backlight", KERNEL=="<vendor>", RUN+="/bin/chmod g+w 
 $INSTALL brightnessctl
 #+end_src
 
-***** Set XF86 Keys
-#+begin_src conf :tangle no
-### +begin_src conf :tangle ~/.xbindkeysrc
-### Brightness Control ###
-"brightnessctl set 10%+"
-    XF86MonBrightnessUp
-"brightnessctl set 10%-"
-    XF86MonBrightnessDown
-#+end_src
-
 **** Brillo
 ***** Install
 #+begin_src bash
@@ -658,11 +646,6 @@ sudo systemctl enable cups
 Runs using cups and sane. Comes with a systemtray available through the ~hp-systray~ command. To get started find the ip address of your printer and then run ~hp-setup <ip-address>~.
 #+begin_src bash
 $INSTALL hplip
-#+end_src
-
-*** MSP430 Launchpad
-#+begin_src bash
-$INSTALL msp430-elf-gcc-bin
 #+end_src
 
 ** System Tray
@@ -731,8 +714,6 @@ alias ip="ip -color=auto"
 $INSTALL nodejs npm
 sudo npm install --global pure-prompt
 #+end_src
-
-** Xmodmap
 
 ** Power Saving Mode using TLP
 1. Run the following commands to start using TLP:
@@ -984,7 +965,7 @@ $INSTALL waybar
 
     },
 }
-// modules-left = xworkspaces date spotify
+// modules-left = pre-xworkspaces xworkspaces date spotify
 // modules-right = pulseaudio redshift wireless backlight battery
 #+end_src
 
@@ -1108,10 +1089,30 @@ margin-bottom = 0
 
 ***** Themes
 ****** Moonless
-#+begin_src conf
+#+begin_src conf :tangle no
 [colors]
 background = #00000000
 foreground = #c5c8c6
+green = #b5bd68
+yellow = #f0c674
+violet = #b294bb
+blue = #81a2be
+red = #cc6666
+grey = #6b6b6b
+#+end_src
+
+****** Pywal
+#+begin_src conf
+[colors]
+background = ${xrdb:color0:#222}
+foreground = ${xrdb:color7:#222}
+foreground-alt = ${xrdb:color7:#222}
+primary = ${xrdb:color1:#222}
+secondary = ${xrdb:color2:#222}
+alert = ${xrdb:color3:#222}
+color4 = ${xrdb:color4:#222}
+
+; Delete later
 green = #b5bd68
 yellow = #f0c674
 violet = #b294bb
@@ -1152,28 +1153,31 @@ cursor-scroll = ns-resize
 ***** XMonad Panel
 #+begin_src conf
 [bar/xmonad]
-width = 100%
-height = 35
-offset-x = 0
-offset-y = 0
-padding = 2
+; width = 97%
+height = 70
+; offset-x = 1.5%
+; offset-y = 1.5%
+padding-left = 2
 fixed-center = true
 enable-ipc = true
-border-color = #c5c8c6
+border-color = ${colors.primary}
+;border-size = 2
+            
 line-size = 3
 bottom = true
 module-margin = 1
 wm-restack = generic
-       
+
 background = ${colors.background}
 foreground = ${colors.foreground}
-font-0 = "Ubuntu Nerd Font:size=20:weight=bold"
+; font-0 = "Ubuntu Nerd Font:size=20:weight=bold;5"
+font-0 = "RobotoMono Nerd Font:size=20:weight=bold;5"
 
-modules-left = xworkspaces date spotify
+modules-left = pre-xworkspaces xworkspaces date spotify
 modules-right = pulseaudio redshift wireless backlight battery
 
 tray-position = right
-tray-maxsize = 28
+tray-maxsize = 25
 
 cursor-click = pointer
 cursor-scroll = ns-resize
@@ -1188,7 +1192,14 @@ exec = echo $(playerctl metadata -f '{{artist}} - {{title}}' 2>/dev/null | sed -
 exec-if = playerctl metadata -f {{playerName}} 2>/dev/null | grep -Ev 'mopidy' >/dev/null
 format-prefix = "喇 "
 format-foreground = ${colors.green}
-format-underline = ${colors.green}
+#+end_src
+
+***** Pre-XWorkspaces
+#+begin_src conf
+[module/pre-xworkspaces]
+type = custom/text
+content = ""
+content-foreground = ${colors.primary}
 #+end_src
 
 ***** XWorkspaces
@@ -1196,19 +1207,14 @@ format-underline = ${colors.green}
 [module/xworkspaces]
 type = internal/xworkspaces
 
-icon-0 = 1;
-     
-label-active = %icon% [%name%]
-label-active-foreground = ${colors.red}
-label-active-underline = ${colors.red}
+label-active = "%index% "
+label-active-foreground = ${colors.primary}
 
-label-occupied = %icon% %name%
-label-occupied-foreground = ${colors.red}
-label-occupied-underline = ${colors.red}
+label-occupied = "%index% "
+label-occupied-foreground = ${colors.grey}
 
-label-empty = %icon%
-label-empty-underline = ${colors.red}
-label-empty-foreground = ${colors.red}
+label-empty =
+label-empty-foreground = ${colors.primary}
 #+end_src
 
 ***** Xkeyboard
@@ -1220,11 +1226,9 @@ blacklist-1 = scroll lock
 format-prefix = " "
 format-prefix-foreground = ${colors.foreground}
 format-prefix-background = ${colors.background}
-format-prefix-underline = #3ecfb2
 format-foreground = ${colors.foreground}
 
 label-layout = %layout%
-label-layout-underline = #3ecfb2
 label-indicator-padding = 2
 label-indicator-margin = 1
 label-indicator-background = ${colors.background}
@@ -1250,7 +1254,6 @@ interval = 1
 format-foreground = ${colors.foreground}
 format-background = ${colors.background}
 format-padding = 2
-format-underline = ${colors.green}
 format-prefix = " "
 format-prefix-foreground = ${colors.green}
 label = %output:0:150%
@@ -1293,7 +1296,6 @@ exec = ~/.config/polybar/scripts/compton.sh
 click-left = ~/.config/polybar/scripts/compton-toggle.sh
 interval = 5
 format-foreground = ${colors.foreground}
-format-underline = #00AF02
 #+end_src
 
 ***** Weather
@@ -1304,7 +1306,6 @@ interval = 10
 format = <label>
 format-prefix = "WTHR "
 format-prefix-foreground = #3EC13F
-format-underline = #3EC13F
 format-foreground = ${colors.foreground}
 exec = python -u ~/.config/polybar/scripts/weather.py
 tail = true
@@ -1316,7 +1317,6 @@ tail = true
 type = internal/cpu
 interval = 2
 format = CPU <label>
-format-underline = ${colors.violet}
 format-foreground = ${colors.violet}
 label = %percentage:2%%
 #+end_src
@@ -1330,8 +1330,7 @@ date = "%B %d, %Y"
 date-alt = "%A %B %d, %Y"
 time = %l:%M %p
 time-alt = %H:%M:%S
-format-underline = ${colors.red}
-format-foreground = ${colors.red}
+format-foreground = ${colors.primary}
 
 label = %date% %time%
 #+end_src
@@ -1345,24 +1344,25 @@ adapter = ADP1
 full-at = 98
 time-format = %-l:%M
 
-label-charging = %percentage%%
-label-discharging = %percentage%%
-format-charging = <animation-charging>   <label-charging>%{F-}
-format-discharging = <ramp-capacity>   <label-discharging>%{F-}
-format-full = <ramp-capacity>   <label-full>%{F-}
+label-charging =     "%percentage%%"
+label-discharging =  "%percentage%%"
+format-charging =    "<animation-charging>  <label-charging>%{F-}"
+format-discharging = "<ramp-capacity>  <label-discharging>%{F-}"
+format-full =        "<ramp-capacity>  <label-full>%{F-}"
 
-ramp-capacity-0 = "%{u#cc6666}%{+u}%{F#cc6666}"
-ramp-capacity-1 = "%{u#c67c67}%{+u}%{F#c67c67}"
-ramp-capacity-2 = "%{u#c19267}%{+u}%{F#c19267}"
-ramp-capacity-3 = "%{u#bba768}%{+u}%{F#bba768}"
-ramp-capacity-4 = "%{u#b5bd68}%{+u}%{F#b5bd68}"
-ramp-capacity-5 = "%{u#b5bd68}%{+u}%{F#b5bd68}"
+ramp-capacity-0 = "%{F#cc6666}"
+ramp-capacity-1 = "%{F#c67c67}"
+ramp-capacity-2 = "%{F#c19267}"
+ramp-capacity-3 = "%{F#bba768}"
+ramp-capacity-4 = "%{F#b5bd68}"
+ramp-capacity-5 = "%{F#b5bd68}"
 
-animation-charging-0 = "%{u#b5bd68}%{+u}%{F#b5bd68}"
-animation-charging-1 = "%{u#b5bd68}%{+u}%{F#b5bd68}"
-animation-charging-2 = "%{u#b5bd68}%{+u}%{F#b5bd68}"
-animation-charging-3 = "%{u#b5bd68}%{+u}%{F#b5bd68}"
-animation-charging-4 = "%{u#b5bd68}%{+u}%{F#b5bd68}"
+
+animation-charging-0 = "%{F#b5bd68}"
+animation-charging-1 = "%{F#b5bd68}"
+animation-charging-2 = "%{F#b5bd68}"
+animation-charging-3 = "%{F#b5bd68}"
+animation-charging-4 = "%{F#b5bd68}"
 animation-charging-framerate = 750
 #+end_src
 
@@ -1375,8 +1375,6 @@ warn-temperature = 70
 
 format = TEMP <label>
 format-warn = TEMP <label-warn>
-format-underline = ${colors.yellow}
-format-warn-underline = ${colors.yellow}
 format-foreground = ${colors.yellow}
 format-warn-foreground = ${colors.yellow}
 
@@ -1389,9 +1387,7 @@ label-warn = %temperature-c%!
 [module/pulseaudio]
 type = custom/script
 tail = true
-label-padding = 2
-format-underline = ${colors.violet}
-format-foreground = ${colors.violet}
+format-foreground = ${colors.secondary}
 exec = pulseaudio-control --icons-volume " , " --icon-muted " " --sink-nicknames-from "device.description" --sink-nickname "alsa_output.pci-0000_00_1f.3.analog-stereo: Built In Speakers" listen
 
 click-right = pavucontrol
@@ -1411,15 +1407,11 @@ interface = wlan0
 label-connected = %essid%
 label-disconnected = not connected
 
-format-connected =   <label-connected>
-format-connected-underline = ${colors.green}
-format-connected-foreground = ${colors.green}
-format-disconnected = <label-disconnected>
-format-disconnected-underline = ${colors.grey}
+format-connected = 直 <label-connected>
+format-connected-foreground = ${colors.color4}
+
+format-disconnected = 
 format-disconnected-foreground = ${colors.grey}
-format-packetloss = <animation-packetloss> <label-connected>
-format-packetloss-underline = ${colors.red}
-format-packetloss-foreground = ${colors.red}
 #+end_src
 
 ***** Memory                              
@@ -1429,7 +1421,6 @@ type = internal/memory
 interval = 3
 format = <label>
 label = MEM %percentage_used:2%%
-format-underline = ${colors.blue}
 format-foreground = ${colors.blue}
 #+end_src
 
@@ -1449,17 +1440,17 @@ sudo chmod g+w /sys/class/backlight/intel_backlight/brightness
 type = internal/backlight
 enable-scroll = true
 card = intel_backlight
-format = <ramp> <label>
+format = "<ramp> <label>"
 label = %percentage%%
 ;yellow = #f0c674
 ;blue = #81a2be
-ramp-0 = "%{u#81a2be}%{+u}%{F#81a2be}"
-ramp-1 = "%{u#81a2be}%{+u}%{F#81a2be}"
-ramp-2 = "%{u#81a2be}%{+u}%{F#81a2be}"
-ramp-3 = "%{u#f0c674}%{+u}%{F#f0c674}"
-ramp-4 = "%{u#f0c674}%{+u}%{F#f0c674}"
-ramp-5 = "%{u#f0c674}%{+u}%{F#f0c674}"
-ramp-6 = "%{u#f0c674}%{+u}%{F#f0c674}"
+ramp-0 = "%{F#81a2be}"
+ramp-1 = "%{F#81a2be}"
+ramp-2 = "%{F#81a2be}"
+ramp-3 = "%{F#f0c674}"
+ramp-4 = "%{F#f0c674}"
+ramp-5 = "%{F#f0c674}"
+ramp-6 = "%{F#f0c674}"
 #+end_src
 
 ***** Redshift
@@ -1472,7 +1463,6 @@ click-left = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/
 scroll-up = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh increase
 scroll-down = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh decrease
 interval = 1
-format-underline = ${colors.red}
 format-foreground = ${colors.red}
 #+end_src
 
@@ -1542,8 +1532,6 @@ case $1 in
         else
             COLOR="#cc6666"
         fi
-        # echo "%{u$COLOR}%{+u}%{F$COLOR} $REDSHIFT_TEMP%{F-}%{u-}%{-u}"
-
         echo "%{F$COLOR} $REDSHIFT_TEMP%{F-}"
         ;;
       off)
@@ -1668,7 +1656,6 @@ logo              = /usr/share/pixmaps/archlinux-logo.svg
 user_image        = /usr/share/pixmaps/archlinux-user.svg
 #+end_src
 
-
 ** Compositors
 *** Picom
 **** Install
@@ -1676,96 +1663,12 @@ user_image        = /usr/share/pixmaps/archlinux-user.svg
 # The ibhagwan fork of picom has rounded corners and dual kawase blur
 # $INSTALL picom-ibhagwan-git
 
-# The ibhagwan fork of picom has rounded corners, dual kawase blur, and window animations
+# The jonaburg fork of picom has rounded corners, dual kawase blur, and window animations
 # $INSTALL picom-jonaburg-git
 
 # My fork of jonaburg's fork of picom has an updated picom-trans binary that can be used to toggle transparency of a window
 git install https://github.com/mwglen/picom.git $REPOSITORIES/picom
 cd $REPOSITORIES/picom && meson --buildtype=release . build && sudo ninja -C build install
-#+end_src
-
-**** Configuration (picom-ibhagwan-git)
-:PROPERTIES:
-:header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/picom.conf")
-:END:
-#+begin_src conf :tangle no
-#################################
-#             Shadows           #
-#################################
-shadow = false;
-shadow-radius = 7;
-# shadow-opacity = .75
-shadow-offset-x = -15;
-shadow-offset-y = -15;
-no-dock-shadow = false
-no-dnd-shadow = false
-
-shadow-exclude = [
-  "name = 'Notification'",
-  "class_g = 'Conky'",
-  "class_g ?= 'Notify-osd'",
-  "class_g = 'Cairo-clock'",
-  "_GTK_FRAME_EXTENTS@:c"
-];
-
-#################################
-#           Fading              #
-#################################
-fading = true
-fade-in-step = 0.03;
-fade-out-step = 0.03;
-
-#################################
-#   Transparency / Opacity      #
-#################################
-# Only the first rule matching a window will be applied to that window
-opacity-rule = [
-  "100:class_g = 'dmenu'",
-  "60:class_g = 'Polybar'",
-  "60:class_g = 'Rofi'",
-  "80:class_i = 'xmobar'",
-  "100:fullscreen",
-  "60:!focused && class_i != 'xmobar'",
-  "80:focused",
-];
-                     
-#################################
-#     Background-Blurring       #
-#################################
-# blur-method = "dual_kawase";
-# blur-strength = 5;
-# blur-background-exclude = [
-#   "window_type = 'desktop'",
-#   "_GTK_FRAME_EXTENTS@:c"
-# ];
-
-#################################
-#       General Settings        #
-#################################
-backend = "glx";
-vsync = true
-mark-wmwin-focused = true;
-mark-ovredir-focused = true;
-use-ewmh-active-win = true;
-detect-rounded-corners = true;
-detect-client-opacity = true;
-refresh-rate = 0
-detect-transient = true
-detect-client-leader = true
-glx-no-stencil = true;
-glx-no-rebind-pixmap = true;
-use-damage = true
-log-level = "warn";
-#corner-radius = 50; # obviously doesn't work with EXWM, but useful
-# wintypes:
-# {
-  #tooltip = { fade = true; shadow = true; opacity = 0.75; focus = true; full-shadow = false; };
-  # dock = { shadow = false; opacity = 0.9; };
-  #dnd = { shadow = false; }
-  #popup_menu = { opacity = 0.8; }
-  #dropdown_menu = { opacity = 0.8; }
-  #utility = { opacity = 0.8; }
-# };
 #+end_src
 
 **** Configuration (picom-jonaburg-git)
@@ -1784,25 +1687,13 @@ transition-pow-h = 0.1
 size-transition = true
 
 #################################
-#             Corners           #
-#################################
-corner-radius = 10.0;
-rounded-corners-exclude = [
-  "class_g = 'Polybar'",
-  "class_g = 'Rofi'",
-];
-round-borders = 1;
-round-borders-exclude = [
-];
-
-#################################
 #             Shadows           #
 #################################
 shadow = true;
-# shadow-radius = 7;
-# shadow-opacity = .75
-# shadow-offset-x = -7;
-# shadow-offset-y = -7;
+shadow-radius = 40;
+shadow-opacity = .90;
+shadow-offset-x = -8;
+shadow-offset-y = -8;
 # no-dock-shadow = false
 # no-dnd-shadow = false
 
@@ -1812,7 +1703,7 @@ shadow-exclude = [
 ];
 
 #################################
-#           Fading              #
+#             Fading            #
 #################################
 fading = true;
 fade-exclude = [
@@ -1827,8 +1718,8 @@ fade-exclude = [
 opacity-rule = [
   "100:class_g = 'dmenu'",
   "100:class_g = 'Nsxiv'",
-  "100:class_g = 'Polybar'",
-  "60:class_g = 'Rofi'",
+  "70:class_g = 'Polybar'",
+  "80:class_g = 'Rofi'",
   "100:fullscreen",
   "60:!focused",
   "80:focused",
@@ -1855,8 +1746,8 @@ blur: {
 }
 
 blur-background-exclude = [
-  "class_g = 'Polybar'",
   "class_g = 'slop'",
+  "class_i = 'tray'", # Needed or else polybar's tray blurs twice
   "_GTK_FRAME_EXTENTS@:c"
 ];
 
@@ -2026,7 +1917,6 @@ profile {
 }
 #+end_src
 
-
 ** Xorg
 *** Install
 #+begin_src bash
@@ -2038,6 +1928,7 @@ $INSTALL xorg dbus xorg-xrdb xorg-transset wmctrl xorg-xmessage xclip
 # Display
 xrandr --dpi 200 --output eDP-1 --primary --mode 3840x2160 --pos 0x0 --rotate normal --output DP-1 --off --output HDMI-1 --off
 picom -b
+wal --backend colorthief -i $BACKGROUNDS/nge.jpeg -n
 feh --bg-scale $BACKGROUNDS/nge.jpeg
 
 # Keybindings
@@ -2071,164 +1962,6 @@ $INSTALL xbindkeys
 #+end_src
 
 ** Window Managers
-*** Qtile
-**** Install
-#+begin_src bash
-$INSTALL qtile
-#+end_src
-
-**** Configuration
-:PROPERTIES:
-:header-args:python: :tangle (concat (getenv "XDG_CONFIG_HOME") "/qtile/config.py")
-:END:
-#+begin_src python
-from typing import List  # noqa: F401
-
-from libqtile import bar, layout, widget, hook
-from libqtile.config import Click, Drag, Group, Key, Match, Screen
-from libqtile.lazy import lazy
-from libqtile.utils import guess_terminal
-
-mod = "mod4"
-terminal = guess_terminal()
-
-keys = [
-    # A list of available commands that can be bound to keys can be found
-    # at https://docs.qtile.org/en/latest/manual/config/lazy.html
-    # Switch between windows
-    Key([mod], "h", lazy.layout.left(), desc="Move focus to left"),
-    Key([mod], "l", lazy.layout.right(), desc="Move focus to right"),
-    Key([mod], "j", lazy.layout.down(), desc="Move focus down"),
-    Key([mod], "k", lazy.layout.up(), desc="Move focus up"),
-    # Move windows between left/right columns or move up/down in current stack.
-    # Moving out of range in Columns layout will create new column.
-    Key([mod, "shift"], "h", lazy.layout.shuffle_left(), desc="Move window to the left"),
-    Key([mod, "shift"], "l", lazy.layout.shuffle_right(), desc="Move window to the right"),
-    Key([mod, "shift"], "j", lazy.layout.shuffle_down(), desc="Move window down"),
-    Key([mod, "shift"], "k", lazy.layout.shuffle_up(), desc="Move window up"),
-    # Grow windows. If current window is on the edge of screen and direction
-    # will be to screen edge - window would shrink.
-    Key([mod, "control"], "h", lazy.layout.grow_left(), desc="Grow window to the left"),
-    Key([mod, "control"], "l", lazy.layout.grow_right(), desc="Grow window to the right"),
-    Key([mod, "control"], "j", lazy.layout.grow_down(), desc="Grow window down"),
-    Key([mod, "control"], "k", lazy.layout.grow_up(), desc="Grow window up"),
-    Key([mod], "n", lazy.layout.normalize(), desc="Reset all window sizes"),
-    # Toggle between split and unsplit sides of stack.
-    # Split = all windows displayed
-    # Unsplit = 1 window displayed, like Max layout, but still with
-    # multiple stack panes
-    # Key(
-    #     [mod, "shift"],
-    #     "Return",
-    #     lazy.layout.toggle_split(),
-    #     desc="Toggle between split and unsplit sides of stack",
-    # ),
-    Key([mod, "shift"], "Return", lazy.spawn(terminal), desc="Launch terminal"),
-    # Toggle between different layouts as defined below
-    Key([mod], "space", lazy.next_layout(), desc="Toggle between layouts"),
-    Key([mod, "shift"], "c", lazy.window.kill(), desc="Kill focused window"),
-    Key([mod], "q", lazy.reload_config(), desc="Reload the config"),
-    Key([mod, "shift"], "q", lazy.shutdown(), desc="Shutdown Qtile"),
-    Key([mod], "r", lazy.spawncmd(), desc="Spawn a command using a prompt widget"),
-    Key([mod], "p", lazy.spawn('rofi -show run'), desc="Run a command through rofi"),
-    Key([mod, "control"], "p", lazy.spawn('rofi -show window'), desc="Go to a window through rofi"),
-    Key([mod], "b", lazy.spawn('bwmenu'), desc="Access bitwarden vault using rofi"),
-]
-
-groups = [Group(i) for i in "123456789"]
-
-for i in groups:
-    keys.extend(
-        [
-            # mod1 + letter of group = switch to group
-            Key(
-                [mod],
-                i.name,
-                lazy.group[i.name].toscreen(),
-                desc="Switch to group {}".format(i.name),
-            ),
-            # mod1 + shift + letter of group = switch to & move focused window to group
-            Key(
-                [mod, "shift"],
-                i.name,
-                lazy.window.togroup(i.name, switch_group=True),
-                desc="Switch to & move focused window to group {}".format(i.name),
-            ),
-        ]
-    )
-
-layouts = [
-    layout.MonadTall(margin = 50),
-    layout.Max(margin = 50),
-]
-
-widget_defaults = dict(
-    font="sans",
-    fontsize=12,
-    padding=3,
-)
-extension_defaults = widget_defaults.copy()
-
-screens = [
-    Screen(
-        wallpaper='~/Backgrounds/nge.jpeg',
-        wallpaper_mode='fill',
-    ),
-]
-
-# Drag floating layouts.
-mouse = [
-    Drag([mod], "Button1", lazy.window.set_position_floating(), start=lazy.window.get_position()),
-    Drag([mod], "Button3", lazy.window.set_size_floating(), start=lazy.window.get_size()),
-    Click([mod], "Button2", lazy.window.bring_to_front()),
-]
-
-dgroups_key_binder = None
-dgroups_app_rules = []  # type: List
-follow_mouse_focus = True
-bring_front_click = False
-cursor_warp = False
-floating_layout = layout.Floating(
-    float_rules=[
-        # Run the utility of `xprop` to see the wm class and name of an X client.
-        ,*layout.Floating.default_float_rules,
-        Match(wm_class="confirmreset"),  # gitk
-        Match(wm_class="makebranch"),  # gitk
-        Match(wm_class="maketag"),  # gitk
-        Match(wm_class="ssh-askpass"),  # ssh-askpass
-        Match(title="branchdialog"),  # gitk
-        Match(title="pinentry"),  # GPG key password entry
-    ]
-)
-auto_fullscreen = False
-focus_on_window_activation = "smart"
-reconfigure_screens = True
-
-# If things like steam games want to auto-minimize themselves when losing
-# focus, should we respect this or not?
-auto_minimize = True
-
-# Startup Applications
-@hook.subscribe.startup
-def autostart():
-    # Restart Waybar
-    subprocess.Popen(['pkill', 'waybar'])
-    subprocess.Popen(['waybar'])
-    # Restart Kanshi
-    subprocess.Popen(['pkill', 'kanshi'])
-    subprocess.Popen(['kanshi'])
-
-# XXX: Gasp! We're lying here. In fact, nobody really uses or cares about this
-# string besides java UI toolkits; you can see several discussions on the
-# mailing lists, GitHub issues, and other WM documentation that suggest setting
-# this string if your java app doesn't work correctly. We may as well just lie
-# and say that we're a working one by default.
-#
-# We choose LG3D to maximize irony: it is a 3D non-reparenting WM written in
-# java that happens to be on java's whitelist.
-wmname = "LG3D"
-#+end_src
-
 *** EXWM
 **** Desktop Entry
 #+begin_src conf :tangle /sudo:://usr/share/xsessions/exwm.desktop
@@ -2276,8 +2009,11 @@ $INSTALL xmonad xmonad-contrib
 |--------------+-------------------------------------------------------|
 
 **** Configuration
+:PROPERTIES:
+:header-args:haskell: :tangle ~/.xmonad/xmonad.hs
+:END:
 ***** Imports
-#+begin_src haskell :tangle ~/.xmonad/xmonad.hs
+#+begin_src haskell
 -- Base
 import XMonad
 import System.Exit (exitSuccess)
@@ -2289,17 +2025,18 @@ import XMonad.Actions.CopyWindow (copyToAll, killAllOtherCopies)
 -- Hooks
 import XMonad.Hooks.EwmhDesktops (ewmhDesktopsEventHook, fullscreenEventHook, ewmhDesktopsLogHook, ewmh)
 import XMonad.Hooks.ManageDocks (avoidStruts, docksEventHook, manageDocks, docks, ToggleStruts(..))
-import XMonad.Hooks.ManageHelpers (isFullscreen, doFullFloat, doRectFloat)
+import XMonad.Hooks.ManageHelpers (isFullscreen, doFullFloat, doRectFloat, isDialog, isInProperty)
 
   
 -- Layouts
 import XMonad.Layout.ResizableTile
+import XMonad.Layout (Full)
 
 -- Layouts modifiers
 import XMonad.Layout.LayoutModifier
 import XMonad.Layout.LimitWindows (limitWindows)
-import XMonad.Layout.MultiToggle (mkToggle, single, EOT(EOT), (??), Toggle(..))
-import XMonad.Layout.MultiToggle.Instances (StdTransformers(NBFULL, MIRROR, NOBORDERS))
+import XMonad.Layout.MultiToggle (mkToggle, single, Toggle(..))
+import XMonad.Layout.MultiToggle.Instances (StdTransformers(NBFULL))
 import XMonad.Layout.NoBorders
 import XMonad.Layout.Renamed
 import XMonad.Layout.Spacing
@@ -2309,10 +2046,13 @@ import XMonad.Util.EZConfig (additionalKeysP)
 import XMonad.Util.Run (spawnPipe)
 import XMonad.Util.SpawnOnce (spawnOnce)
 import XMonad.Util.NamedScratchpad
+
+-- Misc
+import Foreign.C.Types (CLong)
 #+end_src
 
 ***** Variables
-#+begin_src haskell :tangle ~/.xmonad/xmonad.hs
+#+begin_src haskell
 myXMessage :: String
 myXMessage = "xmessage -default okay -bg black -fg white "
   
@@ -2327,29 +2067,22 @@ myEditor = "emacsclient -c -a 'emacs' "
 
 myEventHook = ewmhDesktopsEventHook <+> fullscreenEventHook
 myLogHook = ewmhDesktopsLogHook
-  
---Makes setting the spacingRaw simpler to write. The spacingRaw module adds a configurable amount of space around windows.
-mySpacing :: Integer -> l a -> XMonad.Layout.LayoutModifier.ModifiedLayout Spacing l a
-mySpacing i = spacingRaw False (Border i i i i) True (Border i i i i) True
-
--- Below is a variation of the above except no borders are applied
--- if fewer than two windows. So a single window has no gaps.
-mySpacing' :: Integer -> l a -> XMonad.Layout.LayoutModifier.ModifiedLayout Spacing l a
-mySpacing' i = spacingRaw True (Border i i i i) True (Border i i i i) True
 #+end_src
 
 ***** Layouts
-#+begin_src haskell :tangle ~/.xmonad/xmonad.hs
-tall         = limitWindows 12
-             $ ResizableTall 1 (3/100) (1/2) []
-  
-myLayoutHook = spacingWithEdge 30
+#+begin_src haskell
+global       = noBorders
+tall         = limitWindows 6
              $ avoidStruts
-             $ mkToggle (NBFULL ?? NOBORDERS ?? EOT) tall
+             $ spacingWithEdge 30
+             $ mkToggle (single NBFULL)
+             $ ResizableTall 1 (3/100) (1/2) []
+ 
+myLayoutHook = global $ tall ||| Full
 #+end_src
 
 ***** Scratchpads
-#+begin_src haskell :tangle ~/.xmonad/xmonad.hs
+#+begin_src haskell
 scratchpads :: [NamedScratchpad]
 scratchpads = [
   NS "terminal" "alacritty -t ScratchT"
@@ -2362,9 +2095,10 @@ scratchpads = [
 #+end_src
 
 ***** Managehook
-#+begin_src haskell :tangle ~/.xmonad/xmonad.hs
+#+begin_src haskell
 myManageHook = composeAll
     [ isFullscreen                  --> doFullFloat
+    , isInProperty "_NET_WM_WINDOW_TYPE" "NET_WM_WINDOW_TYPE_DIALOG" --> doFloat
     
     -- Picture in Picture (Firefox)
     -- , title =? "Picture-in-Picture"
@@ -2373,7 +2107,6 @@ myManageHook = composeAll
     --  --> doF copyToAll
     -- , title =? "Picture-in-Picture"
     --  --> spawn "picom-trans -t -c 100",
-      
     , className =? "confirm"        --> doFloat
     , className =? "file_progress"  --> doFloat
     , className =? "dialog"         --> doFloat
@@ -2390,15 +2123,15 @@ myManageHook = composeAll
 #+end_src
 
 ***** Startup Hook
-#+begin_src haskell :tangle ~/.xmonad/xmonad.hs
+#+begin_src haskell
 myStartupHook :: X ()
 myStartupHook = do
   spawnOnce "/usr/bin/emacs --daemon"
 #+end_src
 
 ***** Keybindings
-#+begin_src haskell :tangle ~/.xmonad/xmonad.hs
--- START_KEYS
+#+begin_src haskell
+-- Start Keys
 myKeys :: [(String, X ())]
 myKeys = [
   -- Xmonad --
@@ -2443,10 +2176,7 @@ myKeys = [
   , ("M-S-t", spawn "picom-trans -t -c 100")
   , ("M-f", sendMessage $ Toggle NBFULL)
   , ("M-g",  sendMessage ToggleStruts)
-  , ("M-S-f", toggleScreenSpacingEnabled
-            >> toggleWindowSpacingEnabled
-            >> sendMessage (Toggle NBFULL)
-            >> sendMessage ToggleStruts)
+  , ("M-S-f", sendMessage NextLayout)
   , ("M-S-c", kill)
 
   -- Layouts --
@@ -2457,7 +2187,7 @@ myKeys = [
 #+end_src
 
 ***** Main
-#+begin_src haskell :tangle ~/.xmonad/xmonad.hs
+#+begin_src haskell
 main :: IO ()
 main = do
   -- Launch polybar
@@ -2469,7 +2199,7 @@ main = do
     terminal           = "alacritty",
     focusFollowsMouse  = False,
     clickJustFocuses   = True,
-    borderWidth        = 2,
+    borderWidth        = 1,
     modMask            = mod4Mask,
     workspaces         = ["1","2","3","4","5","6","7","8","9"],
     normalBorderColor  = "#dddddd",
@@ -2484,15 +2214,15 @@ main = do
 #+end_src
 
 ***** Help
-#+begin_src haskell :tangle ~/.xmonad/xmonad.hs
+#+begin_src haskell
 help :: String
 help = unlines [
   "The default modifier key is 'alt'. Default keybindings:",
   "",
   "-- launching and killing programs",
   "mod-Shift-Enter  Launch alacritty",
-  "mod-p            Launch rufi",
-  "mod-Shift-p      Launch gmrun",
+  "mod-p            Launch rofi",
+  "mod-Shift-p      Launch rofi for window selection",
   "mod-Shift-c      Close/kill the focused window",
   "mod-Space        Rotate through the available layout algorithms",
   "mod-Shift-Space  Reset the layouts on the current workSpace to default",
@@ -2538,6 +2268,178 @@ help = unlines [
   ]
 #+end_src
 
+*** Qtile
+**** Install
+#+begin_src bash
+$INSTALL qtile
+#+end_src
+
+**** Configuration
+:PROPERTIES:
+:header-args:python: :tangle (concat (getenv "XDG_CONFIG_HOME") "/qtile/config.py")
+:END:
+#+begin_src python
+from typing import List  # noqa: F401
+
+from libqtile import bar, layout, widget, hook
+from libqtile.config import Click, Drag, Group, Key, Match, Screen
+from libqtile.lazy import lazy
+from libqtile.utils import guess_terminal
+
+import subprocess
+
+mod = "mod4"
+terminal = guess_terminal()
+
+keys = [
+    # A list of available commands that can be bound to keys can be found
+    # at https://docs.qtile.org/en/latest/manual/config/lazy.html
+    # Switch between windows
+    Key([mod], "h", lazy.layout.left(),  desc="Move focus to left"),
+    Key([mod], "l", lazy.layout.right(), desc="Move focus to right"),
+    Key([mod], "j", lazy.layout.down(),  desc="Move focus down"),
+    Key([mod], "k", lazy.layout.up(),    desc="Move focus up"),
+    # Move windows between left/right columns or move up/down in current
+    # stack. Moving out of range in Columns layout will create new column.
+    Key([mod, "shift"], "h", lazy.layout.shuffle_left(),
+        desc="Move window to the left"),
+    Key([mod, "shift"], "l", lazy.layout.shuffle_right(),
+        desc="Move window to the right"),
+    Key([mod, "shift"], "j", lazy.layout.shuffle_down(),
+        desc="Move window down"),
+    Key([mod, "shift"], "k", lazy.layout.shuffle_up(),
+        desc="Move window up"),
+    # Grow windows. If current window is on the edge of screen and
+    # direction will be to screen edge - window would shrink.
+    Key([mod, "control"], "h", lazy.layout.grow_left(),
+        desc="Grow window to the left"),
+    Key([mod, "control"], "l", lazy.layout.grow_right(),
+        desc="Grow window to the right"),
+    Key([mod, "control"], "j", lazy.layout.grow_down(),
+        desc="Grow window down"),
+    Key([mod, "control"], "k", lazy.layout.grow_up(),
+        desc="Grow window up"),
+    Key([mod], "n", lazy.layout.normalize(),
+        desc="Reset all window sizes"),
+    
+    Key([mod, "shift"], "Return", lazy.spawn(terminal),
+        desc="Launch terminal"),
+    
+    # Toggle between different layouts as defined below
+    Key([mod], "space", lazy.next_layout(),
+        desc="Toggle between layouts"),
+    Key([mod, "shift"], "c", lazy.window.kill(),
+        desc="Kill focused window"),
+    Key([mod], "q", lazy.reload_config(),
+        desc="Reload the config"),
+    Key([mod, "shift"], "q", lazy.shutdown(),
+        desc="Shutdown Qtile"),
+    Key([mod], "r", lazy.spawncmd(),
+        desc="Spawn a command using a prompt widget"),
+    Key([mod], "p", lazy.spawn('rofi -show run'),
+        desc="Run a command through rofi"),
+    Key([mod, "control"], "p", lazy.spawn('rofi -show window'),
+        desc="Go to a window through rofi"),
+    Key([mod], "b", lazy.spawn('bwmenu'),
+        desc="Access bitwarden vault using rofi"),
+]
+
+groups = [Group(i) for i in "123456789"]
+
+for i in groups:
+    keys.extend(
+        [
+            # mod1 + letter of group = switch to group
+            Key(
+                [mod],
+                i.name,
+                lazy.group[i.name].toscreen(),
+                desc="Switch to group {}".format(i.name),
+            ),
+            # mod1 + shift + letter of group = switch to & move
+            # focused window to group
+            Key(
+                [mod, "shift"],
+                i.name,
+                lazy.window.togroup(i.name, switch_group=True),
+                desc="Switch to & move focused window to group {}"
+                .format(i.name),
+            ),
+        ]
+    )
+
+layouts = [
+    layout.MonadTall(margin = 50),
+    layout.Max(margin = 50),
+]
+
+widget_defaults = dict(
+    font="sans",
+    fontsize=12,
+    padding=3,
+)
+extension_defaults = widget_defaults.copy()
+
+screens = [
+    Screen(
+        wallpaper='~/Backgrounds/nge.jpeg',
+        wallpaper_mode='fill',
+    ),
+]
+
+# Drag floating layouts.
+mouse = [
+    Drag([mod], "Button1", lazy.window.set_position_floating(),
+         start=lazy.window.get_position()),
+    Drag([mod], "Button3", lazy.window.set_size_floating(),
+         start=lazy.window.get_size()),
+    Click([mod], "Button2", lazy.window.bring_to_front()),
+]
+
+dgroups_key_binder = None
+dgroups_app_rules = []  # type: List
+follow_mouse_focus = True
+bring_front_click = False
+cursor_warp = False
+floating_layout = layout.Floating(
+    float_rules=[
+        # Run the utility of `xprop` to see the wm class and name of an
+        # X client.
+        ,*layout.Floating.default_float_rules,
+        Match(wm_class="confirmreset"),  # gitk
+        Match(wm_class="makebranch"),  # gitk
+        Match(wm_class="maketag"),  # gitk
+        Match(wm_class="ssh-askpass"),  # ssh-askpass
+        Match(title="branchdialog"),  # gitk
+        Match(title="pinentry"),  # GPG key password entry
+    ]
+)
+auto_fullscreen = False
+focus_on_window_activation = "smart"
+reconfigure_screens = True
+
+# If things like steam games want to auto-minimize themselves when losing
+# focus, should we respect this or not?
+auto_minimize = True
+
+# Startup Applications
+@hook.subscribe.startup
+def autostart():
+    # Restart Polybar
+    subprocess.Popen("pkill polybar", shell=True).wait()
+    subprocess.Popen("polybar xmonad", shell=True)
+    
+    # Restart Waybar
+    subprocess.Popen("pkill waybar", shell=True).wait()
+    subprocess.Popen("waybar", shell=True)
+    
+    # Restart Kanshi
+    subprocess.Popen("pkill kanshi", shell=True).wait()
+    subprocess.Popen("kanshi", shell=True)
+
+wmname = "LG3D"
+#+end_src
+
 ** Menu Systems
 *** Rofi
 **** Install
@@ -2558,9 +2460,7 @@ rofi.kb-remove-char-back: BackSpace
 #+end_src
 
 **** Basic Confirguration
-#+begin_src conf :tangle ~/.config/rofi/config.rasi
-/** Basic config file **/
-
+#+begin_src css :tangle ~/.config/rofi/config.rasi
 configuration {
   show-icons:   true;
   modi:         "window,drun,filebrowser,combi";
@@ -2570,8 +2470,8 @@ configuration {
 #+end_src
 
 **** Theme
-#+begin_src conf :tangle ~/.config/rofi/config.rasi
-*{
+#+begin_src css :tangle ~/.config/rofi/config.rasi
+,*{
     bg:                          rgb(0, 0, 0);
     bg2:                         rgb(0, 0, 0);
     fg:                          rgb(255, 255, 255);
@@ -2724,6 +2624,9 @@ textbox-prompt-colon {
     margin:     0px 0.3em 0em 0em ;
     text-color: @normal-foreground;
 }
+
+/* Use Wal Colorscheme */
+@import "~/.cache/wal/colors-rofi-dark"
 #+end_src
 
 ** Status Bars
@@ -2882,7 +2785,7 @@ $INSTALL dunst
 :PROPERTIES:
 :header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/dunst/dunstrc")
 :END:
-See [[https://dunst-project.org/documentation/]]
+See [[https://dunst-project.org/documentation/]] 
 #+begin_src conf
 [global]
     ### Location ###
@@ -2890,7 +2793,7 @@ See [[https://dunst-project.org/documentation/]]
 
     ### Geometry ###
     offset = 20x80
-    width = (250, 500)
+    width = 500
     height = 300
     transparency = 10  # Requires X11 and a compositor [0; 100]
     corner_radius = 5
@@ -3002,6 +2905,11 @@ For Windows 11:
 $INTSALL vagrant
 #+end_src
 
+*** Wine
+#+begin_src bash
+$INSTALL wine-staging wine-gecko wine-mono
+#+end_src
+
 ** Applications
 *** rmtrash
 **** Install
@@ -3023,11 +2931,6 @@ alias sudo="sudo "
 Use =mimeo --mime2desk <schema>= to find what application is set as default for a certain schema. Use =mimeo --app2desk <app>= to find an applications corresponding desktop file.
 #+begin_src bash
 $INSTALL mimeo
-#+end_src
-
-*** Manuskript
-#+begin_src bash
-$INSTALL manuskript
 #+end_src
 
 *** Indicator StickyNotes
@@ -3120,7 +3023,6 @@ rm -rf ~/.emacs.d
 ln -s $XDG_CONFIG_HOME/emacs ~/.emacs.d
 rm -rf ~/backgrounds
 ln -s $DIR/backgrounds ~/backgrounds
-
 #sudo systemctl enable --now --user emacs
 #+end_src
 
@@ -3203,306 +3105,6 @@ TYPE_UNDO=Ctrl+Z
 **** Install
 #+begin_src bash
 $INSTALL qutebrowser python-qutescript-git
-mkdir -p $XDG_DATA_HOME/qutebrowser/userscripts
-#+end_src
-
-**** Userscripts
-***** Qute-Bitwarden
-:PROPERTIES:
-:header-args:python: :tangle (concat (getenv "XDG_DATA_HOME") "/qutebrowser/userscripts/qute-bitwarden") :tangle-mode (identity #o755)
-:END:
-#+begin_src python
-#!/usr/bin/python3
-
-"""
-Insert login information using Bitwarden CLI and a dmenu-compatible application
-(e.g. dmenu, rofi -dmenu, ...).
-"""
-
-USAGE = """The domain of the site has to be in the name of the Bitwarden entry, for example: "github.com/cryzed" or "websites/github.com".  The login information is inserted by emulating key events using qutebrowser's fake-key command in this manner: [USERNAME]<Tab>[PASSWORD], which is compatible with almost all login forms.
-
-If enabled, with the `--totp` flag, it will also move the TOTP code to the clipboard, much like the Firefox add-on.
-
-You must log into Bitwarden CLI using `bw login` prior to use of this script. The session key will be stored using keyctl for the number of seconds passed to the --auto-lock option.
-
-To use in qutebrowser, run: `spawn --userscript qute-bitwarden`
-"""
-
-EPILOG = """Dependencies: tldextract (Python 3 module), pyperclip (optional Python module, used for TOTP codes), Bitwarden CLI (1.7.4 is known to work but older versions may well also work)
-
-WARNING: The login details are viewable as plaintext in qutebrowser's debug log (qute://log) and might be shared if you decide to submit a crash report!"""
-
-import argparse
-import enum
-import functools
-import os
-import shlex
-import subprocess
-import sys
-import json
-import tldextract
-
-argument_parser = argparse.ArgumentParser(
-    description=__doc__,
-    usage=USAGE,
-    epilog=EPILOG,
-)
-argument_parser.add_argument('url', nargs='?', default=os.getenv('QUTE_URL'))
-argument_parser.add_argument(
-    '--dmenu-invocation', '-d', default='rofi -dmenu -i -p Bitwarden',
-    help='Invocation used to execute a dmenu-provider')
-argument_parser.add_argument(
-    '--no-insert-mode', '-n', dest='insert_mode', action='store_false',
-    help="Don't automatically enter insert mode")
-argument_parser.add_argument(
-    '--totp', '-t', action='store_true',
-    help="Copy TOTP key to clipboard")
-argument_parser.add_argument(
-    '--io-encoding', '-i', default='UTF-8',
-    help='Encoding used to communicate with subprocesses')
-argument_parser.add_argument(
-    '--merge-candidates', '-m', action='store_true',
-    help='Merge pass candidates for fully-qualified and registered domain name')
-argument_parser.add_argument(
-    '--auto-lock', type=int, default=900,
-    help='Automatically lock the vault after this many seconds')
-group = argument_parser.add_mutually_exclusive_group()
-group.add_argument(
-    '--username-only', '-e', action='store_true',
-    help='Only insert username')
-group.add_argument(
-    '--password-only', '-w', action='store_true',
-    help='Only insert password')
-group.add_argument(
-    '--totp-only', '-T', action='store_true',
-    help='Only insert totp code')
-
-stderr = functools.partial(print, file=sys.stderr)
-
-
-class ExitCodes(enum.IntEnum):
-    SUCCESS = 0
-    FAILURE = 1
-    # 1 is automatically used if Python throws an exception
-    NO_PASS_CANDIDATES = 2
-    COULD_NOT_MATCH_USERNAME = 3
-    COULD_NOT_MATCH_PASSWORD = 4
-
-def qute_command(command):
-    with open(os.environ['QUTE_FIFO'], 'w') as fifo:
-        fifo.write(command + '\n')
-        fifo.flush()
-
-def ask_password():
-    process = subprocess.run([
-        'rofi',
-        '-dmenu',
-        '-p',
-        'Master Password',
-        '-password',
-        '-lines',
-        '0',
-    ], universal_newlines=True, stdout=subprocess.PIPE)
-    if process.returncode > 0:
-        raise Exception('Could not unlock vault')
-    master_pass = process.stdout.strip()
-    return subprocess.check_output(
-        ['bw', 'unlock', '--raw', master_pass],
-        universal_newlines=True,
-    ).strip()
-
-
-def get_session_key(auto_lock):
-    if auto_lock == 0:
-        subprocess.call(['keyctl', 'purge', 'user', 'bw_session'])
-        return ask_password()
-    else:
-        process = subprocess.run(
-            ['keyctl', 'request', 'user', 'bw_session'],
-            universal_newlines=True,
-            stdout=subprocess.PIPE,
-        )
-        key_id = process.stdout.strip()
-        if process.returncode > 0:
-            session = ask_password()
-            if not session:
-                raise Exception('Could not unlock vault')
-            key_id = subprocess.check_output(
-                ['keyctl', 'add', 'user', 'bw_session', session, '@u'],
-                universal_newlines=True,
-            ).strip()
-
-        if auto_lock > 0:
-            subprocess.call(['keyctl', 'timeout',
-                             str(key_id), str(auto_lock)])
-        return subprocess.check_output(
-            ['keyctl', 'pipe', str(key_id)],
-            universal_newlines=True,
-        ).strip()
-
-
-def pass_(domain, encoding, auto_lock):
-    session_key = get_session_key(auto_lock)
-    process = subprocess.run(
-        ['bw', 'list', 'items', '--session',
-         session_key, '--url', domain],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-
-    err = process.stderr.decode(encoding).strip()
-    if err:
-        msg = 'Bitwarden CLI returned for {:s} - {:s}'.format(
-            domain, err)
-        stderr(msg)
-    out = process.stdout.decode(encoding).strip()
-    return out
-
-
-def get_totp_code(selection_id, domain_name, encoding, auto_lock):
-    session_key = get_session_key(auto_lock)
-    process = subprocess.run(
-        ['bw', 'get', 'totp', '--session', session_key, selection_id],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-
-    err = process.stderr.decode(encoding).strip()
-    if err:
-        # domain_name instead of selection_id to make it more
-        # user-friendly
-        msg = 'Bitwarden CLI returned for {:s} - {:s}'.format(
-            domain_name, err)
-        stderr(msg)
-
-    if len(candidates) == 0:
-        return ExitCodes.SUCCESS
-    if process.returncode:
-        return '[]'
-    out = process.stdout.decode(encoding).strip()
-    return out
-
-
-def dmenu(items, invocation, encoding):
-    command = shlex.split(invocation)
-    process = subprocess.run(command, input='\n'.join(
-        items).encode(encoding), stdout=subprocess.PIPE)
-    return process.stdout.decode(encoding).strip()
-
-
-def fake_key_raw(text):
-    for character in text:
-        # Escape all characters by default, space requires special
-        # handling
-        sequence = '" "' if character == ' ' else '\{}'.format(character)
-        qute_command('fake-key {}'.format(sequence))
-
-
-def main(arguments):
-    if not arguments.url:
-        argument_parser.print_help()
-        return ExitCodes.FAILURE
-
-    extract_result = tldextract.extract(arguments.url)
-
-    # Try to find candidates using targets in the following order:
-    # fully-qualified domain name (includes subdomains),
-    # the registered domain name and finally: the IPv4 address if that's
-    # what the URL represents
-    candidates = []
-    for target in filter(None, [
-                extract_result.fqdn,
-                extract_result.registered_domain,
-                extract_result.subdomain + extract_result.domain,
-                extract_result.domain,
-                extract_result.ipv4]):
-        target_candidates = json.loads(
-            pass_(
-                target,
-                arguments.io_encoding,
-                arguments.auto_lock,
-            )
-        )
-        if not target_candidates:
-            continue
-
-        candidates = candidates + target_candidates
-        if not arguments.merge_candidates:
-            break
-        
-    if len(candidates) == 1:
-        selection = candidates.pop()
-    else:
-        choices = ['{:s} | {:s}'.format(
-            c['name'], c['login']['username']) for c in candidates]
-        choice = dmenu(
-            choices, arguments.dmenu_invocation, arguments.io_encoding)
-        choice_tokens = choice.split('|')
-        choice_name = choice_tokens[0].strip()
-        try:
-            choice_username = choice_tokens[1].strip()
-        except Exception as e:
-            return ExitCodes.SUCCESS
-        selection = next((c for (i, c) in enumerate(candidates)
-                          if c['name'] == choice_name
-                          and c['login']['username'] == choice_username),
-                         None)
-
-    # Nothing was selected, simply return
-    if not selection:
-        return ExitCodes.SUCCESS
-
-    username = selection['login']['username']
-    password = selection['login']['password']
-    totp = selection['login']['totp']
-
-    if arguments.username_only:
-        fake_key_raw(username)
-    elif arguments.password_only:
-        fake_key_raw(password)
-    elif arguments.totp_only:
-        # No point in moving it to the clipboard in this case
-        fake_key_raw(
-            get_totp_code(
-                selection['id'],
-                selection['name'],
-                arguments.io_encoding,
-                arguments.auto_lock
-            )
-        )
-    else:
-        # Enter username and password using fake-key and <Tab> (which
-        # seems to work almost universally), then switch
-        # back into insert-mode, so the form can be directly submitted by
-        # hitting enter afterwards
-        fake_key_raw(username)
-        qute_command('fake-key <Tab>')
-        fake_key_raw(password)
-
-    if arguments.insert_mode:
-        qute_command('mode-enter insert')
-
-    # If it finds a TOTP code, it copies it to the clipboard,
-    # which is the same behavior as the Firefox add-on.
-    if not arguments.totp_only and totp and arguments.totp:
-        # The import is done here, to make pyperclip an optional
-        # dependency
-        import pyperclip
-        pyperclip.copy(
-            get_totp_code(
-                selection['id'],
-                selection['name'],
-                arguments.io_encoding,
-                arguments.auto_lock
-            )
-        )
-
-    return ExitCodes.SUCCESS
-
-
-if __name__ == '__main__':
-    arguments = argument_parser.parse_args()
-    sys.exit(main(arguments))
 #+end_src
 
 **** Configuration
@@ -3539,9 +3141,9 @@ c.fonts.statusbar = '11pt "NotoSans Nerd Font"'
 #config.bind('o', 'spawn --userscript dmenu-open')
 #config.bind('O', 'spawn --userscript dmenu-open --tab')
 
-config.bind('pw', 'spawn --userscript qute-bitwarden')
-config.bind('pu', 'spawn --userscript qute-bitwarden -e')
-config.bind('pd', 'spawn --userscript qute-bitwarden -w')
+# config.bind('pw', 'spawn --userscript qute-bitwarden')
+# config.bind('pu', 'spawn --userscript qute-bitwarden -e')
+# config.bind('pd', 'spawn --userscript qute-bitwarden -w')
 
 # Colors
 c.colors.completion.fg = ['#9cc4ff', 'white', 'white']
@@ -3675,6 +3277,11 @@ echo "unqualified-search-registries = ['docker.io']" \
     | sudo tee /etc/containers/registries.conf
 #+end_src
 
+*** Devour
+#+begin_src bash
+$INSTALL devour
+#+end_src
+
 *** NSXIV
 **** Install
 #+begin_src bash
@@ -3686,7 +3293,7 @@ $INSTALL nsxiv
 :header-args:bash: :tangle ~/.zshenv
 :END:
 #+begin_src bash
-alias nsxiv="nsxiv -ab -s f"
+alias nsxiv="devour nsxiv -ab -s f"
 #+end_src
 
 **** Key Handler
@@ -3698,33 +3305,63 @@ You must use C-x after opening nsxiv to enable this keybindings
 #!/bin/sh
 case "$1" in
 "C-d") while read file; do
-           rm "$file"
+           trash "$file"
        done;;
 
 "C-c") while read file; do
            echo -n "$file" | xclip -selection clipboard
        done;;
+"C-x") while read file; do
+           mv "$file" ~/Pictures/Tmp
+       done;;
 esac
 #+end_src
 
-*** Feh
-**** Install
+*** Backgrounds
+**** Feh
+***** Install
 #+begin_src bash
 $INSTALL feh
 #+end_src
 
-**** Copy Over Backgrounds
+***** Copy Over Backgrounds
 #+begin_src bash
 mkdir -p $BACKGROUNDS
 cp -r $DIR/backgrounds/* $BACKGROUNDS
 #+end_src
 
-**** Gifs as Backgrounds
+***** Gifs as Backgrounds
 #+begin_src bash
 curl -L https://raw.githubusercontent.com/thomas10-10/foo-Wallpaper-Feh-Gif/master/install.sh | bash
 #back4.sh 0.010 gif/pixel.gif &
 #+end_src
 
+**** Pywal
+***** Install
+#+begin_src bash
+$INSTALL python-pywal python-colorthief
+#+end_src
+
+***** Add Colorscheme to All Terminals
+#+begin_src bash :tangle ~/.zshrc
+# Use pywal colorscheme
+(cat ~/.cache/wal/sequences &)
+
+# Use pywal colorscheme for TTYs
+source ~/.cache/wal/colors-tty.sh
+#+end_src
+
+***** Firefox Addon
+#+begin_src bash
+$INSTALL python-pywalfox
+sudo pywalfox install
+#+end_src
+
+***** Discord
+#+begin_src bash
+$INSTALL betterdiscord-installer-bin pywal-discord-git
+pywal-discord -d
+#+end_src
 
 *** Neovim
 **** Install
@@ -3749,6 +3386,7 @@ Plug 'airblade/vim-gitgutter'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-commentary'
+Plug 'dylanaraps/wal.vim'
 call plug#end()
 
 set number relativenumber       " set line-numbers to be relative
@@ -3757,19 +3395,19 @@ set mouse=a                     " recognize and enable mouse
 set tabstop=4                   " show existing tab as 4 spaces
 set shiftwidth=4                " use 4 spaces when indenting with '>'
 set expandtab                   " on pressing tab, insert 4 spaces
-set termguicolors               " use terminal colors
 set ignorecase
 set smartcase
 set nobackup
 let g:airline_powerlin_fonts=1  " set airline theme
-colorscheme tender              " change the colorscheme
-let g:airline_theme = 'tender'  " change airline colorscheme
+    
+colorscheme wal                 " change the colorscheme
 #+end_src
 
 *****  Colors
-#+begin_src vimrc
+#+begin_src vimrc :tangle no
 let bg = "#000000"
 let fg = "#d5d8d6"
+
 let base0 = "#0d0d0d"
 let base1 = "#1b1b1b"
 let base2 = "#212122"
