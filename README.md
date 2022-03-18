@@ -21,9 +21,6 @@ Currently, I use XMonad as my window manager (although I sometimes switch to EXW
 - Run `./setup.sh` from inside the repository
 - Reboot the system
 
-## Loading my configuration on a Podman Container (most likely broken):
-- Run `./podman.sh` from inside the repository
-
 ## Important Information:
 - Consider enabling SSD Trim by running `sudo systemctl enable fstrim.timer`. This prevents write amplification and can lead to faster drives that live longer. Make sure to check `lsblk --discard` for non-zero values of `DISC-GRAN` and `DISC_MAX` before enabling. This starts up a weekly timer to trim your drive
 - When `setup.sh` is installing base-devel, make sure to not install fakeroot if it is in IgnorePkg or IgnoreGroup

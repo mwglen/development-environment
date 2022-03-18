@@ -166,6 +166,8 @@ $INSTALL linux-wifi-hotspot
 
 $INSTALL waybar
 
+$INSTALL stalonetray
+
 $INSTALL polybar-git
 
 sudo mkdir -p /etc/udev/rules.d
@@ -350,7 +352,7 @@ sudo pywalfox install
 $INSTALL betterdiscord-installer-bin pywal-discord-git
 pywal-discord -d
 
-$INSTALL neovim
+$INSTALL neovim neovide-git
 mkdir -p $XDG_CONFIG_HOME/nvim
 curl -fLo $XDG_DATA_HOME/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 

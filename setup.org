@@ -1066,6 +1066,11 @@ $INSTALL waybar
     /* "modules-right": ["network", "backlight", "battery", "tray"], */
 #+end_src
 
+** Stalonetray
+#+begin_src bash
+$INSTALL stalonetray
+#+end_src
+
 ** Polybar
 *** Install
 Polybar-git is used for the wm-restack=generic feature
@@ -1157,7 +1162,7 @@ cursor-scroll = ns-resize
 height = 70
 ; offset-x = 1.5%
 ; offset-y = 1.5%
-padding-left = 2
+padding = 2
 fixed-center = true
 enable-ipc = true
 border-color = ${colors.primary}
@@ -1174,13 +1179,49 @@ foreground = ${colors.foreground}
 font-0 = "RobotoMono Nerd Font:size=20:weight=bold;5"
 
 modules-left = pre-xworkspaces xworkspaces date spotify
-modules-right = pulseaudio redshift wireless backlight battery
+modules-right = pulseaudio redshift wireless backlight battery systray
 
-tray-position = right
+tray-position = none
 tray-maxsize = 25
 
 cursor-click = pointer
 cursor-scroll = ns-resize
+#+end_src
+
+***** Systray
+#+begin_src conf
+[module/systray]
+type = custom/text
+content = ""
+click-left = ~/.config/polybar/scripts/toggle-stalonetray.sh
+content-foreground = ${colors.primary}
+#+end_src
+
+****** Start Stalonetray
+:PROPERTIES:
+:header-args:bash: :tangle (concat (getenv "XDG_CONFIG_HOME") "/polybar/scripts/stalonetray.sh") :tangle-mode (identity #o755)
+:END:
+#+begin_src bash
+#!/bin/bash
+Xaxis=$(xrandr --current | grep '*' | uniq | awk '{print $1}' | cut -d 'x' -f1)
+Yaxis=$(xrandr --current | grep '*' | uniq | awk '{print $1}' | cut -d 'x' -f2)
+stalonetray --grow-gravity SE --geometry 1x1+$((Xaxis-60))+$((Yaxis-130)) --icon-size 32 --icon-gravity SE --window-strut none --slot-size 50 -bg "#161616" &
+sleep 1
+xdotool windowunmap "$(xdotool search --class stalonetray)"
+#+end_src
+
+****** Toggle Stalonetray
+:PROPERTIES:
+:header-args:bash: :tangle (concat (getenv "XDG_CONFIG_HOME") "/polybar/scripts/toggle-stalonetray.sh") :tangle-mode (identity #o755)
+:END:
+#+begin_src bash
+#!/bin/bash
+curr_state=$(xwininfo -name stalonetray | grep 'Map State' | awk '{print $3}')
+if [ $curr_state == "IsUnMapped" ]; then
+   xdotool windowmap "$(xdotool search --class stalonetray)"
+else
+   xdotool windowunmap "$(xdotool search --class stalonetray)"
+fi
 #+end_src
 
 ***** Playerctl
@@ -1719,15 +1760,15 @@ opacity-rule = [
   "100:class_g = 'dmenu'",
   "100:class_g = 'Nsxiv'",
   "70:class_g = 'Polybar'",
+  "70:class_g = 'stalonetray'",
   "80:class_g = 'Rofi'",
   "100:fullscreen",
-  "60:!focused",
-  "80:focused",
+  "80:!focused",
+  "100:focused",
 ];
 
-# windows that should always be considered focused
-focus-exclude = [
-  "class_i = 'xmobar'",
+opacity-exlcude = [
+  "class_g = 'Alacritty'",
 ];
 
 #popup_menu = { opacity = 0.8; }
@@ -2190,6 +2231,10 @@ myKeys = [
 #+begin_src haskell
 main :: IO ()
 main = do
+  
+  -- Launch stalonetray
+  spawnPipe ("pkill stalonetray || true &&  $XDG_CONFIG_HOME/polybar/scripts/stalonetray.sh")
+  
   -- Launch polybar
   xmproc <- spawnPipe ("pkill polybar || true && polybar xmonad")
   
@@ -3366,81 +3411,165 @@ pywal-discord -d
 *** Neovim
 **** Install
 #+begin_src bash
-$INSTALL neovim
+$INSTALL neovim neovide-git
 mkdir -p $XDG_CONFIG_HOME/nvim
 curl -fLo $XDG_DATA_HOME/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 #+end_src
 
-**** Configuration
+*** Configuration
 :PROPERTIES:
-:header-args:vimrc: :tangle (concat (getenv "XDG_CONFIG_HOME") "/nvim/init.vim")
+:header-args:lua: :tangle (concat (getenv "XDG_CONFIG_HOME") "/nvim/init.lua")
 :END:
-#+begin_src vimrc
-call plug#begin('$XDG_CONFIG_HOME/nvim/plugged')
-Plug 'jacoborus/tender.vim'
-Plug 'LnL7/vim-nix'
-Plug 'rust-lang/rust.vim'
-Plug 'vim-airline/vim-airline'
-Plug 'vim-airline/vim-airline-themes'
-Plug 'airblade/vim-gitgutter'
-Plug 'tpope/vim-surround'
-Plug 'tpope/vim-fugitive'
-Plug 'tpope/vim-commentary'
-Plug 'dylanaraps/wal.vim'
-call plug#end()
+**** Install Packages
+#+begin_src lua
+-- Install Packages
+vim.cmd([[
+    call plug#begin('$XDG_CONFIG_HOME/nvim/plugged')
+    Plug 'jacoborus/tender.vim'
+    Plug 'LnL7/vim-nix'
+    Plug 'rust-lang/rust.vim'
+    Plug 'vim-airline/vim-airline'
+    Plug 'vim-airline/vim-airline-themes'
+    Plug 'airblade/vim-gitgutter'
+    Plug 'tpope/vim-surround'
+    Plug 'tpope/vim-fugitive'
+    Plug 'tpope/vim-commentary'
+    Plug 'mwglen/wal.vim'
+    Plug 'mhinz/vim-startify'
+    Plug 'junegunn/goyo.vim'
 
-set number relativenumber       " set line-numbers to be relative
-set nohlsearch                  " no highlight search
-set mouse=a                     " recognize and enable mouse
-set tabstop=4                   " show existing tab as 4 spaces
-set shiftwidth=4                " use 4 spaces when indenting with '>'
-set expandtab                   " on pressing tab, insert 4 spaces
-set ignorecase
-set smartcase
-set nobackup
-let g:airline_powerlin_fonts=1  " set airline theme
-    
-colorscheme wal                 " change the colorscheme
+    " Setup Neorg (Must run :TSInstall norg)
+    Plug 'nvim-treesitter/nvim-treesitter', {'do':':TSUpdate'}
+    Plug 'nvim-orgmode/orgmode'
+    Plug 'akinsho/org-bullets.nvim'
+    Plug 'lukas-reineke/headlines.nvim'
+    call plug#end()
+]])
 #+end_src
 
-*****  Colors
-#+begin_src vimrc :tangle no
-let bg = "#000000"
-let fg = "#d5d8d6"
+**** Set Options
+#+begin_src lua
+-- Set Options
+vim.cmd([[
+    set number relativenumber       " set line-numbers to be relative
+    set nohlsearch                  " no highlight search
+    set mouse=a                     " recognize and enable mouse
 
-let base0 = "#0d0d0d"
-let base1 = "#1b1b1b"
-let base2 = "#212122"
-let base3 = "#292b2b"
-let base4 = "#3f4040"
-let base5 = "#5c5e5e"
-let base6 = "#757878"
-let base7 = "#969896"
-let base8 = "#ffffff"
 
-let black     = "#000000"
-let white     = "#ffffff"
-let grey      = "#5a5b5a" 
-let red       = "#cc6666" 
-let orange    = "#de935f"
-let yellow    = "#f0c674"
-let green     = "#b5bd68"
-let blue      = "#81a2be"
-let teal      = "#81a2be"
-let magenta   = "#c9b4cf"
-let violet    = "#b294bb"
-let cyan      = "#8abeb7"
+    set tabstop=3                   " show existing tab as 4 spaces
+    set shiftwidth=3                " use 4 spaces when indenting with '>'
+    set expandtab                   " on pressing tab, insert 4 spaces
 
-execute "hi! Normal guibg=" . bg
-execute "hi! String guifg=" . green
-execute "hi! Keyword guifg=" . violet
-execute "hi! Type guifg=" . yellow
-execute "hi! Operator guifg=" . fg
-execute "hi! Number guifg=" . orange
-execute "hi! Function guifg=" . blue
-execute "hi! Constant guifg=" . orange
-execute "hi! Comment guifg=" . grey
-execute "hi! Conditional guifg=" . violet
+    set ignorecase
+    set smartcase
+    set nobackup
+    let g:airline_powerline_fonts=1 " set airline style
+
+    colorscheme wal                 " change the colorscheme
+    set guifont=RobotoMono\ Nerd\ Font:h10
+    set guifontwide=RobotoMono\ Nerd\ Font:h11.5
+
+    " Make autocomplete better:
+    "   - First tab completes as much as possible
+    "   - Second tab provides a list
+    "   - Third and subsequent tabs cycle through completion options
+    set wildmode=longest,list,full
+    set wildmenu
+
+    " %s/ctermbg=\(NONE\|\d\) ctermfg=\(NONE\|\d\).*/& guibg=\1 guifg=\2
+]])
+#+end_src
+
+**** Startify Configuration
+#+begin_src lua
+vim.cmd([[
+let g:startify_bookmarks = [ {'c': '~/.vimrc'} ]
+let g:startify_files_number = 10
+let g:startify_fortune_use_unicode = 1
+let g:startify_enable_special = 0
+let g:startify_custom_header =
+    \ 'startify#center(startify#fortune#cowsay())'
+]])
+#+end_src
+
+**** Support Font Resizing
+#+begin_src lua
+vim.cmd([[
+if has("gui_gtk2")
+    function! FontSizePlus ()
+      let l:gf_size_whole = matchstr(&guifont, '\( \)\@<=\d\+$')
+      let l:gf_size_whole = l:gf_size_whole + 1
+      let l:new_font_size = ' '.l:gf_size_whole
+      let &guifont = substitute(&guifont, ' \d\+$', l:new_font_size, '')
+    endfunction
+
+    function! FontSizeMinus ()
+      let l:gf_size_whole = matchstr(&guifont, '\( \)\@<=\d\+$')
+      let l:gf_size_whole = l:gf_size_whole - 1
+      let l:new_font_size = ' '.l:gf_size_whole
+      let &guifont = substitute(&guifont, ' \d\+$', l:new_font_size, '')
+    endfunction
+else
+    function! FontSizePlus ()
+      let l:gf_size_whole = matchstr(&guifont, '\(:h\)\@<=\d\+$')
+      let l:gf_size_whole = l:gf_size_whole + 1
+      let l:new_font_size = ':h'.l:gf_size_whole
+      let &guifont = substitute(&guifont, ':h\d\+$', l:new_font_size, '')
+    endfunction
+
+    function! FontSizeMinus ()
+      let l:gf_size_whole = matchstr(&guifont, '\(:h\)\@<=\d\+$')
+      let l:gf_size_whole = l:gf_size_whole - 1
+      let l:new_font_size = ':h'.l:gf_size_whole
+      let &guifont = substitute(&guifont, ':h\d\+$', l:new_font_size, '')
+    endfunction
+endif
+
+
+if has("gui_running")
+    nmap <S-F12> :call FontSizeMinus()<CR>
+    nmap <F12> :call FontSizePlus()<CR>
+endif
+]])
+#+end_src
+
+**** Setup Org Support
+#+begin_src lua
+-- Load custom tree-sitter grammar for org filetype
+require('orgmode').setup_ts_grammar()
+
+-- Tree-sitter configuration
+require'nvim-treesitter.configs'.setup {
+  highlight = {
+    enable = true,
+    disable = {'org'}, -- Remove this to use TS highlighter for some of the highlights (Experimental)
+    additional_vim_regex_highlighting = {'org'}, -- Required since TS highlighter doesn't support all syntax features (conceal)
+  },
+  ensure_installed = {'org'},
+}
+
+require('orgmode').setup({
+  org_agenda_files = '~/Documents/org/*',
+  org_default_notes_file = '~/Documents/org/refile.org',
+})
+
+require("org-bullets").setup {
+  symbols = { "◉", "○", "●", "○", "●", "○", "●" }
+}
+
+vim.cmd([[
+    autocmd Filetype org setlocal guifont=Roboto\ Nerd\ Font:h10
+]])
+-- vim.cmd([[
+--     highlight Headline1 guibg=#1e2718
+--     highlight Headline2 guibg=#21262d
+--     highlight CodeBlock guibg=#1c1c1c
+-- ]])
+-- require("headlines").setup {
+--   org = {
+--     headline_highlights = { "Headline1", "Headline2" },
+--   },
+-- }
 #+end_src
 
 ** Change Shell
