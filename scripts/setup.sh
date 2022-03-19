@@ -223,8 +223,6 @@ cd ~/.config/emacs/lisp && wget https://raw.githubusercontent.com/mwglen/ivy-cli
 
 $INSTALL xmonad xmonad-contrib
 
-$INSTALL qtile
-
 $INSTALL rofi pinentry-rofi rofi-bluetooth-git rofi-dmenu
 
 $INSTALL xmobar trayer ttf-mononoki
@@ -345,6 +343,8 @@ curl -L https://raw.githubusercontent.com/thomas10-10/foo-Wallpaper-Feh-Gif/mast
 #back4.sh 0.010 gif/pixel.gif &
 
 $INSTALL python-pywal python-colorthief
+
+sudo pip3 install wpgtk
 
 $INSTALL python-pywalfox
 sudo pywalfox install

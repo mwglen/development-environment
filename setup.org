@@ -1114,59 +1114,49 @@ foreground = ${xrdb:color7:#222}
 foreground-alt = ${xrdb:color7:#222}
 primary = ${xrdb:color1:#222}
 secondary = ${xrdb:color2:#222}
-alert = ${xrdb:color3:#222}
-color4 = ${xrdb:color4:#222}
+ternary = ${xrdb:color3:#222}
+alert = ${xrdb:color4:#222}
 
 ; Delete later
-green = #b5bd68
-yellow = #f0c674
-violet = #b294bb
-blue = #81a2be
-red = #cc6666
-grey = #6b6b6b
+; green = #b5bd68
+; yellow = #f0c674
+; violet = #b294bb
+; blue = #81a2be
+; red = #cc6666
+; grey = #6b6b6b
 #+end_src
-
-***** EXWM Panel
+***** Panels
+****** EXWM Panel
 #+begin_src conf
 [bar/exwm]
 width = 100%
-height = 45
-offset-x = 0
-offset-y = 0
+height = 70
 padding = 2
 fixed-center = true
 enable-ipc = true
-border-color = #c5c8c6
+
 line-size = 3
 bottom = false
 module-margin = 1
              
-background = #ff000000
+background = ${colors.background}
 foreground = ${colors.foreground}
-font-0 = "Ubuntu Nerd Font:size=20:weight=bold"
+font-0 = "Ubuntu Nerd Font:size=23:weight=bold"
 
 modules-left = date spotify
 modules-right = pulseaudio redshift wireless backlight battery
-
-tray-position = none
-tray-maxsize = 28
 
 cursor-click = pointer
 cursor-scroll = ns-resize
 #+end_src
 
-***** XMonad Panel
+****** XMonad Panel
 #+begin_src conf
 [bar/xmonad]
-; width = 97%
 height = 70
-; offset-x = 1.5%
-; offset-y = 1.5%
 padding = 2
 fixed-center = true
 enable-ipc = true
-border-color = ${colors.primary}
-;border-size = 2
             
 line-size = 3
 bottom = true
@@ -1175,20 +1165,17 @@ wm-restack = generic
 
 background = ${colors.background}
 foreground = ${colors.foreground}
-; font-0 = "Ubuntu Nerd Font:size=20:weight=bold;5"
 font-0 = "RobotoMono Nerd Font:size=20:weight=bold;5"
 
 modules-left = pre-xworkspaces xworkspaces date spotify
 modules-right = pulseaudio redshift wireless backlight battery systray
 
-tray-position = none
-tray-maxsize = 25
-
 cursor-click = pointer
 cursor-scroll = ns-resize
 #+end_src
 
-***** Systray
+***** Modules
+****** Systray
 #+begin_src conf
 [module/systray]
 type = custom/text
@@ -1197,7 +1184,7 @@ click-left = ~/.config/polybar/scripts/toggle-stalonetray.sh
 content-foreground = ${colors.primary}
 #+end_src
 
-****** Start Stalonetray
+******* Start Stalonetray
 :PROPERTIES:
 :header-args:bash: :tangle (concat (getenv "XDG_CONFIG_HOME") "/polybar/scripts/stalonetray.sh") :tangle-mode (identity #o755)
 :END:
@@ -1210,7 +1197,7 @@ sleep 1
 xdotool windowunmap "$(xdotool search --class stalonetray)"
 #+end_src
 
-****** Toggle Stalonetray
+******* Toggle Stalonetray
 :PROPERTIES:
 :header-args:bash: :tangle (concat (getenv "XDG_CONFIG_HOME") "/polybar/scripts/toggle-stalonetray.sh") :tangle-mode (identity #o755)
 :END:
@@ -1224,7 +1211,7 @@ else
 fi
 #+end_src
 
-***** Playerctl
+****** Playerctl
 #+begin_src conf
 [module/playerctl]
 type = custom/script
@@ -1232,10 +1219,10 @@ interval = 2
 exec = echo $(playerctl metadata -f '{{artist}} - {{title}}' 2>/dev/null | sed -E 's/(.{30}).+/\1.../')
 exec-if = playerctl metadata -f {{playerName}} 2>/dev/null | grep -Ev 'mopidy' >/dev/null
 format-prefix = "喇 "
-format-foreground = ${colors.green}
+format-foreground = ${colors.secondary}
 #+end_src
 
-***** Pre-XWorkspaces
+****** Pre-XWorkspaces
 #+begin_src conf
 [module/pre-xworkspaces]
 type = custom/text
@@ -1243,7 +1230,7 @@ content = ""
 content-foreground = ${colors.primary}
 #+end_src
 
-***** XWorkspaces
+****** XWorkspaces
 #+begin_src conf
 [module/xworkspaces]
 type = internal/xworkspaces
@@ -1258,7 +1245,7 @@ label-empty =
 label-empty-foreground = ${colors.primary}
 #+end_src
 
-***** Xkeyboard
+****** Xkeyboard
 #+begin_src conf
 [module/keyboard]
 type = internal/xkeyboard
@@ -1275,7 +1262,7 @@ label-indicator-margin = 1
 label-indicator-background = ${colors.background}
 #+end_src
 
-***** Filesystem
+****** Filesystem
 #+begin_src conf
 [module/filesystem]
 type = internal/fs
@@ -1286,7 +1273,7 @@ interval = 30
 fixed-values = false
 #+end_src
 
-***** Spotify
+****** Spotify
 #+begin_src conf
 [module/spotify]
 type = custom/script
@@ -1296,11 +1283,11 @@ format-foreground = ${colors.foreground}
 format-background = ${colors.background}
 format-padding = 2
 format-prefix = " "
-format-prefix-foreground = ${colors.green}
+format-prefix-foreground = ${colors.ternary}
 label = %output:0:150%
 #+end_src
 
-****** Script https://github.com/NicholasFeldman/dotfiles/blob/master/polybar/.config/polybar/spotify.sh
+******* Script https://github.com/NicholasFeldman/dotfiles/blob/master/polybar/.config/polybar/spotify.sh
 :PROPERTIES:
 :header-args:sh: :tangle (concat (getenv "XDG_CONFIG_HOME") "/polybar/scripts/spotify.sh") :tangle-mode (identity #o755)
 :END:
@@ -1329,7 +1316,7 @@ main() {
 main "$@"
 #+end_src
 
-***** Compton
+****** Compton
 #+begin_src conf
 [module/compton]
 type = custom/script
@@ -1339,7 +1326,7 @@ interval = 5
 format-foreground = ${colors.foreground}
 #+end_src
 
-***** Weather
+****** Weather
 #+begin_src conf
 [module/weather]
 type = custom/script
@@ -1352,17 +1339,17 @@ exec = python -u ~/.config/polybar/scripts/weather.py
 tail = true
 #+end_src
 
-***** CPU Utilization
+****** CPU Utilization
 #+begin_src conf
 [module/cpu]
 type = internal/cpu
 interval = 2
 format = CPU <label>
-format-foreground = ${colors.violet}
+format-foreground = ${colors.ternary}
 label = %percentage:2%%
 #+end_src
 
-***** Date and Time
+****** Date and Time
 #+begin_src conf
 [module/date]
 type = internal/date
@@ -1376,7 +1363,7 @@ format-foreground = ${colors.primary}
 label = %date% %time%
 #+end_src
 
-***** Battery
+****** Battery
 #+begin_src conf
 [module/battery]
 type = internal/battery
@@ -1407,7 +1394,7 @@ animation-charging-4 = "%{F#b5bd68}"
 animation-charging-framerate = 750
 #+end_src
 
-***** Temperature
+****** Temperature
 #+begin_src conf
 [module/temperature]
 type = internal/temperature
@@ -1416,14 +1403,14 @@ warn-temperature = 70
 
 format = TEMP <label>
 format-warn = TEMP <label-warn>
-format-foreground = ${colors.yellow}
-format-warn-foreground = ${colors.yellow}
+format-foreground = ${colors.secondary}
+format-warn-foreground = ${colors.secondary}
 
 label = %temperature-c%
 label-warn = %temperature-c%!
 #+end_src
 
-***** Pulse Audio
+****** Pulse Audio
 #+begin_src conf
 [module/pulseaudio]
 type = custom/script
@@ -1439,7 +1426,7 @@ scroll-up = pulseaudio-control up
 scroll-down = pulseaudio-control down
 #+end_src
 
-***** Wireless Network
+****** Wireless Network
 #+begin_src conf
 [module/wireless]
 type = internal/network
@@ -1449,24 +1436,24 @@ label-connected = %essid%
 label-disconnected = not connected
 
 format-connected = 直 <label-connected>
-format-connected-foreground = ${colors.color4}
+format-connected-foreground = ${colors.ternary}
 
 format-disconnected = 
 format-disconnected-foreground = ${colors.grey}
 #+end_src
 
-***** Memory                              
+****** Memory                              
 #+begin_src conf
 [module/memory]
 type = internal/memory
 interval = 3
 format = <label>
 label = MEM %percentage_used:2%%
-format-foreground = ${colors.blue}
+format-foreground = ${colors.ternary}
 #+end_src
 
-***** Backlight
-****** Give Polybar Access to Change Backlight
+****** Backlight
+******* Give Polybar Access to Change Backlight
 #+begin_src bash
 sudo mkdir -p /etc/udev/rules.d
 groupadd -r video && true
@@ -1475,7 +1462,7 @@ sudo chgrp video /sys/class/backlight/intel_backlight/brightness
 sudo chmod g+w /sys/class/backlight/intel_backlight/brightness
 #+end_src
 
-****** Module
+******* Module
 #+begin_src conf
 [module/backlight]
 type = internal/backlight
@@ -1494,8 +1481,8 @@ ramp-5 = "%{F#f0c674}"
 ramp-6 = "%{F#f0c674}"
 #+end_src
 
-***** Redshift
-****** Module
+****** Redshift
+******* Module
 #+begin_src conf
 [module/redshift]
 type = custom/script
@@ -1504,11 +1491,11 @@ click-left = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/
 scroll-up = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh increase
 scroll-down = source $XDG_CONFIG_HOME/polybar/scripts/env.sh && $XDG_CONFIG_HOME/polybar/scripts/redshift.sh decrease
 interval = 1
-format-foreground = ${colors.red}
+format-foreground = ${colors.alert}
 #+end_src
 
-****** Scripts
-******* env.sh
+******* Scripts
+******** env.sh
 :PROPERTIES:
 :header-args:sh: :tangle (concat (getenv "XDG_CONFIG_HOME") "/polybar/scripts/env.sh") :tangle-mode (identity #o755)
 :END:
@@ -1517,7 +1504,7 @@ export REDSHIFT=on
 export REDSHIFT_TEMP=5600
 #+end_src
 
-******* redshift.sh
+******** redshift.sh
 :PROPERTIES:
 :header-args:sh: :tangle (concat (getenv "XDG_CONFIG_HOME") "/polybar/scripts/redshift.sh") :tangle-mode (identity #o755)
 :END:
@@ -1562,13 +1549,13 @@ case $1 in
       on)
         if (($REDSHIFT_TEMP > 5000)); then
             COLOR="#6b6b6b"
-        elif (($REDSHIFT_TEMP > 4000)); then
+        elif (($REDSHIFT_TEMP > 4500)); then
             COLOR="#7E6A6A"
-        elif (($REDSHIFT_TEMP > 3000)); then
+        elif (($REDSHIFT_TEMP > 4000)); then
             COLOR="#926969"
-        elif (($REDSHIFT_TEMP > 2000)); then
+        elif (($REDSHIFT_TEMP > 3000)); then
             COLOR="#A56868"
-        elif (($REDSHIFT_TEMP > 1500)); then
+        elif (($REDSHIFT_TEMP > 2000)); then
             COLOR="#B96767"
         else
             COLOR="#cc6666"
@@ -1583,7 +1570,7 @@ case $1 in
 esac
 #+end_src
 
-***** Workspace Indicator
+****** Workspace Indicator
 #+begin_src conf
 [module/exwm-workspace]
 type = custom/ipc
@@ -1969,7 +1956,7 @@ $INSTALL xorg dbus xorg-xrdb xorg-transset wmctrl xorg-xmessage xclip
 # Display
 xrandr --dpi 200 --output eDP-1 --primary --mode 3840x2160 --pos 0x0 --rotate normal --output DP-1 --off --output HDMI-1 --off
 picom -b
-wal --backend colorthief -i $BACKGROUNDS/nge.jpeg -n
+wal -i $BACKGROUNDS/nge.jpeg -n
 feh --bg-scale $BACKGROUNDS/nge.jpeg
 
 # Keybindings
@@ -2072,6 +2059,7 @@ import XMonad.Hooks.ManageHelpers (isFullscreen, doFullFloat, doRectFloat, isDia
 -- Layouts
 import XMonad.Layout.ResizableTile
 import XMonad.Layout (Full)
+import XMonad.Layout.Tabbed (simpleTabbed)
 
 -- Layouts modifiers
 import XMonad.Layout.LayoutModifier
@@ -2090,6 +2078,42 @@ import XMonad.Util.NamedScratchpad
 
 -- Misc
 import Foreign.C.Types (CLong)
+
+-- To Try Out
+-- import XMonad.Actions.AfterDrag
+-- import XMonad.Layout.MouseResizableTile
+-- import XMonad.Layout.BorderResize
+-- import XMonad.Layout.WindowSwitcherDecoration
+-- import XMonad.Layout.Combo
+-- import XMonad.Layout.ComboP
+-- import XMonad.Layout.Drawer
+-- import XMonad.Layout.Maximize
+-- import XMonad.Layout.Magnifier
+import XMonad.Layout.TabBarDecoration
+-- import XMonad.Layout.Renamed
+-- import XMonad.Layout.TrackFloating
+-- import XMonad.Layout.DecorationMadness
+-- import XMonad.Layout.BoringWindows
+-- import XMonad.Layout.Hidden
+-- import XMonad.Layout.Groups (ALL)
+-- import XMonad.Util.Dzen
+-- import XMonad.Util.ExclusiveScratchpads
+-- import XMonad.Util.DynamicScratchpads
+-- import XMonad.Util.ActionCycle
+-- import XMonad.Actions.Search
+-- import XMonad.Actions.SimpleDate
+-- import XMonad.Actions.Sift (siftUp, siftDown)
+-- import XMonad.Actions.FloatSnap
+-- import XMonad.Actions.DynamicWorkspaces
+-- import XMonad.Actions.FlexibleManipulate
+-- import XMonad.Actions.FlexibleResize
+-- import XMonad.Actions.SwapWorkspaces
+-- import XMonad.Actions.WorkspaceOrder
+-- import XMonad.Actions.FloatKeys
+-- import XMonad.Actions.Minimize
+-- import XMonad.Hooks.FadeInactive
+-- import XMonad.Actions.WorkspaceNames
+  
 #+end_src
 
 ***** Variables
@@ -2118,8 +2142,9 @@ tall         = limitWindows 6
              $ spacingWithEdge 30
              $ mkToggle (single NBFULL)
              $ ResizableTall 1 (3/100) (1/2) []
- 
-myLayoutHook = global $ tall ||| Full
+             -- $ mouseResizableTile{ draggerType = FixedDragger }
+tabbed       =  simpleTabBar $ simpleTabbed
+myLayoutHook = global $ tall ||| tabbed ||| Full
 #+end_src
 
 ***** Scratchpads
@@ -2201,8 +2226,8 @@ myKeys = [
 
   -- Swap Windows --
   , ("M-<Return>", windows swapMaster)
-  , ("M-S-j", windows swapDown)
-  , ("M-S-k", windows swapUp)
+  , ("M-S-j", windows siftDown)
+  , ("M-S-k", windows siftUp)
 
   -- Resize Windows --
   , ("M-n", refresh)
@@ -2311,178 +2336,6 @@ help = unlines [
   "mod-button2  Raise the window to the top of the stack",
   "mod-button3  Set the window to floating mode and resize by dragging"
   ]
-#+end_src
-
-*** Qtile
-**** Install
-#+begin_src bash
-$INSTALL qtile
-#+end_src
-
-**** Configuration
-:PROPERTIES:
-:header-args:python: :tangle (concat (getenv "XDG_CONFIG_HOME") "/qtile/config.py")
-:END:
-#+begin_src python
-from typing import List  # noqa: F401
-
-from libqtile import bar, layout, widget, hook
-from libqtile.config import Click, Drag, Group, Key, Match, Screen
-from libqtile.lazy import lazy
-from libqtile.utils import guess_terminal
-
-import subprocess
-
-mod = "mod4"
-terminal = guess_terminal()
-
-keys = [
-    # A list of available commands that can be bound to keys can be found
-    # at https://docs.qtile.org/en/latest/manual/config/lazy.html
-    # Switch between windows
-    Key([mod], "h", lazy.layout.left(),  desc="Move focus to left"),
-    Key([mod], "l", lazy.layout.right(), desc="Move focus to right"),
-    Key([mod], "j", lazy.layout.down(),  desc="Move focus down"),
-    Key([mod], "k", lazy.layout.up(),    desc="Move focus up"),
-    # Move windows between left/right columns or move up/down in current
-    # stack. Moving out of range in Columns layout will create new column.
-    Key([mod, "shift"], "h", lazy.layout.shuffle_left(),
-        desc="Move window to the left"),
-    Key([mod, "shift"], "l", lazy.layout.shuffle_right(),
-        desc="Move window to the right"),
-    Key([mod, "shift"], "j", lazy.layout.shuffle_down(),
-        desc="Move window down"),
-    Key([mod, "shift"], "k", lazy.layout.shuffle_up(),
-        desc="Move window up"),
-    # Grow windows. If current window is on the edge of screen and
-    # direction will be to screen edge - window would shrink.
-    Key([mod, "control"], "h", lazy.layout.grow_left(),
-        desc="Grow window to the left"),
-    Key([mod, "control"], "l", lazy.layout.grow_right(),
-        desc="Grow window to the right"),
-    Key([mod, "control"], "j", lazy.layout.grow_down(),
-        desc="Grow window down"),
-    Key([mod, "control"], "k", lazy.layout.grow_up(),
-        desc="Grow window up"),
-    Key([mod], "n", lazy.layout.normalize(),
-        desc="Reset all window sizes"),
-    
-    Key([mod, "shift"], "Return", lazy.spawn(terminal),
-        desc="Launch terminal"),
-    
-    # Toggle between different layouts as defined below
-    Key([mod], "space", lazy.next_layout(),
-        desc="Toggle between layouts"),
-    Key([mod, "shift"], "c", lazy.window.kill(),
-        desc="Kill focused window"),
-    Key([mod], "q", lazy.reload_config(),
-        desc="Reload the config"),
-    Key([mod, "shift"], "q", lazy.shutdown(),
-        desc="Shutdown Qtile"),
-    Key([mod], "r", lazy.spawncmd(),
-        desc="Spawn a command using a prompt widget"),
-    Key([mod], "p", lazy.spawn('rofi -show run'),
-        desc="Run a command through rofi"),
-    Key([mod, "control"], "p", lazy.spawn('rofi -show window'),
-        desc="Go to a window through rofi"),
-    Key([mod], "b", lazy.spawn('bwmenu'),
-        desc="Access bitwarden vault using rofi"),
-]
-
-groups = [Group(i) for i in "123456789"]
-
-for i in groups:
-    keys.extend(
-        [
-            # mod1 + letter of group = switch to group
-            Key(
-                [mod],
-                i.name,
-                lazy.group[i.name].toscreen(),
-                desc="Switch to group {}".format(i.name),
-            ),
-            # mod1 + shift + letter of group = switch to & move
-            # focused window to group
-            Key(
-                [mod, "shift"],
-                i.name,
-                lazy.window.togroup(i.name, switch_group=True),
-                desc="Switch to & move focused window to group {}"
-                .format(i.name),
-            ),
-        ]
-    )
-
-layouts = [
-    layout.MonadTall(margin = 50),
-    layout.Max(margin = 50),
-]
-
-widget_defaults = dict(
-    font="sans",
-    fontsize=12,
-    padding=3,
-)
-extension_defaults = widget_defaults.copy()
-
-screens = [
-    Screen(
-        wallpaper='~/Backgrounds/nge.jpeg',
-        wallpaper_mode='fill',
-    ),
-]
-
-# Drag floating layouts.
-mouse = [
-    Drag([mod], "Button1", lazy.window.set_position_floating(),
-         start=lazy.window.get_position()),
-    Drag([mod], "Button3", lazy.window.set_size_floating(),
-         start=lazy.window.get_size()),
-    Click([mod], "Button2", lazy.window.bring_to_front()),
-]
-
-dgroups_key_binder = None
-dgroups_app_rules = []  # type: List
-follow_mouse_focus = True
-bring_front_click = False
-cursor_warp = False
-floating_layout = layout.Floating(
-    float_rules=[
-        # Run the utility of `xprop` to see the wm class and name of an
-        # X client.
-        ,*layout.Floating.default_float_rules,
-        Match(wm_class="confirmreset"),  # gitk
-        Match(wm_class="makebranch"),  # gitk
-        Match(wm_class="maketag"),  # gitk
-        Match(wm_class="ssh-askpass"),  # ssh-askpass
-        Match(title="branchdialog"),  # gitk
-        Match(title="pinentry"),  # GPG key password entry
-    ]
-)
-auto_fullscreen = False
-focus_on_window_activation = "smart"
-reconfigure_screens = True
-
-# If things like steam games want to auto-minimize themselves when losing
-# focus, should we respect this or not?
-auto_minimize = True
-
-# Startup Applications
-@hook.subscribe.startup
-def autostart():
-    # Restart Polybar
-    subprocess.Popen("pkill polybar", shell=True).wait()
-    subprocess.Popen("polybar xmonad", shell=True)
-    
-    # Restart Waybar
-    subprocess.Popen("pkill waybar", shell=True).wait()
-    subprocess.Popen("waybar", shell=True)
-    
-    # Restart Kanshi
-    subprocess.Popen("pkill kanshi", shell=True).wait()
-    subprocess.Popen("kanshi", shell=True)
-
-wmname = "LG3D"
 #+end_src
 
 ** Menu Systems
@@ -3385,6 +3238,11 @@ curl -L https://raw.githubusercontent.com/thomas10-10/foo-Wallpaper-Feh-Gif/mast
 ***** Install
 #+begin_src bash
 $INSTALL python-pywal python-colorthief
+#+end_src
+
+***** Install wpgtk
+#+begin_src bash
+sudo pip3 install wpgtk
 #+end_src
 
 ***** Add Colorscheme to All Terminals
