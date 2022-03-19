@@ -2226,8 +2226,8 @@ myKeys = [
 
   -- Swap Windows --
   , ("M-<Return>", windows swapMaster)
-  , ("M-S-j", windows siftDown)
-  , ("M-S-k", windows siftUp)
+  , ("M-S-j", windows swapDown)
+  , ("M-S-k", windows swapUp)
 
   -- Resize Windows --
   , ("M-n", refresh)
@@ -2808,6 +2808,61 @@ $INTSALL vagrant
 $INSTALL wine-staging wine-gecko wine-mono
 #+end_src
 
+
+** Kernel
+   Kernel Space occurs on ring 0 on x86 processors, system mode on ARM, kernel mode on MIP, supervisor mode on 68xxx, etc.
+   
+   User space occurs on the least privileged mode: ring 3 on x86 CPUs, user mode on ARM or MIPS, etc.
+
+   Linux only uses two modes even if the processor supports more
+
+
+** Networking
+*** IP Routing
+   IPv6 NAT is not very good in comparison with IPv4 NAT and should be avoided.
+
+**** Legacy
+     The traditional way of routing IP traffic is to use =iptables=. =iptables= is a tool for configuring the =Netfilter= kernel firewall that comes with the standard linux kernel. Other =iptables= like programs are avaialable. Specifically =ip6tables= is used for routing IPv6 traffic, =ebtables= is used for routing Ethernet traffic, and =arptables= for managing ARP traffic.
+  
+      *NOTE:* =iptables=, =ip6tables=, =ebtables=, and =arptables= are often symlinked to =nfttables= binaries. Run the commands and look for "(nf_tables)" by the version number to determine which program is actually being used.
+
+***** =iptables=
+***** =ip6tables=
+***** =ebtables=
+***** =arptables=
+***** =conntrack=
+      Manages in-kernel connection state table
+
+**** nft Based 
+     Address families: ip, ip6, inet, arp, bridge, netdev
+***** =nfttables=
+      =nfttables= is managed by the ~nft~ command
+***** =iptables-nft=
+      =iptables-nft= is the iptables like command for interfacing with the =nfttables= infrastructure. It often replaces the =iptables= binary on install.
+ 
+**** Firewalld
+     A firewall daemon developed by Red Hat that uses =nfttables= by default.
+ 
+     A zone is a collection of rules that can be applied to a specific interface. Networkmanager can use Firewalld to assign different connection profiles to different zones using the following command ~nmcli connection modify \myssid\ connection.zone \home\~.
+ 
+*** Ports
+    Most systems have 65535 ports. Ports 1-1023 are usually considered service ports and often require privileged permissions for processes to attach to them (so that not anyone can listen to your SSH traffic). Process that want to attach to service ports should bind to the port as root and then switch to a unprivilleged user ASAP. Ports 1024-49151 are usually reserved for non-superuser privileges (NFS, OpenVPN, SVN, etc). Ports 49152-65535 are for temporary connections and processes usually don't bind to them.
+
+    Port Blocking:
+    - FTP Uses two ports: Client sends command to port 21 on server and server replies from port 20 the a dynamically allocated port on the client.
+    - This is a problem for stateless firewalls as it might not understand to open up port 20.
+
+**** namp
+     #+begin_src bash
+     $INSTALL nmap
+     #+end_src
+**** netstat
+
+**** tcpdump
+     #+begin_src bash
+     $INSTALL tcpdump
+     #+end_src
+
 ** Applications
 *** rmtrash
 **** Install
@@ -3295,6 +3350,8 @@ vim.cmd([[
     Plug 'mwglen/wal.vim'
     Plug 'mhinz/vim-startify'
     Plug 'junegunn/goyo.vim'
+    Plug 'francoiscabrol/ranger.vim'
+    Plug 'ap/vim-css-color'
 
     " Setup Neorg (Must run :TSInstall norg)
     Plug 'nvim-treesitter/nvim-treesitter', {'do':':TSUpdate'}
@@ -3335,6 +3392,13 @@ vim.cmd([[
     set wildmenu
 
     " %s/ctermbg=\(NONE\|\d\) ctermfg=\(NONE\|\d\).*/& guibg=\1 guifg=\2
+]])
+#+end_src
+
+**** Ranger Integration
+#+begin_src lua
+vim.cmd([[
+    let g:ranger_replace_netrw = 1
 ]])
 #+end_src
 
