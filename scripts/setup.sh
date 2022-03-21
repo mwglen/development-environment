@@ -64,6 +64,9 @@ echo hsts-file \= "$XDG_CACHE_HOME"/wget-hsts >> "$XDG_CONFIG_HOME/wgetrc"
 $INSTALL inetutils
 
 $INSTALL nerd-fonts-complete
+# cd /usr/share/fonts/nerd-fonts-complete/TTF && sudo mkfontscale && mkfontdir
+# sudo xset +fp /usr/share/fonts/nerd-fonts-complete/TTF
+sudo fc-cache -fv
 
 $INSTALL python python-matplotlib poetry
 
@@ -84,11 +87,13 @@ $INSTALL optimus-manager-qt
 
 $INSTALL usbutils usbip
 
+$INSTALL pipewire wireplumber pipewire-alsa pipewire-pulse pipewire-jack
+
 $INSTALL pulseaudio-control
 
 $INSTALL galaxybudsclient-bin
 
-$INSTALL bluez bluez-utils pulseaudio-bluetooth
+$INSTALL bluez bluez-utils
 sudo systemctl enable bluetooth
 
 $INSTALL networkmanager network-manager-applet
@@ -164,8 +169,6 @@ git clone https://tero.hasu.is/repos/icalendar-to-org.git $REPOSITORIES/icalenda
 
 $INSTALL linux-wifi-hotspot
 
-$INSTALL waybar
-
 $INSTALL stalonetray
 
 $INSTALL polybar-git
@@ -190,15 +193,8 @@ wget https://github.com/Litarvan/lightdm-webkit-theme-litarvan/releases/download
 
 sudo tar -xf $REPOSITORIES/lightdm-webkit-theme-litarvan-3.2.0.tar.gz -C /usr/share/lightdm-webkit/themes/litarvan
 
-# The ibhagwan fork of picom has rounded corners and dual kawase blur
-# $INSTALL picom-ibhagwan-git
-
 # The jonaburg fork of picom has rounded corners, dual kawase blur, and window animations
-# $INSTALL picom-jonaburg-git
-
-# My fork of jonaburg's fork of picom has an updated picom-trans binary that can be used to toggle transparency of a window
-git install https://github.com/mwglen/picom.git $REPOSITORIES/picom
-cd $REPOSITORIES/picom && meson --buildtype=release . build && sudo ninja -C build install
+$INSTALL picom-jonaburg-git
 
 $INSTALL fcitx-im fcitx-configtool fcitx-qt4
 sudo locale-gen
@@ -218,8 +214,6 @@ profile {
 $INSTALL xorg dbus xorg-xrdb xorg-transset wmctrl xorg-xmessage xclip
 
 $INSTALL xbindkeys
-
-cd ~/.config/emacs/lisp && wget https://raw.githubusercontent.com/mwglen/ivy-clipmenu.el/master/ivy-clipmenu.el
 
 $INSTALL xmonad xmonad-contrib
 
@@ -259,6 +253,10 @@ sudo systemctl start virtlogd
 $INTSALL vagrant
 
 $INSTALL wine-staging wine-gecko wine-mono
+
+$INSTALL nmap
+
+$INSTALL tcpdump
 
 $INSTALL rmtrash
 
@@ -307,6 +305,9 @@ $INSTALL qutebrowser python-qutescript-git
 mkdir -p $XDG_CONFIG_HOME/qutebrowser
 mkdir -p ~/Downloads
 cd $XDG_CONFIG_HOME/qutebrowser && git clone https://github.com/alphapapa/solarized-everything-css && true
+
+mkdir -p $XDG_CONFIG_HOME/qutebrowser
+curl https://raw.githubusercontent.com/theova/base16-qutebrowser/master/themes/default/base16-default-dark.config.py >> $XDG_CONFIG_HOME/qutebrowser/config.py
 
 $INSTALL bitwarden bitwarden-cli bitwarden-rofi
 
