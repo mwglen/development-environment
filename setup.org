@@ -1,53 +1,6 @@
 #+title: Guide to Setup Development Environment
 #+PROPERTY: header-args :results none :mkdirp yes
 * Configuration Files
-**  Function Key Fix
-Prevents volume keys from sticking.
-#+begin_src conf :tangle /sudo:://etc/udev/hwdb.d/70-keyboard-framework-fix.hwdb
-# Fix for Fn keys sticking on Framework laptop
-evdev:atkbd:dmi:bvn*:bvr*:bd*:svnFramework:pnLaptop:pvr*:*
-evdev:input:b0011v0001p0001*icon
-# Primary function fixes
- KEYBOARD_KEY_3b=!F1           # F1
- KEYBOARD_KEY_3c=!F2           # F2
- KEYBOARD_KEY_3d=!F3           # F3
- KEYBOARD_KEY_3e=!F4           # F4
- KEYBOARD_KEY_3f=!F5           # F5
- KEYBOARD_KEY_40=!F6           # F6
- KEYBOARD_KEY_41=!F7           # F7
- KEYBOARD_KEY_42=!F8           # F8
- KEYBOARD_KEY_43=!F9           # F9
- KEYBOARD_KEY_44=!F10          # F10
- KEYBOARD_KEY_57=!F11          # F11
- KEYBOARD_KEY_58=!F12          # F12
- KEYBOARD_KEY_d3=!delete       # Delete key
-# Secondary function fixes
- KEYBOARD_KEY_a0=!mute         # On F1 key
- KEYBOARD_KEY_ae=!volumedown   # On F2 key
- KEYBOARD_KEY_b0=!volumeup     # On F3 key
- KEYBOARD_KEY_90=!previoussong # On F4 key
- KEYBOARD_KEY_a2=!playpause    # On F5 key
- KEYBOARD_KEY_99=!nextsong     # On F6 key
- KEYBOARD_KEY_b7=!sysrq        # On F11 key
- KEYBOARD_KEY_ed=!media        # On F12 key
- KEYBOARD_KEY_d2=!insert       # On Delete key
-# Arrow keys
- KEYBOARD_KEY_cb=!left         # Left Arrow key
- KEYBOARD_KEY_cd=!right        # Right Arrow key
- KEYBOARD_KEY_d0=!down         # Down Arrow
- KEYBOARD_KEY_c8=!up           # Up Arrow
- KEYBOARD_KEY_c7=!home         # On Left Arrow key
- KEYBOARD_KEY_cf=!end          # On Right Arrow key
- KEYBOARD_KEY_d1=!pagedown     # On Down Arrow key
- KEYBOARD_KEY_c9=!pageup       # On Up Arrow key
-#+end_src
-
-*** Apply Changes
-#+begin_src bash :tangle no
-sudo systemd-hwdb update
-sudo udevadm trigger --verbose --sysname-match="event*"
-#+end_src
-
 ** Grub
 #+begin_src conf :tangle /sudo:://etc/default/grub
 GRUB_DEFAULT=saved
@@ -89,9 +42,31 @@ HibernateDelaySec=30min
 See https://www.freeformatter.com/mime-types-list.html for a list of schema.
 #+begin_src conf
 [Default Applications]
-x-scheme-handler/http=org.qutebrowser.qutebrowser.desktop
-x-scheme-handler/https=org.qutebrowser.qutebrowser.desktop
-application/pdf=org.qutebrowser.qutebrowser.desktop
+x-scheme-handler/http=firefox.desktop
+x-scheme-handler/https=firefox.desktop
+x-scheme-handler/ftp=firefox.desktop
+x-scheme-handler/chrome=firefox.desktop
+text/html=firefox.desktop
+application/x-extension-htm=firefox.desktop
+application/x-extension-html=firefox.desktop
+application/x-extension-shtml=firefox.desktop
+application/xhtml+xml=firefox.desktop
+application/x-extension-xhtml=firefox.desktop
+application/x-extension-xht=firefox.desktop
+application/pdf=firefox.desktop
+        
+image/jpg=nsxiv.desktop
+image/jpeg=nsxiv.desktop
+image/png=nsxiv.desktop
+image/bmp=nsxiv.desktop
+image/tiff=nsxiv.desktop
+image/gif=nsxiv.desktop
+image/x-tga=nsxiv.desktop
+image/x-xpixmap=nsxiv.desktop
+image/webp=nsxiv.desktop
+image/x-portable-graymap=nsxiv.desktop
+image/x-portable-bitmap=nsxiv.desktop
+image/x-portable-anymap=nsxiv.desktop
 #+end_src
 
 *** User Directories
@@ -362,6 +337,7 @@ $INSTALL python python-matplotlib poetry
 #+begin_src bash
 $INSTALL rustup
 rustup default nightly
+rustup component add rls rust-analysis rust-src
 #+end_src
 
 *** Prolog
@@ -968,12 +944,12 @@ ternary = ${xrdb:color3:#222}
 alert = ${xrdb:color4:#222}
 
 ; Delete later
-; green = #b5bd68
+green = #b5bd68
 ; yellow = #f0c674
 ; violet = #b294bb
 ; blue = #81a2be
 ; red = #cc6666
-; grey = #6b6b6b
+grey = #6b6b6b
 #+end_src
 ***** Panels
 ****** EXWM Panel
@@ -1019,6 +995,7 @@ font-0 = "RobotoMono Nerd Font:size=20:weight=bold;5"
 
 modules-left = pre-xworkspaces xworkspaces date spotify
 modules-right = pulseaudio redshift wireless backlight battery systray
+modules-center =
 
 cursor-click = pointer
 cursor-scroll = ns-resize
@@ -1085,10 +1062,10 @@ content-foreground = ${colors.primary}
 [module/xworkspaces]
 type = internal/xworkspaces
 
-label-active = "%index% "
+label-active = "%name% "
 label-active-foreground = ${colors.primary}
 
-label-occupied = "%index% "
+label-occupied = "%name% "
 label-occupied-foreground = ${colors.grey}
 
 label-empty =
@@ -1121,6 +1098,29 @@ mount-0 = /
 ;mount-2 = /var
 interval = 30
 fixed-values = false
+#+end_src
+
+****** Pomodoro Timer
+******* Module
+#+begin_src conf
+[module/polypomo]
+type = custom/script
+
+exec = ~/.config/polybar/scripts/polypomo
+tail = true
+
+label = %output%
+click-left = ~/.config/polybar/scripts/polypomo toggle
+click-right = ~/.config/polybar/scripts/polypomo end
+click-middle = ~/.config/polybar/scripts/polypomo lock
+scroll-up = ~/.config/polybar/scripts/polypomo time +60
+scroll-down = ~/.config/polybar/scripts/polypomo time -60
+#+end_src
+
+******* Script
+#+begin_src bash
+curl https://raw.githubusercontent.com/unode/polypomo/master/polypomo > $XDG_CONFIG_HOME/polybar/scripts/polypomo
+chmod +x $XDG_CONFIG_HOME/polybar/scripts/polypomo
 #+end_src
 
 ****** Spotify
@@ -1254,7 +1254,7 @@ warn-temperature = 70
 format = TEMP <label>
 format-warn = TEMP <label-warn>
 format-foreground = ${colors.secondary}
-format-warn-foreground = ${colors.secondary}
+format-warn-foreground = ${colors.primary}
 
 label = %temperature-c%
 label-warn = %temperature-c%!
@@ -1265,7 +1265,7 @@ label-warn = %temperature-c%!
 [module/pulseaudio]
 type = custom/script
 tail = true
-format-foreground = ${colors.secondary}
+format-foreground = ${colors.primary}
 exec = pulseaudio-control --icons-volume " , " --icon-muted " " --sink-nicknames-from "device.description" --sink-nickname "alsa_output.pci-0000_00_1f.3.analog-stereo: Built In Speakers" listen
 
 click-right = pavucontrol
@@ -1286,7 +1286,7 @@ label-connected = %essid%
 label-disconnected = not connected
 
 format-connected = 直 <label-connected>
-format-connected-foreground = ${colors.ternary}
+format-connected-foreground = ${colors.green}
 
 format-disconnected = 
 format-disconnected-foreground = ${colors.grey}
@@ -1835,6 +1835,30 @@ $INSTALL xbindkeys
 #+end_src
 
 ** Window Managers
+*** DWM
+**** Desktop Entry
+#+begin_src conf :tangle /sudo:://usr/share/xsessions/dwm.desktop
+[Desktop Entry]
+Encoding=UTF-8
+Name=dwm
+Comment=Dynamic window manager
+Exec=dwm
+Icon=dwm
+Type=XSession
+#+end_src
+
+**** Configuration
+Patches Used
+- Attach Bottom
+- Always Center
+- Warp
+- Move Stack
+- Cool Autostart
+- EWMH Tags
+- Full Gaps
+- Save Floats
+- Pertag
+
 *** EXWM
 **** Desktop Entry
 #+begin_src conf :tangle /sudo:://usr/share/xsessions/exwm.desktop
@@ -1850,8 +1874,9 @@ Exec=emacs -fs
 
 *** XMonad
 **** Install
+AUR packages are used as official packages are out of date.
 #+begin_src bash
-$INSTALL xmonad xmonad-contrib
+$INSTALL xmonad-git xmonad-contrib-git
 #+end_src
 
 **** Packages
@@ -1887,6 +1912,7 @@ import XMonad
 import System.Exit (exitSuccess)
 import XMonad.StackSet (swapUp, swapDown, swapMaster, focusUp, focusDown, focusMaster, sink, RationalRect(..))
 import Data.List
+import GHC.IO.Handle (hGetLine)
 
 -- Actions
 import XMonad.Actions.CopyWindow (copyToAll, killAllOtherCopies)
@@ -1898,7 +1924,7 @@ import XMonad.Hooks.ManageHelpers (isFullscreen, doFullFloat, doRectFloat, isDia
 
   
 -- Layouts
-import XMonad.Layout.ResizableTile
+import XMonad.Layout.ResizableTile (ResizableTall(..))
 import XMonad.Layout (Full)
 import XMonad.Layout.Tabbed (simpleTabbed)
 
@@ -1907,9 +1933,8 @@ import XMonad.Layout.LayoutModifier
 import XMonad.Layout.LimitWindows (limitWindows)
 import XMonad.Layout.MultiToggle (mkToggle, single, Toggle(..))
 import XMonad.Layout.MultiToggle.Instances (StdTransformers(NBFULL))
-import XMonad.Layout.NoBorders
-import XMonad.Layout.Renamed
-import XMonad.Layout.Spacing
+import XMonad.Layout.NoBorders (noBorders)
+import XMonad.Layout.Spacing (spacingWithEdge)
 import XMonad.Layout.Hidden (hiddenWindows, hideWindow, popNewestHiddenWindow)
 
 -- Utilities
@@ -1917,6 +1942,7 @@ import XMonad.Util.EZConfig (additionalKeysP)
 import XMonad.Util.Run (spawnPipe)
 import XMonad.Util.SpawnOnce (spawnOnce)
 import XMonad.Util.NamedScratchpad
+import XMonad.Util.Dmenu
 
 -- Misc
 import Foreign.C.Types (CLong)
@@ -1956,22 +1982,20 @@ import XMonad.Actions.WorkspaceNames
   
 #+end_src
 
+***** Single Line Dmenu
+#+begin_src haskell
+-- singleLineDmenu :: String -> String
+-- singleLineDmenu prompt = liftIO $
+--   menuArgs "dmenu" ["-p", prompt, "-l", "0"] [] :: IO String
+-- singleLineDmenu prompt = [ head c | c <- ans ]
+--   where ans = menuArgs "dmenu" ["-p", prompt, "-l", "0"] []
+-- singleLineDmenu = liftIO $ dmenu ["test"] :: IO String
+#+end_src
+
 ***** Variables
 #+begin_src haskell
 myXMessage :: String
 myXMessage = "xmessage -default okay -bg black -fg white"
-  
-myBrowser :: String
-myBrowser = "qutebrowser "
-
-myEmacs :: String
-myEmacs = "emacsclient -c -a 'emacs' "
-
-myEditor :: String
-myEditor = "emacsclient -c -a 'emacs' "
-
-myEventHook = ewmhDesktopsEventHook <+> fullscreenEventHook
-myLogHook = ewmhDesktopsLogHook
 #+end_src
 
 ***** Layouts
@@ -2079,7 +2103,8 @@ myKeys = [
   , ("M-S-/", popNewestHiddenWindow)
 
   -- Act on Workspaces --
-  , ("M-S-r", renameWorkspace def)
+  -- , ("M-S-r", singleLineDmenu "Window Name")
+
   
   -- Resize Windows --
   , ("M-n", refresh)
@@ -2116,7 +2141,7 @@ main = do
   xmproc <- spawnPipe ("pkill polybar || true && polybar xmonad")
   
   -- Start xmonad
-  xmonad $ ewmh $ docks $ def {
+  xmonad $ workspaceNamesEwmh . ewmh $ docks $ def {
     -- simple stuff
     terminal           = "alacritty",
     focusFollowsMouse  = False,
@@ -2129,8 +2154,6 @@ main = do
     -- hooks, layouts
     layoutHook         = myLayoutHook,
     manageHook         = myManageHook,
-    handleEventHook    = myEventHook,
-    logHook            = myLogHook,
     startupHook        = myStartupHook
     } `additionalKeysP` myKeys
 #+end_src
@@ -2831,22 +2854,61 @@ ln -s $DIR/backgrounds ~/backgrounds
 #sudo systemctl enable --now --user emacs
 #+end_src
 
-*** Firefox
+*** Browsers
+**** Yandex
+#+begin_src bash
+$INSTALL yandex-browser-beta
+#+end_src
+
+**** Chrome
+#+begin_src bash
+$INSTALL google-chrome
+#+end_src
+
+**** Firefox
 #+begin_src bash
 $INSTALL firefox
 #+end_src
 
-**** Enable  Touchscreen Scrolling
+***** Desktop File (Open in New Window)
+#+begin_src bash :tangle /sudo::/usr/share/applications/firefox.desktop
+[Desktop Entry]
+Version=1.0
+Name=Firefox
+GenericName=Web Browser
+Comment=Browse the World Wide Web
+Keywords=Internet;WWW;Browser;Web;Explorer
+Exec=/usr/lib/firefox/firefox --new-window %u
+Icon=firefox
+Terminal=false
+X-MultipleArgs=false
+Type=Application
+MimeType=text/html;text/xml;application/xhtml+xml;x-scheme-handler/http;x-scheme-handler/https;application/x-xpinstall;application/pdf;application/json;
+StartupNotify=true
+StartupWMClass=firefox
+Categories=Network;WebBrowser;
+Actions=new-window;new-private-window;
+
+[Desktop Action new-window]
+Name=New Window
+Exec=/usr/lib/firefox/firefox --new-window %u
+
+[Desktop Action new-private-window]
+Name=New Private Window
+Exec=/usr/lib/firefox/firefox --private-window %u
+#+end_src
+
+***** Enable  Touchscreen Scrolling
 #+begin_src bash :tangle ~/.xprofile
 export MOZ_USE_XINPUT2=1
 #+end_src
 
-**** Stylesheets
+***** Stylesheets
 :PROPERTIES:
 :header-args:css: :tangle (concat (getenv "XDG_CONFIG_HOME") "/firefox/chrome/userChrome.css")
 :END:
 
-***** Hide tabbar when only one tab
+****** Hide tabbar when only one tab
 #+begin_src css
 /* Source file https://github.com/MrOtherGuy/firefox-csshacks/tree/master/chrome/hide_tabs_with_one_tab.css made available under Mozilla Public License v. 2.0
 See the above repository for updates as well as full license text. */
@@ -2914,7 +2976,7 @@ See the above repository for updates as well as full license text. */
 }
 #+end_src
 
-***** Autohide Main Toolbar
+****** Autohide Main Toolbar
 #+begin_src css
 /* Source file https://github.com/MrOtherGuy/firefox-csshacks/tree/master/chrome/autohide_main_toolbar.css made available under Mozilla Public License v. 2.0
 See the above repository for updates as well as full license text. */
@@ -3030,113 +3092,6 @@ TYPE_TOGGLE_PANEL=Space
 TYPE_UNDO=Ctrl+Z
 #+end_src
 
-*** Qutebrowser
-**** Install
-#+begin_src bash
-$INSTALL qutebrowser python-qutescript-git
-#+end_src
-
-**** Configuration
-:PROPERTIES:
-:header-args:python: :tangle (concat (getenv "XDG_CONFIG_HOME") "/qutebrowser/config.py")
-:END:
-#+begin_src python
-# Set to True to load settings configured via autoconfig.yml
-config.load_autoconfig(False)
-c.qt.highdpi = True
-c.auto_save.session = False
-c.aliases = {
-    'q': 'quit',
-    'w': 'session-save',
-    'wq': 'quit --save'
-}
-config.set("colors.webpage.darkmode.enabled", True)
-c.completion.show = "auto"
-c.downloads.location.directory = '~/Downloads'
-c.tabs.show = 'never'
-c.statusbar.show = 'never'
-c.scrolling.bar = 'never'
-c.scrolling.smooth = True
-
-# Fonts
-c.fonts.default_family = '"NotoSans Nerd Font"'
-c.fonts.default_size = '11pt'
-c.fonts.completion.entry = '11pt "NotoSans Nerd Font"'
-c.fonts.debug_console = '11pt "NotoSans Nerd Font"'
-c.fonts.prompts = 'default_size "NotoSans Nerd Font"'
-c.fonts.statusbar = '11pt "NotoSans Nerd Font"'
-
-# Use dmenu
-#config.bind('o', 'spawn --userscript dmenu-open')
-#config.bind('O', 'spawn --userscript dmenu-open --tab')
-
-# config.bind('pw', 'spawn --userscript qute-bitwarden')
-# config.bind('pu', 'spawn --userscript qute-bitwarden -e')
-# config.bind('pd', 'spawn --userscript qute-bitwarden -w')
-
-# Colors
-c.colors.completion.fg = ['#9cc4ff', 'white', 'white']
-c.colors.completion.odd.bg = '#1c1f24'
-c.colors.completion.even.bg = '#232429'
-c.colors.completion.category.fg = '#e1acff'
-c.colors.completion.category.bg = 'qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #000000, stop:1 #232429)'
-c.colors.completion.category.border.top = '#3f4147'
-c.colors.completion.category.border.bottom = '#3f4147'
-c.colors.completion.item.selected.fg = '#282c34'
-c.colors.completion.item.selected.bg = '#ecbe7b'
-c.colors.completion.item.selected.match.fg = '#c678dd'
-c.colors.completion.match.fg = '#c678dd'
-c.colors.completion.scrollbar.fg = 'black'
-c.colors.downloads.bar.bg = '#282c34'
-c.colors.downloads.error.bg = '#ff6c6b'
-c.colors.hints.fg = '#282c34'
-c.colors.hints.match.fg = '#98be65'
-c.colors.messages.info.bg = '#282c34'
-c.colors.statusbar.normal.bg = '#282c34'
-c.colors.statusbar.insert.fg = 'white'
-c.colors.statusbar.insert.bg = '#497920'
-c.colors.statusbar.passthrough.bg = '#34426f'
-c.colors.statusbar.command.bg = '#282c34'
-c.colors.statusbar.url.warn.fg = 'yellow'
-c.colors.tabs.bar.bg = '#1c1f34'
-c.colors.tabs.odd.bg = '#282c34'
-c.colors.tabs.even.bg = '#282c34'
-c.colors.tabs.selected.odd.bg = '#282c34'
-c.colors.tabs.selected.even.bg = '#282c34'
-c.colors.tabs.pinned.odd.bg = 'seagreen'
-c.colors.tabs.pinned.even.bg = 'darkseagreen'
-c.colors.tabs.pinned.selected.odd.bg = '#282c34'
-c.colors.tabs.pinned.selected.even.bg = '#282c34'
-
-# Search Engines
-c.url.searchengines = {
-    'DEFAULT': 'https://www.google.com/search?q={}',
-    'arch':    'https://wiki.archlinux.org/?search={}',
-    'wiki':    'https://en.wikipedia.org/wiki/{}',
-    'yt':      'https://www.youtube.com/results?search_query={}'
-}
-
-# Normal Mode Keybindings
-config.bind(';m', 'hint links spawn baka-mplayer {hint-url}')
-config.bind('M', 'spawn baka-mplayer {url}')
-config.bind('xb', 'config-cycle statusbar.show always never')
-config.bind('xt', 'config-cycle tabs.show always never')
-config.bind('xx', 'config-cycle statusbar.show always never;; config-cycle tabs.show always never')
-#+end_src
-
-**** Solarized Themes
-#+begin_src bash
-mkdir -p $XDG_CONFIG_HOME/qutebrowser
-mkdir -p ~/Downloads
-cd $XDG_CONFIG_HOME/qutebrowser && git clone https://github.com/alphapapa/solarized-everything-css && true
-#+end_src
-
-**** Base 16 Theme
-#+begin_src bash
-mkdir -p $XDG_CONFIG_HOME/qutebrowser
-curl https://raw.githubusercontent.com/theova/base16-qutebrowser/master/themes/default/base16-default-dark.config.py >> $XDG_CONFIG_HOME/qutebrowser/config.py
-#+end_src
-
 *** Bitwarden
 #+begin_src bash
 $INSTALL bitwarden bitwarden-cli bitwarden-rofi
@@ -3231,6 +3186,18 @@ $INSTALL nsxiv
 alias nsxiv="devour nsxiv -ab -s f"
 #+end_src
 
+**** Desktop File
+#+begin_src bash :tangle /sudo::/usr/share/applications/nsxiv.desktop
+[Desktop Entry]
+Type=Application
+Name=nsxiv
+GenericName=Image Viewer
+Exec=nsxiv -ab -s f %F
+MimeType=image/bmp;image/gif;image/jpeg;image/jpg;image/png;image/tiff;image/x-bmp;image/x-portable-anymap;image/x-portable-bitmap;image/x-portable-graymap;image/x-tga;image/x-xpixmap;image/webp;
+NoDisplay=true
+Icon=nsxiv
+#+end_src
+
 **** Key Handler
 :PROPERTIES:
 :header-args:bash: :tangle (concat (getenv "XDG_CONFIG_HOME") "/nsxiv/exec/key-handler") :tangle-mode (identity #o755)
@@ -3311,103 +3278,229 @@ mkdir -p $XDG_CONFIG_HOME/nvim
 curl -fLo $XDG_DATA_HOME/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 #+end_src
 
-*** Configuration
+**** Setup Neovim
+#+begin_src bash
+nvim +'PlugInstall' +qall
+nvim +'CocInstall -sync coc-json coc-tsserver coc-html coc-rls coc-pyright coc-css coc-cmake coc-sh coc-cl coc-clojure coc-godot' +qall
+nvim +CocUpdateSync +qall
+#+end_src
+
+***** Setup Coc
+#+begin_src bash
+$INSTALL svlangserver
+$INSTALL haskell-language-server
+sudo npm install moby --global
+$INSTALL sdcv stardict-oed stardict-full-rus-eng stardict-full-eng-rus
+#+end_src
+
+****** Config File
 :PROPERTIES:
-:header-args:lua: :tangle (concat (getenv "XDG_CONFIG_HOME") "/nvim/init.lua")
+:header-args:json: :tangle (concat (getenv "XDG_CONFIG_HOME") "/nvim/coc-settings.json")
 :END:
-**** Install Packages
-#+begin_src lua
--- Install Packages
-vim.cmd([[
-    call plug#begin('$XDG_CONFIG_HOME/nvim/plugged')
-    Plug 'jacoborus/tender.vim'
-    Plug 'LnL7/vim-nix'
-    Plug 'rust-lang/rust.vim'
-    Plug 'vim-airline/vim-airline'
-    Plug 'vim-airline/vim-airline-themes'
-    Plug 'airblade/vim-gitgutter'
-    Plug 'tpope/vim-surround'
-    Plug 'tpope/vim-fugitive'
-    Plug 'tpope/vim-commentary'
-    Plug 'mwglen/wal.vim'
-    Plug 'mhinz/vim-startify'
-    Plug 'junegunn/goyo.vim'
-    Plug 'francoiscabrol/ranger.vim'
-    Plug 'ap/vim-css-color'
-
-    " Setup Neorg (Must run :TSInstall norg)
-    Plug 'nvim-treesitter/nvim-treesitter', {'do':':TSUpdate'}
-    Plug 'nvim-orgmode/orgmode'
-    Plug 'akinsho/org-bullets.nvim'
-    Plug 'lukas-reineke/headlines.nvim'
-    call plug#end()
-]])
+#+begin_src json
+{
+    "languageserver": {
+        
+        "haskell": {
+          "command": "haskell-language-server-wrapper",
+          "args": ["--lsp"],
+          "rootPatterns": ["*.cabal", "stack.yaml", "cabal.project", "package.yaml", "hie.yaml"],
+          "filetypes": ["haskell", "lhaskell"]
+        },
+        
+        "ccls": {
+          "command": "ccls",
+          "filetypes": ["c", "cc", "cpp", "c++", "objc", "objcpp"],
+          "rootPatterns": [".ccls", "compile_commands.json", ".git/", ".hg/"],
+          "initializationOptions": {
+            "cache": {
+              "directory": "/tmp/ccls"
+            }
+          }
+        },
+        
+        "svlangserver": {
+            "command": "svlangserver",
+            "filetypes": ["systemverilog"],
+            "settings": {
+                "systemverilog.includeIndexing": ["**/*.{sv,svh}"],
+                "systemverilog.excludeIndexing": ["test/**/*.sv*"],
+                "systemverilog.defines" : [],
+                "systemverilog.launchConfiguration": "/tools/verilator -sv -Wall --lint-only",
+                "systemverilog.formatCommand": "/tools/verible-verilog-format"
+            }
+        }
+    }
+}
 #+end_src
 
-**** Set Options
-#+begin_src lua
--- Set Options
-vim.cmd([[
-    set number relativenumber       " set line-numbers to be relative
-    set nohlsearch                  " no highlight search
-    set mouse=a                     " recognize and enable mouse
+**** Configuration
+:PROPERTIES:
+:header-args:vimrc: :tangle (concat (getenv "XDG_CONFIG_HOME") "/nvim/init.vim")
+:END:
+***** Install Plugins
+#+begin_src vimrc
+call plug#begin('$XDG_CONFIG_HOME/nvim/plugged')
+     
+" Theme
+Plug 'vim-airline/vim-airline'
+Plug 'mwglen/wal.vim'
+Plug 'ap/vim-css-color'
+Plug 'glepnir/dashboard-nvim'
 
+" Fuzzy Matching
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
+     
+" Syntax Highlighting
+Plug 'sheerun/vim-polyglot'
 
-    set tabstop=3                   " show existing tab as 4 spaces
-    set shiftwidth=3                " use 4 spaces when indenting with '>'
-    set expandtab                   " on pressing tab, insert 4 spaces
+" Autocompletion
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+     
+" Git Support
+Plug 'airblade/vim-gitgutter'
+Plug 'tpope/vim-fugitive'
+     
+" Text Object Manipulation
+Plug 'tpope/vim-commentary'
+Plug 'tpope/vim-surround'
 
-    set ignorecase
-    set smartcase
-    set nobackup
-    let g:airline_powerline_fonts=1 " set airline style
-    set clipboard^=unnamedplus      " Copy to system clipboard using "+
+" Integration with other Applications
+Plug 'francoiscabrol/ranger.vim'
 
-    colorscheme wal                 " change the colorscheme
-    set guifont=RobotoMono\ Nerd\ Font:h10
-    set guifontwide=RobotoMono\ Nerd\ Font:h11.5
+" Prose
+Plug 'reedes/vim-pencil'
+Plug 'junegunn/limelight.vim'
+Plug 'junegunn/goyo.vim'
+Plug 'preservim/vim-lexical'
+Plug 'preservim/vim-textobj-sentence'
+Plug 'reedes/vim-wordy'
+Plug 'tpope/vim-markdown'
+Plug 'vimwiki/vimwiki'
 
-    " Make autocomplete better:
-    "   - First tab completes as much as possible
-    "   - Second tab provides a list
-    "   - Third and subsequent tabs cycle through completion options
-    set wildmode=longest,list,full
-    set wildmenu
+Plug 'tpope/vim-repeat'
+Plug 'vim-scripts/utl.vim' " Needed for org hyperlink support
+Plug 'vim-scripts/SyntaxRange'
 
-    " %s/ctermbg=\(NONE\|\d\) ctermfg=\(NONE\|\d\).*/& guibg=\1 guifg=\2
-]])
+call plug#end()
 #+end_src
 
-**** Post Write Hooks
-#+begin_src lua
-vim.cmd([[
-    autocmd BufWritePost ~/.Xresources !xrdb %
-]])
+***** Vimwiki
+#+begin_src vimrc
+" Required Vim Settings
+set nocompatible
+filetype plugin on
+syntax on
+
+" Use Markdown
+let g:vimwiki_list = [{'path': '~/Documents/vimwiki/',
+                      \ 'syntax': 'markdown', 'ext': '.md'}]
 #+end_src
 
-**** Ranger Integration
-#+begin_src lua
-vim.cmd([[
-    let g:ranger_replace_netrw = 1
-]])
+***** Prose Mode
+Credit to [[https://www.reddit.com/r/vim/comments/q03mqa/my_setup_for_prose/][this reddit post]]
+#+begin_src vimrc
+let w:ProseModeOn = 0
+
+function EnableProseMode()
+	setlocal spell spelllang=en_us
+	Goyo 66
+	SoftPencil
+      Limelight
+	echo "Prose Mode On"
+
+      " open most folds
+      setlocal foldlevel=6
+endfu
+
+function DisableProseMode()
+	Goyo!
+	NoPencil
+	setlocal nospell
+      Limelight!
+	echo "Prose Mode Off"
+endfu
+
+function ToggleProseMode()
+	if w:ProseModeOn == 0
+		call EnableProseMode()
+		let w:ProseModeOn = 1
+	else
+		call DisableProseMode()
+	endif
+endfu
+
+command Prose call EnableProseMode()
+command UnProse call DisableProseMode()
+command ToggleProse call ToggleProseMode()
+
+function ScratchBufferize()
+	setlocal buftype=nofile
+	setlocal bufhidden=hide
+	setlocal noswapfile
+endfu
+
+nnoremap <Leader>d :new \| read ! sdcv <C-R><C-W> <CR>:call ScratchBufferize() <CR>:normal gg<CR>
+nnoremap <Leader>t :new \| read ! moby <C-R><C-W> \| tr , '\n' <CR>:call ScratchBufferize() <CR>:normal gg2dd <CR>
 #+end_src
 
-**** Startify Configuration
-#+begin_src lua
-vim.cmd([[
-let g:startify_bookmarks = [ {'c': '~/.vimrc'} ]
-let g:startify_files_number = 10
-let g:startify_fortune_use_unicode = 1
-let g:startify_enable_special = 0
-let g:startify_relative_path = 1
-let g:startify_custom_header =
-    \ 'startify#center(startify#fortune#cowsay())'
-]])
+***** Set Options
+#+begin_src vimrc
+set number relativenumber       " set line-numbers to be relative
+set nohlsearch                  " no highlight search
+set mouse=a                     " recognize and enable mouse
+
+
+set tabstop=3                   " show existing tab as 4 spaces
+set shiftwidth=3                " use 4 spaces when indenting with '>'
+set expandtab                   " on pressing tab, insert 4 spaces
+
+set ignorecase
+set smartcase
+
+set nobackup
+    
+let g:airline_powerline_fonts=1 " set airline style
+let g:markdown_folding = 1
+set clipboard^=unnamedplus      " Copy to system clipboard using "+
+
+colorscheme wal                 " change the colorscheme
+set guifont=RobotoMono\ Nerd\ Font:h10
+set guifontwide=RobotoMono\ Nerd\ Font:h11.5
+
+" Make autocomplete better:
+"   - First tab completes as much as possible
+"   - Second tab provides a list
+"   - Third and subsequent tabs cycle through completion options
+set wildmode=longest,list,full
+set wildmenu
+
+" %s/ctermbg=\(NONE\|\d\) ctermfg=\(NONE\|\d\).*/& guibg=\1 guifg=\2
 #+end_src
 
-**** Support Font Resizing
-#+begin_src lua
-vim.cmd([[
+***** On File Open Hooks
+#+begin_src vimrc
+" autocmd FileType markdown,mkd,text call EnableProseMode()
+#+end_src
+
+***** Post Write Hooks
+#+begin_src vimrc
+autocmd BufWritePost ~/.Xresources !xrdb %
+#+end_src
+
+***** Ranger Integration
+#+begin_src vimrc
+let g:ranger_replace_netrw = 1
+#+end_src
+
+***** Dashboard
+#+begin_src vimrc
+let g:dashboard_default_executive ='fzf'
+#+end_src
+
+***** Support Font Resizing
+#+begin_src vimrc
 if has("gui_gtk2")
     function! FontSizePlus ()
       let l:gf_size_whole = matchstr(&guifont, '\( \)\@<=\d\+$')
@@ -3443,11 +3536,10 @@ if has("gui_running")
     nmap <S-F12> :call FontSizeMinus()<CR>
     nmap <F12> :call FontSizePlus()<CR>
 endif
-]])
 #+end_src
 
-**** Setup Org Support
-#+begin_src lua
+***** Setup Org Support
+#+begin_src lua :tangle no
 -- Load custom tree-sitter grammar for org filetype
 require('orgmode').setup_ts_grammar()
 
@@ -3489,22 +3581,3 @@ vim.cmd([[
 #+begin_src bash
 sudo chsh -s /usr/bin/zsh $USER
 #+end_src
-
-* After Setup
-** Exporting PGP Keys
-#+begin_src bash
-gpg --output public.pgp --armor --export username@email
-gpg --output private.pgp --armor --export-secret-key username@email
-
-# Backup Private Keys
-gpg --output backupkeys.pgp --armor --export-secret-keys --export-options export-backup user@email
-#+end_src
-
-** Linux Password Manager
-#+begin_src bash :tangle no
-$INSTALL -S pass
-pass init "62EC2C26" # Use the last 8 characters of your GPG key's ID
-#+end_src
-
-The =passfs= addon for firefox allows you to use your password store while browsing in firefox
-The =Password Store= android app allows you to access your passwords on  

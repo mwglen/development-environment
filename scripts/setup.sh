@@ -72,6 +72,7 @@ $INSTALL python python-matplotlib poetry
 
 $INSTALL rustup
 rustup default nightly
+rustup component add rls rust-analysis rust-src
 
 $INSTALL gprolog swi-prolog
 
@@ -173,6 +174,9 @@ $INSTALL stalonetray
 
 $INSTALL polybar-git
 
+curl https://raw.githubusercontent.com/unode/polypomo/master/polypomo > $XDG_CONFIG_HOME/polybar/scripts/polypomo
+chmod +x $XDG_CONFIG_HOME/polybar/scripts/polypomo
+
 sudo mkdir -p /etc/udev/rules.d
 groupadd -r video && true
 sudo usermod -a -G video $USER
@@ -215,7 +219,7 @@ $INSTALL xorg dbus xorg-xrdb xorg-transset wmctrl xorg-xmessage xclip
 
 $INSTALL xbindkeys
 
-$INSTALL xmonad xmonad-contrib
+$INSTALL xmonad-git xmonad-contrib-git
 
 $INSTALL rofi pinentry-rofi rofi-bluetooth-git rofi-dmenu
 
@@ -294,20 +298,15 @@ rm -rf ~/backgrounds
 ln -s $DIR/backgrounds ~/backgrounds
 #sudo systemctl enable --now --user emacs
 
+$INSTALL yandex-browser-beta
+
+$INSTALL google-chrome
+
 $INSTALL firefox
 
 $INSTALL blender blendnet
 
 $INSTALL flameshot
-
-$INSTALL qutebrowser python-qutescript-git
-
-mkdir -p $XDG_CONFIG_HOME/qutebrowser
-mkdir -p ~/Downloads
-cd $XDG_CONFIG_HOME/qutebrowser && git clone https://github.com/alphapapa/solarized-everything-css && true
-
-mkdir -p $XDG_CONFIG_HOME/qutebrowser
-curl https://raw.githubusercontent.com/theova/base16-qutebrowser/master/themes/default/base16-default-dark.config.py >> $XDG_CONFIG_HOME/qutebrowser/config.py
 
 $INSTALL bitwarden bitwarden-cli bitwarden-rofi
 
@@ -356,5 +355,14 @@ pywal-discord -d
 $INSTALL neovim neovide-git
 mkdir -p $XDG_CONFIG_HOME/nvim
 curl -fLo $XDG_DATA_HOME/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+
+nvim +'PlugInstall' +qall
+nvim +'CocInstall -sync coc-json coc-tsserver coc-html coc-rls coc-pyright coc-css coc-cmake coc-sh coc-cl coc-clojure coc-godot' +qall
+nvim +CocUpdateSync +qall
+
+$INSTALL svlangserver
+$INSTALL haskell-language-server
+sudo npm install moby --global
+$INSTALL sdcv stardict-oed stardict-full-rus-eng stardict-full-eng-rus
 
 sudo chsh -s /usr/bin/zsh $USER
