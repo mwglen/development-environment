@@ -262,6 +262,10 @@ $INSTALL nmap
 
 $INSTALL tcpdump
 
+$INSTALL pandoc
+
+$INSTALL zk
+
 $INSTALL rmtrash
 
 $INSTALL mimeo
@@ -357,6 +361,7 @@ mkdir -p $XDG_CONFIG_HOME/nvim
 curl -fLo $XDG_DATA_HOME/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
 nvim +'PlugInstall' +qall
+nvim +'TSUpdate org' +qall
 nvim +'CocInstall -sync coc-json coc-tsserver coc-html coc-rls coc-pyright coc-css coc-cmake coc-sh coc-cl coc-clojure coc-godot' +qall
 nvim +CocUpdateSync +qall
 
