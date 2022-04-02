@@ -68,6 +68,19 @@ $INSTALL nerd-fonts-complete
 # sudo xset +fp /usr/share/fonts/nerd-fonts-complete/TTF
 sudo fc-cache -fv
 
+# Create font directory
+mkdir -p ~/.local/share/fonts
+
+# Copy font to directory
+cp /usr/share/fonts/'Roboto Mono Nerd Font Complete Mono.ttf' ~/.local/share/fonts/roboto-mono-nerd-font-complete-mono.ttf
+
+# Initialize font directory
+cd ~/.local/share/fonts && mkfontscale && mkfontdir
+
+# Add font directory
+xset +fp '/home/$USER/.local/share/fonts'
+xset fp rehash
+
 $INSTALL python python-matplotlib poetry
 
 $INSTALL rustup
