@@ -605,15 +605,35 @@ $INSTALL brightnessctl
 **** Brillo
 ***** Install
 #+begin_src bash
-git clone https://github.com/CameronNemo/brillo $REPOSITORIES/brillo && true
-cd $REPOSITORIES/brillo && sudo make install
+$INSTALL brillo
+#+end_src
+
+***** Set Minimum Brightness
+This prevents brillo from setting the backlight completely off (which can cause instability in some systems).
+
+*Arguments Used:*
+    - *q*: use exponential values
+    - *c*: target minimum value
+    - *S*: set command
+
+#+begin_src bash
+brillo -qc -S 50
 #+end_src
 
 ***** Set XF86 Keys
+Modify the XF86 Keys to call Brillo and manage the brightness of the display's backlight
+
+*Arguments Used:*
+    - *q*: use exponential values
+    - *u*: transition time in microseconds
+    - *A*: increase
+    - *D*: decrease
+
 #+begin_src conf :tangle ~/.xbindkeysrc
 ### Brightness Control ###
 "brillo -q -u 150000 -A 5"
     XF86MonBrightnessUp
+
 "brillo -q -u 150000 -U 5"
     XF86MonBrightnessDown
 #+end_src
@@ -1907,6 +1927,7 @@ $INSTALL xmonad-git xmonad-contrib-git
 :END:
 ***** Imports
 #+begin_src haskell
+{-# LANGUAGE FlexibleContexts #-}
 -- Base
 import XMonad
 import System.Exit (exitSuccess)
@@ -1935,10 +1956,15 @@ import XMonad.Layout.MultiToggle.Instances (StdTransformers(NBFULL))
 import XMonad.Layout.NoBorders (noBorders)
 import XMonad.Layout.Spacing (spacingWithEdge)
 import XMonad.Layout.Hidden (hiddenWindows, hideWindow, popNewestHiddenWindow)
-import XMonad.Layout.SubLayouts (subTabbed, onGroup, pullGroup, GroupMsg(..))
+import XMonad.Layout.SubLayouts (subTabbed, onGroup, pullGroup, GroupMsg(..), Sublayout, subLayout)
 import XMonad.Layout.BoringWindows (boringWindows)
 import XMonad.Layout.WindowNavigation (windowNavigation, Direction2D(..))
+import XMonad.Layout.TabBarDecoration (tabBar)
+import XMonad.Layout.Tabbed (Theme(..), TabbedDecoration, addTabs)
 
+import XMonad.Layout.Simplest
+import XMonad.Layout.Decoration
+  
 -- Utilities
 import XMonad.Util.EZConfig (additionalKeysP)
 import XMonad.Util.Run (spawnPipe)
@@ -1998,19 +2024,37 @@ myXMessage :: String
 myXMessage = "xmessage -default okay -bg black -fg white"
 #+end_src
 
+***** Tab Config
+#+begin_src haskell
+myTabConfig = def { activeColor = "#556064"
+                  , inactiveColor = "#2F3D44"
+                  , urgentColor = "#FDF6E3"
+                  , activeBorderColor = "#454948"
+                  , inactiveBorderColor = "#454948"
+                  , urgentBorderColor = "#268BD2"
+                  , activeTextColor = "#80FFF9"
+                  , inactiveTextColor = "#1ABC9C"
+                  , urgentTextColor = "#1ABC9C"
+                  , fontName = "xft:RobotoMono Nerd Font:size=20:weight=bold"
+                  , decoHeight = 35
+                  }
+subTabbed2 :: (Eq a, LayoutModifier (Sublayout Simplest) a, LayoutClass l a) =>
+    l a -> ModifiedLayout (Decoration TabbedDecoration DefaultShrinker)
+                          (ModifiedLayout (Sublayout Simplest) l) a
+subTabbed2 x = addTabs shrinkText myTabConfig $ subLayout [] Simplest x
+#+end_src
+
 ***** Layouts
 #+begin_src haskell
 tall         = limitWindows 6
              $ avoidStruts
              $ spacingWithEdge 30
-             -- $ windowNavigation
-             $ subTabbed
-             $ boringWindows
+             $ subTabbed2
              $ mkToggle (single NBFULL)
              $ ResizableTall 1 (3/100) (1/2) []
              -- $ mouseResizableTile{ draggerType = FixedDragger }
 
-myLayoutHook = noBorders $ hiddenWindows $ tall ||| Full
+myLayoutHook = noBorders $ windowNavigation $ boringWindows $ hiddenWindows $ tall ||| Full
 #+end_src
 
 ***** Scratchpads
@@ -2102,9 +2146,15 @@ myKeys = [
 
   -- Tabs --
   , ("M-o", withFocused (sendMessage . MergeAll))
-  , ("M-S-o", withFocused (sendMessage . UnMerge))
+  , ("M-S-o", withFocused (sendMessage . UnMergeAll))
+  , ("M-C-h", sendMessage $ pullGroup L)
+  , ("M-C-l", sendMessage $ pullGroup R)
   , ("M-C-k", sendMessage $ pullGroup U)
   , ("M-C-j", sendMessage $ pullGroup D)
+  -- , ("M-C-S-h", 
+  -- , ("M-C-S-l", 
+  -- , ("M-C-S-k", 
+  -- , ("M-C-S-j", 
   , ("M-C-.", onGroup focusUp')
   , ("M-C-,", onGroup focusDown')
 
@@ -2161,6 +2211,7 @@ main = do
     workspaces         = ["1","2","3","4","5","6","7","8","9"],
     normalBorderColor  = "#dddddd",
     focusedBorderColor = "#ff6666",
+    
     -- hooks, layouts
     layoutHook         = myLayoutHook,
     manageHook         = myManageHook,
@@ -2838,15 +2889,22 @@ $INSTALL cava
 $INSTALL alsi
 #+end_src
 
+*** Ahoviewer
+#+begin_src bash
+$INSTALL ahoviewer-git
+#+end_src
+
+
 *** Emacs
 **** Install
 #+begin_src bash
 $INSTALL emacs28-git
 #+end_src
 
-**** Ahoviewer
-#+begin_src bash
-$INSTALL ahoviewer-git
+**** Alias
+#+begin_src bash :tangle ~/.zshrc
+alias emacs="devour emacs"
+alias emacsclient="devour emacsclient"
 #+end_src
 
 **** Apply Theme
@@ -3199,10 +3257,7 @@ $INSTALL nsxiv
 #+end_src
 
 **** Alias
-:PROPERTIES:
-:header-args:bash: :tangle ~/.zshenv
-:END:
-#+begin_src bash
+#+begin_src bash :tangle ~/.zshrc
 alias nsxiv="devour nsxiv -ab -s f"
 #+end_src
 

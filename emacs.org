@@ -297,8 +297,8 @@ Makes popup windows appear in new windows rather than frames
   (doom-modeline-gnus-timer nil)
   (doom-modeline-github-timer nil)
   (doom-modeline-buffer-encoding nil))
-(set-face-attribute 'mode-line nil :height 0.9)
-(set-face-attribute 'mode-line-inactive nil :height 0.9)
+  ;; (set-face-attribute 'mode-line nil :height 0.9)
+  ;; (set-face-attribute 'mode-line-inactive nil :height 0.9)
 #+end_src
 
 ** Desktop Environment

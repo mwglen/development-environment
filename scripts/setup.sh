@@ -127,8 +127,9 @@ sudo chgrp video /sys/class/backlight/intel_backlight/brightness && true
 
 $INSTALL brightnessctl
 
-git clone https://github.com/CameronNemo/brillo $REPOSITORIES/brillo && true
-cd $REPOSITORIES/brillo && sudo make install
+$INSTALL brillo
+
+brillo -qc -S 50
 
 $INSTALL cups sane python-pillow simple-scan
 sudo systemctl enable cups
@@ -286,9 +287,9 @@ $INSTALL cava
 
 $INSTALL alsi
 
-$INSTALL emacs28-git
-
 $INSTALL ahoviewer-git
+
+$INSTALL emacs28-git
 
 ln $DIR/doom-moonless-theme.el ~/.emacs.d/doom-moonless-theme.el
 
