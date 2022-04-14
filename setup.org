@@ -99,7 +99,7 @@ mkdir -p $XDG_VIDEOS_DIR
 
 ** ZSH Config
 :PROPERTIES:
-:header-args:bash: :tangle ~/.zshrc
+:header-args:bash: :tangle (concat (getenv "XDG_CONFIG_HOME") "/zsh/.zshrc")
 :END:
 *** General
 #+begin_src bash
@@ -115,7 +115,7 @@ SAVEHIST="10000"
 HISTFILE="$XDG_STATE_HOME/zsh/history"
 mkdir -p "$(dirname "$HISTFILE")"
 
-zstyle :compinstall filename '~/.zshrc'
+zstyle :compinstall filename '$XDG_CONFIG_HOME/zsh/.zshrc'
 autoload -Uz compinit; compinit
 source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
@@ -273,6 +273,73 @@ export SEARCH="yay -Qs"
 *** Update Packages
 #+begin_src bash
 $UPDATE
+#+end_src
+
+** Pacman Config
+:PROPERTIES:
+:header-args:conf: :tangle /sudo:://etc/pacman.conf
+:END:
+*** Options
+#+begin_src conf
+[options]
+HoldPkg     = pacman glibc
+Architecture = auto
+
+# Pacman won't upgrade packages listed in IgnorePkg and members of IgnoreGroup
+#IgnorePkg   =
+#IgnoreGroup =
+
+#NoUpgrade   =
+#NoExtract   =
+
+CheckSpace
+
+SigLevel    = Required DatabaseOptional
+LocalFileSigLevel = Optional
+#+end_src
+
+*** Add Core Repositories
+#+begin_src conf
+[core]
+Include = /etc/pacman.d/mirrorlist
+
+[extra]
+Include = /etc/pacman.d/mirrorlist
+
+[community]
+Include = /etc/pacman.d/mirrorlist
+#+end_src
+
+*** Add Multilib
+#+begin_src conf
+#[multilib-testing]
+#Include = /etc/pacman.d/mirrorlist
+
+[multilib]
+Include = /etc/pacman.d/mirrorlist
+#+end_src
+
+*** Add Chaotic AUR
+**** Install Keys
+#+begin_src bash
+sudo pacman-key --recv-key FBA220DFC880C036 --keyserver keyserver.ubuntu.com
+sudo pacman-key --lsign-key FBA220DFC880C036
+sudo pacman -U 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst' 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
+#+end_src
+
+**** Update Pacman.conf
+Install keys before updating pacman.conf
+
+#+begin_src conf
+[chaotic-aur]
+Include = /etc/pacman.d/chaotic-mirrorlist
+#+end_src
+
+*** Add Custom Repository
+#+begin_src conf
+[mwglen-arch-repo]
+SigLevel = Never
+Server = https://raw.githubusercontent.com/mwglen/arch-repo/master/x86_64/
 #+end_src
 
 ** Fundamental Packages
@@ -632,8 +699,8 @@ This prevents brillo from setting the backlight completely off (which can cause 
     - *c*: target minimum value
     - *S*: set command
 
-#+begin_src bash
-brillo -qc -S 50
+#+begin_src bash :tangle ~/.xprofile
+brillo -qc -S 70
 #+end_src
 
 ***** Set XF86 Keys
@@ -711,12 +778,11 @@ export XDG_TEMPLATES_DIR="$HOME/Templates"
 export XDG_VIDEOS_DIR="$HOME/Videos"
 #+end_src
 
-**** Environment Config
+**** Aliases
 :PROPERTIES:
-:header-args:bash: :tangle ~/.zshenv
+:header-args:bash: :tangle (concat (getenv "XDG_CONFIG_HOME") "/zsh/.zshrc")
 :END:
 #+begin_src bash
-source $HOME/.profile
 alias ls="ls --color=auto --group-directories"
 alias ll="ls -alh"
 alias la="ls -A"
@@ -727,6 +793,20 @@ alias egrep="egrep --color=auto"
 alias fgrep="fgrep --color=auto"
 alias services="systemctl list-unit-files --state=enabled"
 alias ip="ip -color=auto"
+alias du="du -sh"
+alias v="nvim"
+#alias -s {md,org,txt,sh,rs,xml,txt\'}=nvim
+#alias -s {png}=nsxiv
+#alias -s {pdf}=firefox
+#+end_src
+
+**** Environment Config
+:PROPERTIES:
+:header-args:bash: :tangle ~/.zshenv
+:END:
+#+begin_src bash
+source $HOME/.profile
+ZDOTDIR=~/.config/zsh
 #+end_src
 
 **** Pure (ZSH Theme)
@@ -835,6 +915,11 @@ $INSTALL exfatprogs
 $INSTALL ntfs-3g
 #+end_src
 
+*** Cryfs
+#+begin_src bash
+$install cryfs
+#+end_src
+
 *** VHD and VHDX Support
 #+begin_src bash
 $INSTALL libguestfs
@@ -847,53 +932,70 @@ $INSTALL mtpfs
 
 *** Udisks
 #+begin_src bash
-$INSTALL udisks2
+$INSTALL udisks2 udiskie
 #+end_src
 
 ** Syncing Emails to a Local Directory
-*** Install Isync
-*NOTE*: ~isync~ gives us the ~mbsync~ utility
-#+begin_src bash
-$INSTALL isync
-#+end_src
-
-*** Configure Mbsync
-*NOTE*: Different distributions of linux might place the certificate file at a different location.
-:PROPERTIES:
-:header-args:conf: :tangle ~/.mbsyncrc
-:END:
-#+begin_src conf
-IMAPAccount gmail
-Host imap.gmail.com
-User mwg2202@gmail.com
-PassCmd ""
-SSLType IMAPS
-CertificateFile /etc/ssl/certs/ca-certificates.crt
-
-IMAPStore gmail-remote
-Account gmail
-
-MaildirStore gmail-local
-Subfolders Verbatim
-Path ~/personal-documents/Mail/
-Inbox ~/personal-documents/Mail/Inbox
-
-Channel gmail
-Master :gmail-remote:
-Slave :gmail-local:
-Patterns * ![Gmail]* "[Gmail]/Sent Mail" "[Gmail]/Starred" "[Gmail]/All Mail" "[Gmail]/Trash"
-Create Both
-SyncState *
-#+end_src
-
-*** Create a Local Folder to Hold Emails
+*** Create a Folder to Hold Emails
 #+begin_src bash
 mkdir -p ~/personal-documents/Mail
 #+end_src
 
-*** Run Mbsync
-#+begin_src bash :tangle no
-mbsync -a
+*** Notmuch
+#+begin_src bash
+$INSTALL notmuch gmailieer
+#+end_src
+**** Configuration
+#+begin_src conf :tangle ~/.notmuch-config
+[database]
+path=/home/mwglen/Mail
+
+[user]
+name=Matthew Glen
+primary_email=mwg2202@gmail.com
+other_email=mwg2202@yahoo.com;mwglen@ncsu.edu;
+
+[new]
+tags=new;
+ignore=.stfolder;/.*[.](json|lock|bak)$/;
+
+[search]
+# exclude_tags=spam;junk;
+
+[maildir]
+#+end_src
+
+*** Lieer
+**** Install
+#+begin_src bash
+$INSTALL gmailieer
+#+end_src
+
+**** Make Directory
+#+begin_src bash
+mkdir ~/Mail/account.gmail
+#+end_src
+
+**** Configuration
+#+begin_src bash
+gmi init mwg2202@gmail.com
+gmi pull
+#+end_src
+
+*** NeoMutt
+**** Install
+#+begin_src bash
+$INSTALL neomutt
+#+end_src
+
+**** RC File
+:PROPERTIES:
+:header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/neomutt/neomuttrc")
+:END:
+#+begin_src conf
+set virtual_spoolfile
+set nm_default_url = "notmuch:///home/mwglen/Mail"
+virtual-mailboxes "new" "notmuch://?query=tag:new"
 #+end_src
 
 ** Converting ICS format to Org
@@ -935,9 +1037,8 @@ $INSTALL stalonetray
 
 ** Polybar
 *** Install
-Polybar-git is used for the wm-restack=generic feature
 #+begin_src bash
-$INSTALL polybar-git
+$INSTALL polybar
 #+end_src
 
 **** Configuration
@@ -1581,49 +1682,47 @@ user_image        = /usr/share/pixmaps/archlinux-user.svg
 $INSTALL picom-jonaburg-git
 #+end_src
 
-**** Configuration (picom-jonaburg-git)
+**** Configuration
 :PROPERTIES:
 :header-args:conf: :tangle (concat (getenv "XDG_CONFIG_HOME") "/picom.conf")
 :END:
+***** Animations
 #+begin_src conf
-#################################
-#          Animations           #
-#################################
 transition-length = 300
 transition-pow-x = 0.1
 transition-pow-y = 0.1
 transition-pow-w = 0.1
 transition-pow-h = 0.1
 size-transition = true
+#+end_src
 
-#################################
-#             Shadows           #
-#################################
+***** Shadows
+#+begin_src conf
 shadow = true;
 shadow-radius = 40;
 shadow-opacity = .90;
 shadow-offset-x = -8;
 shadow-offset-y = -8;
-# no-dock-shadow = false
 # no-dnd-shadow = false
 
 shadow-exclude = [
   "class_g = 'Polybar'",
+  "class_g = 'conky'",
   "_GTK_FRAME_EXTENTS@:c"
 ];
+#+end_src
 
-#################################
-#             Fading            #
-#################################
+***** Fading
+#+begin_src conf
 fading = true;
 fade-exclude = [
+  "class_g = 'conky'",
   "class_g = 'slop'"   # maim
 ]
+#+end_src
 
-
-#################################
-#   Transparency / Opacity      #
-#################################
+***** Transparency/Opacity
+#+begin_src conf
 # only the first rule matching a window will be applied to that window
 opacity-rule = [
   "100:class_g = 'dmenu'",
@@ -1638,14 +1737,15 @@ opacity-rule = [
 
 opacity-exlcude = [
   "class_g = 'Alacritty'",
+  "class_g = 'conky'",
 ];
 
 #popup_menu = { opacity = 0.8; }
 #dropdown_menu = { opacity = 0.8; }
+#+end_src
 
-#################################
-#     Background-Blurring       #
-#################################
+***** Background-Blurring
+#+begin_src conf
 blur: {
   method = "kawase";
   strength = 7;
@@ -1658,12 +1758,13 @@ blur: {
 blur-background-exclude = [
   "class_g = 'slop'",
   "class_i = 'tray'", # Needed or else polybar's tray blurs twice
-  "_GTK_FRAME_EXTENTS@:c"
+  "_GTK_FRAME_EXTENTS@:c",
+  "class_i = 'Conky'"
 ];
+#+end_src
 
-#################################
-#       General Settings        #
-#################################
+***** General Settings
+#+begin_src conf
 experimental-backends = true;
 backend = "glx";
 vsync = true
@@ -1856,10 +1957,14 @@ optimus-manager-qt &
 nm-applet &
 hp-systray &
 flameshot &
+udiskie -a -t &
 #+end_src
 
 **** Alias xmessage
-#+begin_src bash :tangle ~/.zshrc
+:PROPERTIES:
+:header-args:bash: :tangle (concat (getenv "XDG_CONFIG_HOME") "/zsh/.zshrc")
+:END:
+#+begin_src bash
 alias xmessage="xmessage -default okay -bg black -fg white"
 #+end_src
 
@@ -2061,7 +2166,9 @@ myTabConfig = def { inactiveColor       = "#222222"
                   , decoHeight = 35
                   , decoWidth  = 90
                   }
-subTabbed :: (Eq a, LayoutModifier (Sublayout Simplest) a, LayoutClass l a) =>
+subTabbed :: (Eq a, LayoutModifier
+              (Sublayout Simplest) a,
+              LayoutClass l a) =>
     l a -> ModifiedLayout (Decoration TabbedDecoration DefaultShrinker)
                           (ModifiedLayout (Sublayout Simplest) l) a
 subTabbed x = addTabs shrinkText myTabConfig $ subLayout [] Simplest x
@@ -2121,6 +2228,7 @@ myManageHook = composeAll
     , className =? "pinentry-gtk-2" --> doFloat 
     , className =? "splash"         --> doFloat 
     , className =? "toolbar"        --> doFloat 
+    -- , className =? "conky"          --> doFloat 
     , resource  =? "download"       --> doIgnore
     , (className =? "firefox" <&&> resource =? "Dialog") --> doFloat 
     ] <+> namedScratchpadManageHook scratchpads
@@ -2131,6 +2239,10 @@ myManageHook = composeAll
 myStartupHook :: X ()
 myStartupHook = do
   spawnOnce "/usr/bin/emacs --daemon"
+
+  -- Start Conky
+  spawn "killall conky"
+  spawn ("sleep 2 && conky -c ~/.config/conky/sysinfo.lua")
 #+end_src
 
 ***** Keybindings
@@ -2188,7 +2300,6 @@ myKeys = [
 
   -- Act on Workspaces --
   -- , ("M-S-r", singleLineDmenu "Window Name")
-
   
   -- Resize Windows --
   , ("M-n", refresh)
@@ -2232,7 +2343,7 @@ main = do
     clickJustFocuses   = True,
     borderWidth        = 1,
     modMask            = mod4Mask,
-    workspaces         = ["1","2","3","4","5","6","7","8","9"],
+    -- workspaces         = ["1","2","3","4","5","6","7","8","9"],
     normalBorderColor  = "#dddddd",
     focusedBorderColor = "#ff6666",
     
@@ -2824,6 +2935,167 @@ $INSTALL wine-staging wine-gecko wine-mono
      #+end_src
 
 ** Applications
+*** Aerospace Engineering Applications
+*XFoil:* Program for design and analysis of subsonic airfoils
+*OpenVSP:* Allows the user to create a 3D model of an aircraft defined by common engineering parameters
+#+begin_src bash
+$INSTALL xfoil openvsp-git
+#+end_src
+
+*** Todoist
+#+begin_src bash
+$INSTALL todoist-electron
+#+end_src
+
+*** Krita
+#+begin_src bash
+$INSTALL krita
+#+end_src
+
+*** Conky
+#+begin_src bash
+$INSTALL conky
+#+end_src
+
+**** System Info Window
+:PROPERTIES:
+:header-args:lua: :tangle (concat (getenv "XDG_CONFIG_HOME") "/conky/sysinfo.lua")
+:END:
+#+begin_src lua
+conky.config = {
+   -- Window Properties
+   own_window             = true,
+   own_window_type        = 'dock',
+   own_window_class       = 'Conky',
+   own_window_title       = 'Sysinfo Conky',
+   own_window_hints       = 'undecorated,below,skip_taskbar,skip_pager',
+   own_window_transparent = true,
+   own_window_colour      = '000000',
+
+   -- XFT
+   use_xft  = true,
+   font     = 'RobotoMono Nerd Font:size=9',
+   xftalpha = 0.1,
+
+   -- Size & Alignment
+   maximum_width   = 315,
+   minimum_width   = 315,
+   minimum_height  = 950,
+   alignment       = 'top_left',
+   gap_x           = 30,
+   gap_y           = 15,
+   update_interval = 1.0,
+
+   -- Shades & Borders
+   draw_graph_borders    = false,
+   draw_shades           = true,
+   default_shade_color   = '000000',
+    
+   -- Misc
+   override_utf8_locale = true,
+   cpu_avg_samples      = 2,
+   net_avg_samples      = 1,
+
+   total_run_times  = 0,
+   double_buffer    = true,
+   no_buffers       = true,
+   use_spacer       = 'left',
+   text_buffer_size = 256,
+   
+    -- Colors
+    color2 = 'B4C3CA', -- LightBlue
+    color3 = 'white',
+    color4 = '3daee9', -- DarkBlue
+    color5 = 'GreenYellow',
+    color6 = 'DarkOrange',
+    color7 = 'DarkRed'
+
+}
+
+adp = 'BAT0'
+function reset_font()
+   return '${font ' .. conky.config.font .. '}${color3}'
+end
+
+function h1(name)
+   return '\n' .. '${font RobotoMono Nerd Font:bold:size=10}${color3}' ..
+      name .. '${color2}${hr 2}' .. reset_font() .. '\n'
+end
+
+-- function h2(namel, namer)
+--    return '${alignr}${font Noto Sans UI'
+-- end
+
+battery_module =
+   h1('BATTERY') .. adp .. [[
+${alignr}${font Noto Sans UI:size=6}${font}${execi 60 acpi | grep -Eo '\w+,' | grep -Eo '\w+'}
+${color green}${voffset 2}${if_match ${battery_percent}<=20}${color7}${battery_bar 10}${else}${if_match ${battery_percent}<=50}${color6}${battery_bar 10}${else}${if_match ${battery_percent}<=90}${color5}${battery_bar 10}${else}${if_match ${battery_percent}>90}${color4}${battery_bar 10}${endif}${endif}${endif}${endif}
+]] .. reset_font() .. [[
+${battery_percent}% ${alignr}Time Remaining: ${execi 60 acpi | grep -Eo '(:?[0-9]+){3}'}
+]]
+   -- h2(adp, [[${execi 60 acpi | grep -Eo '\w+,' | grep -Eo '\w+'}]])
+
+drives_module =
+   h1('DRIVES') .. [[
+/ $alignr ${fs_used /} / ${fs_size /} 
+${color4}${fs_bar 10 /}
+${color1}READ ${diskio_read /dev/nvme0n1p3} $alignr ${color1} WRITE ${diskio_write /dev/nvme0n1p3}
+]]
+
+system_info_module =
+   h1('SYSTEM INFO') .. [[
+$nodename 
+Operating System:$alignr${execi 999999 lsb_release -ds |  tr -d \"}
+Kernel:$alignr$sysname $kernel
+Architecture:$alignr $machine
+Uptime: $alignr${uptime}
+Temp: ${alignr}${acpitemp}C
+#Load: ${color}${alignr}${loadavg}
+]]
+
+memory_module =
+   h1('MEMORY') .. [[
+#${execi 999999 dmidecode --type 17 | grep -m 1 "Type:" | cut -d' ' -f2-} $alignc $mem / $memmax $alignr $memperc%
+DDR4 $alignc $mem / $memmax $alignr $memperc%
+${color green}${if_match ${memperc}<=50}${color4}${membar 10,} ${else}${if_match ${memperc}<=70}${color5}${membar 10,} ${else}${if_match ${memperc}<=90}${color6}${membar 10,} ${else}${if_match ${memperc}>90}${color7}${membar 10,}${endif}${endif}${endif}${endif}${color}
+]]
+
+cpu_module =
+   h1('CPU') .. [[
+${execi 999999 cat /proc/cpuinfo | grep -m 1 'model name' | cut -d' ' -f3-}
+${color green}${if_match ${cpu}<=50}${color4}${cpubar 10,} ${else}${if_match ${cpu}<=70}${color5}${cpubar 10,} ${else}${if_match ${cpu}<=90}${color6}${cpubar 10,} ${else}${if_match ${cpu}>90}${color7}${cpubar 10,}${endif}${endif}${endif}${endif}${color}
+${freq_g cpu0}Ghz${alignr}${cpu}%
+]]
+
+swap_module =
+   h1('SWAP') .. [[
+$swap / $swapmax $alignr $swapperc%
+${color green}${if_match ${swapperc}<=50}${color4}${swapbar 10,} ${else}${if_match ${swapperc}<=70}${color5}${swapbar 10,} ${else}${if_match ${swapperc}<=90}${color6}${swapbar 10,} ${else}${if_match ${swapperc}>90}${color7}${swapbar 10,}${endif}${endif}${endif}${endif}${color}
+]]
+
+processes_module =
+   h1('PROCESSES') .. [[
+${font}CPU${goto 165}RAM${font Noto Sans UI:size=7}
+${voffset 3}$font$color3${top name 1}${goto 110}$color2${top cpu 1}%${goto 165}$color3${top_mem name 1}$color2${goto 270}${top_mem mem_res 1}$color3${top name 2}${goto 110}$color2${top cpu 2}%${goto 165}$color3${top_mem name 2}$color2${goto 270}${top_mem mem_res 2}
+$color3${top name 3}${goto 110}$color2${top cpu 3}%${goto 165}$color3${top_mem name 3}$color2${goto 270}${top_mem mem_res 3}
+$color3${top name 4}${goto 110}$color2${top cpu 4}%${goto 165}$color3${top_mem name 4}$color2${goto 270}${top_mem mem_res 4}
+$color3${top name 5}${goto 110}$color2${top cpu 5}%${goto 165}$color3${top_mem name 5}$color2${goto 270}${top_mem mem_res 5}
+$color3${top name 6}${goto 110}$color2${top cpu 6}%${goto 165}$color3${top_mem name 6}$color2${goto 270}${top_mem mem_res 6}
+$color3${top name 7}${goto 110}$color2${top cpu 7}%${goto 165}$color3${top_mem name 7}$color2${goto 270}${top_mem mem_res 7}
+$color3${top name 8}${goto 110}$color2${top cpu 8}%${goto 165}$color3${top_mem name 8}$color2${goto 270}${top_mem mem_res 8}
+$color3${top name 9}${goto 110}$color2${top cpu 9}%${goto 165}$color3${top_mem name 9}$color2${goto 270}${top_mem mem_res 9}
+]]
+
+conky.text =
+   system_info_module ..
+   battery_module     ..
+   drives_module      ..
+   cpu_module         ..
+   memory_module      ..
+   swap_module        ..
+   processes_module
+#+end_src
+
 *** Pandoc
 #+begin_src bash
 $INSTALL pandoc
@@ -2842,7 +3114,7 @@ $INSTALL rmtrash
 
 **** Alias
 :PROPERTIES:
-:header-args:bash: :tangle ~/.zshrc
+:header-args:bash: :tangle (concat (getenv "XDG_CONFIG_HOME") "/zsh/.zshrc")
 :END:
 #+begin_src bash
 alias rm="rmtrash"
@@ -2926,7 +3198,10 @@ $INSTALL emacs28-git
 #+end_src
 
 **** Alias
-#+begin_src bash :tangle ~/.zshrc
+:PROPERTIES:
+:header-args:bash: :tangle (concat (getenv "XDG_CONFIG_HOME") "/zsh/.zshrc")
+:END:
+#+begin_src bash
 alias emacs="devour emacs"
 alias emacsclient="devour emacsclient"
 #+end_src
@@ -3281,7 +3556,10 @@ $INSTALL nsxiv
 #+end_src
 
 **** Alias
-#+begin_src bash :tangle ~/.zshrc
+:PROPERTIES:
+:header-args:bash: :tangle (concat (getenv "XDG_CONFIG_HOME") "/zsh/.zshrc")
+:END:
+#+begin_src bash
 alias nsxiv="devour nsxiv -ab -s f"
 #+end_src
 
@@ -3349,7 +3627,10 @@ sudo pip3 install wpgtk
 #+end_src
 
 ***** Add Colorscheme to All Terminals
-#+begin_src bash :tangle ~/.zshrc
+:PROPERTIES:
+:header-args:bash: :tangle (concat (getenv "XDG_CONFIG_HOME") "/zsh/.zshrc")
+:END:
+#+begin_src bash
 # Use pywal colorscheme
 (cat ~/.cache/wal/sequences &)
 
@@ -3489,7 +3770,6 @@ Plug 'tpope/vim-repeat'
 Plug 'nvim-treesitter/nvim-treesitter'
 Plug 'nvim-orgmode/orgmode'
 Plug 'akinsho/org-bullets.nvim'
-     
 call plug#end()
 #+end_src
 
@@ -3577,10 +3857,9 @@ set guifont=RobotoMono\ Nerd\ Font:h10
 set guifontwide=RobotoMono\ Nerd\ Font:h11.5
 
 " Make autocomplete better:
-"   - First tab completes as much as possible
-"   - Second tab provides a list
-"   - Third and subsequent tabs cycle through completion options
-set wildmode=longest,list,full
+"   - First tab completes as much as possible and provides list
+"   - Second and subsequent tabs cycle through completion options
+set wildmode=list:longest,full
 set wildmenu
 
 " %s/ctermbg=\(NONE\|\d\) ctermfg=\(NONE\|\d\).*/& guibg=\1 guifg=\2

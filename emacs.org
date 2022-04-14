@@ -1148,6 +1148,11 @@ Allows you to quckly find definitions.
   (setq vterm-max-scrollback 10000))
 #+end_src
 
+** Notmuch Integration
+#+begin_src emacs-lisp
+(use-package notmuch)
+#+end_src
+
 ** Closing Configuration
 *** Reduce Garbage Collector Threshold
 #+begin_src emacs-lisp

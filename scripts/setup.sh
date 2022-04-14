@@ -43,6 +43,10 @@ export SEARCH="yay -Qs"
 
 $UPDATE
 
+sudo pacman-key --recv-key FBA220DFC880C036 --keyserver keyserver.ubuntu.com
+sudo pacman-key --lsign-key FBA220DFC880C036
+sudo pacman -U 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst' 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
+
 $INSTALL git openssh
 mkdir -p "$XDG_CONFIG_HOME"/git
 touch "$XDG_CONFIG_HOME"/git/config
@@ -142,8 +146,6 @@ $INSTALL brightnessctl
 
 $INSTALL brillo
 
-brillo -qc -S 50
-
 $INSTALL cups sane python-pillow simple-scan
 sudo systemctl enable cups
 
@@ -167,15 +169,26 @@ $INSTALL exfatprogs
 
 $INSTALL ntfs-3g
 
+$install cryfs
+
 $INSTALL libguestfs
 
 $INSTALL mtpfs
 
-$INSTALL udisks2
-
-$INSTALL isync
+$INSTALL udisks2 udiskie
 
 mkdir -p ~/personal-documents/Mail
+
+$INSTALL notmuch gmailieer
+
+$INSTALL gmailieer
+
+mkdir ~/Mail/account.gmail
+
+gmi init mwg2202@gmail.com
+gmi pull
+
+$INSTALL neomutt
 
 $INSTALL ruby
 gem install date icalendar optparse tzinfo
@@ -186,7 +199,7 @@ $INSTALL linux-wifi-hotspot
 
 $INSTALL stalonetray
 
-$INSTALL polybar-git
+$INSTALL polybar
 
 curl https://raw.githubusercontent.com/unode/polypomo/master/polypomo > $XDG_CONFIG_HOME/polybar/scripts/polypomo
 chmod +x $XDG_CONFIG_HOME/polybar/scripts/polypomo
@@ -275,6 +288,14 @@ $INSTALL wine-staging wine-gecko wine-mono
 $INSTALL nmap
 
 $INSTALL tcpdump
+
+$INSTALL xfoil openvsp-git
+
+$INSTALL todoist-electron
+
+$INSTALL krita
+
+$INSTALL conky
 
 $INSTALL pandoc
 
