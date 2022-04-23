@@ -779,6 +779,8 @@ export XDG_VIDEOS_DIR="$HOME/Videos"
 :header-args:bash: :tangle (concat (getenv "XDG_CONFIG_HOME") "/zsh/.zshrc")
 :END:
 #+begin_src bash
+alias config="/usr/bin/git --git-dir=$HOME/.dotfiles --work-tree=$HOME"
+
 alias ls="ls --color=auto --group-directories"
 alias ll="ls -alh"
 alias la="ls -A"
@@ -1549,7 +1551,6 @@ gtk-cursor-theme-name=phinger-cursors
 :header-args:conf: :tangle ~/.gtkrc-2.0
 :END:
 #+begin_src conf
-[Settings]
 gtk-icon-theme-name = "Materia"
 gtk-theme-name = "Materia"
 gtk-application-prefer-dark-theme = "true"
@@ -2180,7 +2181,9 @@ tall         = limitWindows 6
              $ ResizableTall 1 (3/100) (1/2) []
              -- $ mouseResizableTile{ draggerType = FixedDragger }
 
-myLayoutHook = noBorders $ windowNavigation $ boringWindows $ hiddenWindows $ tall ||| Full
+full         = Full
+
+myLayoutHook = noBorders $ windowNavigation $ boringWindows $ hiddenWindows $ tall ||| full
 #+end_src
 
 ***** Scratchpads

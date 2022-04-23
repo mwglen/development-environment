@@ -109,8 +109,6 @@ $INSTALL pipewire wireplumber pipewire-alsa pipewire-pulse pipewire-jack
 
 $INSTALL pulseaudio-control
 
-$INSTALL galaxybudsclient-bin
-
 $INSTALL bluez bluez-utils
 sudo systemctl enable bluetooth
 
@@ -305,8 +303,6 @@ $INSTALL rmtrash
 
 $INSTALL mimeo
 
-$INSTALL indicator-stickynotes
-
 $INSTALL anki
 
 $INSTALL dolphin
@@ -323,7 +319,7 @@ $INSTALL alsi
 
 $INSTALL ahoviewer-git
 
-$INSTALL emacs28-git
+$INSTALL emacs-git
 
 ln $DIR/doom-moonless-theme.el ~/.emacs.d/doom-moonless-theme.el
 
@@ -365,10 +361,6 @@ $INSTALL redshift
 
 $INSTALL obs-studio
 
-$INSTALL podman podman-compose podman-docker
-echo "unqualified-search-registries = ['docker.io']" \
-    | sudo tee /etc/containers/registries.conf
-
 $INSTALL devour
 
 $INSTALL nsxiv
@@ -387,9 +379,6 @@ sudo pip3 install wpgtk
 
 $INSTALL python-pywalfox
 sudo pywalfox install
-
-$INSTALL betterdiscord-installer-bin pywal-discord-git
-pywal-discord -d
 
 $INSTALL neovim neovide-git
 mkdir -p $XDG_CONFIG_HOME/nvim
