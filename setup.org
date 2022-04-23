@@ -499,10 +499,6 @@ $INSTALL pipewire wireplumber pipewire-alsa pipewire-pulse pipewire-jack
 $INSTALL pulseaudio-control
 #+end_src
 
-**** Galaxy Live Buds
-#+begin_src bash
-$INSTALL galaxybudsclient-bin
-#+end_src
 
 *** Bluetooth
 #+begin_src bash
@@ -876,35 +872,6 @@ force security mode = 777
 force directorry security mode = 777
 #+end_src
 
-*** TODO Auto Mount Daemon
-#+begin_src bash :tangle no
-$INSTALL autofs
-sudo mkdir -p /misc/android
-#+end_src
-
-**** Autofs Config
-:PROPERTIES:
-:header-args:conf: :tangle /sudo:://etc/autofs/auto.misc
-:END:
-#+begin_src conf :tangle no
-#
-# This is an automounter map and it has the following format
-# key [ -mount-options-separated-by-comma ] location
-# Details may be found in the autofs(5) manpage
-
-cd		-fstype=iso9660,ro,nosuid,nodev         :/dev/cdrom
-android         -fstype=fuse,allow_other,umask=000      :mtpfs
-
-# the following entries are samples to pique your imagination
-#linux		-ro,soft		ftp.example.org:/pub/linux
-#boot		-fstype=ext2		:/dev/hda1
-#floppy		-fstype=auto		:/dev/fd0
-#floppy		-fstype=ext2		:/dev/fd0
-#e2floppy	-fstype=ext2		:/dev/fd0
-#jaz		-fstype=ext2		:/dev/sdc1
-#removable	-fstype=ext2		:/dev/hdd
-#+end_src
-
 *** exFAT Support
 #+begin_src bash
 $INSTALL exfatprogs
@@ -1055,27 +1022,7 @@ margin-top = 0
 margin-bottom = 0
 #+end_src
 
-***** Themes
-****** Moonless
-#+begin_src conf :tangle no
-[colors]
-background = #00000000
-foreground = #c5c8c6
-green = #b5bd68
-yellow = #f0c674
-violet = #b294bb
-blue = #81a2be
-red = #cc6666
-grey = #6b6b6b
-
-primary = red
-secondary = green
-ternary = blue
-foreground-alt = grey
-alert = #cc6666
-#+end_src
-
-****** Pywal
+***** Colors
 #+begin_src conf
 [colors]
 background = ${xrdb:color0:#222}
@@ -1094,6 +1041,7 @@ green = #b5bd68
 ; red = #cc6666
 grey = #6b6b6b
 #+end_src
+
 ***** Panels
 ****** EXWM Panel
 #+begin_src conf
@@ -1945,8 +1893,9 @@ $INSTALL xorg dbus xorg-xrdb xorg-transset wmctrl xorg-xmessage xclip
 # Display
 xrandr --dpi 200 --output eDP-1 --primary --mode 3840x2160 --pos 0x0 --rotate normal --output DP-1 --off --output HDMI-1 --off
 picom -b
-wal -i $BACKGROUNDS/nge.jpeg -n
+wal -i $BACKGROUNDS/nge.jpeg -n -o "~/.config/conky/pywal_conky.py"
 feh --bg-scale $BACKGROUNDS/nge.jpeg
+python ~/.config/conky/pywal_conky.py
 
 # Keybindings
 xbindkeys
@@ -2064,8 +2013,11 @@ $INSTALL xmonad-git xmonad-contrib-git
 -- Base
 import XMonad
 import System.Exit (exitSuccess)
-import XMonad.StackSet (swapUp, swapDown, swapMaster, focusUp, focusDown, focusMaster, sink, RationalRect(..), focusUp', focusDown')
+import XMonad.StackSet (RationalRect(..), StackSet)
+import qualified XMonad.StackSet as W
 import Data.List
+import Data.Maybe ( isNothing, fromJust)
+import qualified Data.Set as S
 import GHC.IO.Handle (hGetLine)
 
 -- Actions
@@ -2139,6 +2091,44 @@ import Foreign.C.Types (CLong)
 -- import XMonad.Hooks.FadeInactive
 import XMonad.Actions.WorkspaceNames
   
+#+end_src
+
+***** Ignore Floats on Focus Up and Down
+#+begin_src haskell :tangle no
+skipFloating :: (Eq a, Ord a) => StackSet i l a s sd -> (StackSet i l a s sd -> StackSet i l a s sd) -> StackSet i l a s sd
+skipFloating stacks f
+    | isNothing curr = stacks -- short circuit if there is no currently focused window
+    | otherwise = skipFloatingR stacks curr f
+  where curr = W.peek stacks
+
+skipFloatingR :: (Eq a, Ord a) => StackSet i l a s sd -> (Maybe a) -> (StackSet i l a s sd -> StackSet i l a s sd) -> StackSet i l a s sd
+skipFloatingR stacks startWindow f
+  
+    -- next window is nothing return current stack set
+    | isNothing nextWindow = stacks
+    
+    -- if next window is the starting window then
+    -- return the new stack set
+    | nextWindow == startWindow = newStacks
+
+    -- if next window is not a floating window return the new stack set
+    | S.notMember (fromJust nextWindow) (W.floating stacks) = newStacks
+
+    -- the next window is a floating window so keep recursing (looking)
+    | otherwise = skipFloatingR newStacks startWindow f
+    
+  where newStacks = f stacks
+        nextWindow = W.peek newStacks
+        
+        
+        
+-- In keybinding configuration:
+
+-- Move focus to the next window
+--, ((modm,               xK_j     ), windows (\s -> skipFloating s W.focusDown))
+
+-- Move focus to the previous window
+--, ((modm,               xK_k     ), windows (\s -> skipFloating s W.focusUp))
 #+end_src
 
 ***** Single Line Dmenu
@@ -2276,14 +2266,14 @@ myKeys = [
   , ("M-b", spawn "bwmenu")
   
   -- Change Focus --
-  , ("M-j", windows focusDown)
-  , ("M-k", windows focusUp)
-  , ("M-m", windows focusMaster)
+  , ("M-j", windows W.focusDown)
+  , ("M-k", windows W.focusUp)
+  , ("M-m", windows W.focusMaster)
 
   -- Swap Windows --
-  , ("M-<Return>", windows swapMaster)
-  , ("M-S-j", windows swapDown)
-  , ("M-S-k", windows swapUp)
+  , ("M-<Return>", windows W.swapMaster)
+  , ("M-S-j", windows W.swapDown)
+  , ("M-S-k", windows W.swapUp)
 
   -- Tabs --
   , ("M-o", withFocused (sendMessage . UnMerge))
@@ -2297,8 +2287,8 @@ myKeys = [
   -- , ("M-C-S-l", 
   -- , ("M-C-S-k", 
   -- , ("M-C-S-j", 
-  , ("M-C-.", onGroup focusUp')
-  , ("M-C-,", onGroup focusDown')
+  , ("M-C-.", onGroup W.focusUp')
+  , ("M-C-,", onGroup W.focusDown')
 
   -- Hide and Restore Windows --
   , ("M-/", withFocused hideWindow)
@@ -2325,7 +2315,7 @@ myKeys = [
 
   -- Layouts --
   , ("M-<Space>", sendMessage NextLayout)
-  , ("M-t", withFocused $ windows . sink)
+  , ("M-t", withFocused $ windows . W.sink)
   , ("M-,", sendMessage (IncMasterN 1))
   , ("M-.", sendMessage (IncMasterN (-1)))]
 #+end_src
@@ -2963,21 +2953,66 @@ $INSTALL krita
 $INSTALL conky
 #+end_src
 
+**** Pywal Script
+:PROPERTIES:
+:header-args:python: :tangle (concat (getenv "XDG_CONFIG_HOME") "/conky/pywal_conky.py")
+:END:
+#+begin_src python
+import json, pathlib, os
+
+#get what to replace
+with open('/home/mwglen/.config/conky/sysinfo-raw.lua') as conf:
+    f = conf.read()
+lines = f.split('\n')
+confs = [l for l in lines if "WALM" in l]
+
+pairs = []
+for l in confs:
+    p = l.split(' ')
+    pairs.append((p[2],p[3]))
+
+print(pairs)
+
+#getting colors from wal
+h = pathlib.Path.home()
+usr = str(h).split('/')[-1]
+cols_path = os.path.join(h, '.cache/wal/colors.json')
+fp_colors = open(cols_path)
+wal_cols = json.load(fp_colors)
+
+col_map = {**wal_cols['special'], **wal_cols['colors']}
+
+#start replacing
+for p in pairs:
+    #getting the key from the pairs
+    key = p[0]
+    new_val = col_map[key].replace("#","").upper()
+    #replacing it inefficiently
+    f = f.replace(p[1],new_val)
+
+
+with open('/home/mwglen/.config/conky/sysinfo.lua', 'w') as conf:
+    conf.write(f)
+#+end_src
+
 **** System Info Widget
 :PROPERTIES:
-:header-args:lua: :tangle (concat (getenv "XDG_CONFIG_HOME") "/conky/sysinfo.lua")
+:header-args:lua: :tangle (concat (getenv "XDG_CONFIG_HOME") "/conky/sysinfo-raw.lua")
 :END:
 ***** Widget Config
 #+begin_src lua
 conky.config = {
    -- Window Properties
    own_window             = true,
-   own_window_type        = 'dock',
+   own_window_type        = 'desktop',
    own_window_class       = 'Conky',
    own_window_title       = 'Sysinfo Conky',
-   own_window_hints       = 'undecorated,below,skip_taskbar,skip_pager',
-   own_window_transparent = false,
+   own_window_hints       =
+      'undecorated,below,above,sticky,skip_taskbar,skip_pager',
    own_window_colour      = '000000',
+   own_window_argb_value  = 255,
+   own_window_argb_visual = true,
+   own_window_transparent = false,
 
    -- XFT
    use_xft  = true,
@@ -2987,10 +3022,10 @@ conky.config = {
    -- Size & Alignment
    maximum_width   = 315,
    minimum_width   = 315,
-   minimum_height  = 950,
+   minimum_height  = 930,
    alignment       = 'top_left',
-   gap_x           = 30,
-   gap_y           = 30,
+   gap_x           = 35,
+   gap_y           = 35,
    update_interval = 1.0,
 
    -- Shades & Borders
@@ -3010,14 +3045,21 @@ conky.config = {
    text_buffer_size = 256,
    
     -- Colors
-    color2 = 'B4C3CA', -- LightBlue
-    color3 = 'white',
-    color4 = '3daee9', -- DarkBlue
-    color5 = 'GreenYellow',
-    color6 = 'DarkOrange',
-    color7 = 'DarkRed'
-
+    color0     = '000000', -- Black: Same as Background
+    color1     = 'B294BB', -- Primary Color:
+    color2     = 'B4C3CA', -- Secondary Color: Horizontal Rules
+    color3     = '81A2BE', -- Ternary Color:
+    color4     = '3DAEE9', -- Bar/Graph Colors
+    color5     = 'B5BD68', -- Positive Color
+    color6     = 'C19267', -- Warning Color
+    color7     = '6B6B6B'  -- Critical Color
 }
+
+--- WALM color1 B294BB
+--- WALM color2 B4C3CA
+--- WALM color3 81A2BE
+--- WALM color4 3DAEE9
+
 #+end_src
 
 ***** Functions and Variables
@@ -3025,11 +3067,11 @@ conky.config = {
 adp = 'BAT0'
 
 function reset_font()
-   return '${font ' .. conky.config.font .. '}${color3}'
+   return '${font ' .. conky.config.font .. '}${color1}'
 end
 
 function h1(name)
-   return '${font RobotoMono Nerd Font:bold:size=10}${color3}\n' ..
+   return '${font RobotoMono Nerd Font:bold:size=10}${color2}\n' ..
       name .. '${color2}${hr 2}' .. reset_font() .. '\n'
 end
 #+end_src
@@ -3037,9 +3079,9 @@ end
 ***** Clock Module
 #+begin_src lua
 clock_module = [[
-${font RobotoMono Nerd Font:size=12}${color3}\
+${font RobotoMono Nerd Font:size=12}${color1}\
 ${time %A %d %B}
-${font RobotoMono Nerd Font:size=70}${color3}\
+${font RobotoMono Nerd Font:size=70}${color1}\
 ${time %H:%M}\
 ]] .. reset_font() .. '\n\n' .. [[
 ${texeci 500 curl 'wttr.in/Raleigh?format=%C+%t+(%f)+%m'}
@@ -3088,7 +3130,7 @@ ${battery_percent}% ${alignr}Time Remaining: ${execi 60 acpi | grep -Eo '(:?[0-9
 cpu_module =
    h1('CPU') .. [[
 ${execi 999999 cat /proc/cpuinfo | grep -m 1 'model name' | cut -d' ' -f3-}
-${color green}${if_match ${cpu}<=50}${color4}${cpubar 10,} ${else}${if_match ${cpu}<=70}${color5}${cpubar 10,} ${else}${if_match ${cpu}<=90}${color6}${cpubar 10,} ${else}${if_match ${cpu}>90}${color7}${cpubar 10,}${endif}${endif}${endif}${endif}${color}
+${color green}${if_match ${cpu}<=50}${color4}${cpubar 10,} ${else}${if_match ${cpu}<=70}${color5}${cpubar 10,} ${else}${if_match ${cpu}<=90}${color6}${cpubar 10,} ${else}${if_match ${cpu}>90}${color7}${cpubar 10,}${endif}${endif}${endif}${endif}$color1
 ${freq_g cpu0}Ghz${alignr}${cpu}%
 ]]
 #+end_src
@@ -3114,18 +3156,25 @@ ${color green}${if_match ${swapperc}<=50}${color4}${swapbar 10,} ${else}${if_mat
 
 ***** Processes Module
 #+begin_src lua
+function proc(num)
+   proc_name = '$font$color1${top name ' .. num .. '}'
+   proc_cpu  = '$color2${goto 110}${top cpu ' .. num .. '}%'
+   proc_mem  = '$color1${goto 165}${top_mem name ' .. num .. '}'
+   proc_memp = '$color2${goto 270}${top_mem mem_res ' .. num .. '}\n'
+   return proc_name .. proc_cpu .. proc_mem .. proc_memp
+end
 processes_module =
-   h1('PROCESSES') .. [[
-${font}CPU${goto 165}RAM${font Noto Sans UI:size=7}
-${voffset 3}$font$color3${top name 1}${goto 110}$color2${top cpu 1}%${goto 165}$color3${top_mem name 1}$color2${goto 270}${top_mem mem_res 1}$color3${top name 2}${goto 110}$color2${top cpu 2}%${goto 165}$color3${top_mem name 2}$color2${goto 270}${top_mem mem_res 2}
-$color3${top name 3}${goto 110}$color2${top cpu 3}%${goto 165}$color3${top_mem name 3}$color2${goto 270}${top_mem mem_res 3}
-$color3${top name 4}${goto 110}$color2${top cpu 4}%${goto 165}$color3${top_mem name 4}$color2${goto 270}${top_mem mem_res 4}
-$color3${top name 5}${goto 110}$color2${top cpu 5}%${goto 165}$color3${top_mem name 5}$color2${goto 270}${top_mem mem_res 5}
-$color3${top name 6}${goto 110}$color2${top cpu 6}%${goto 165}$color3${top_mem name 6}$color2${goto 270}${top_mem mem_res 6}
-$color3${top name 7}${goto 110}$color2${top cpu 7}%${goto 165}$color3${top_mem name 7}$color2${goto 270}${top_mem mem_res 7}
-$color3${top name 8}${goto 110}$color2${top cpu 8}%${goto 165}$color3${top_mem name 8}$color2${goto 270}${top_mem mem_res 8}
-$color3${top name 9}${goto 110}$color2${top cpu 9}%${goto 165}$color3${top_mem name 9}$color2${goto 270}${top_mem mem_res 9}
-]]
+   h1('PROCESSES') ..
+   '${font}CPU${goto 165}RAM\n' ..
+   proc(1) ..
+   proc(2) ..
+   proc(3) ..
+   proc(4) ..
+   proc(5) ..
+   proc(6) ..
+   proc(7) ..
+   proc(8) ..
+   proc(9)
 #+end_src
 
 ***** Widget Definition
@@ -3171,11 +3220,6 @@ alias sudo="sudo "
 Use =mimeo --mime2desk <schema>= to find what application is set as default for a certain schema. Use =mimeo --app2desk <app>= to find an applications corresponding desktop file.
 #+begin_src bash
 $INSTALL mimeo
-#+end_src
-
-*** Indicator StickyNotes
-#+begin_src bash
-$INSTALL indicator-stickynotes
 #+end_src
 
 *** Anki
@@ -3239,7 +3283,7 @@ $INSTALL ahoviewer-git
 *** Emacs
 **** Install
 #+begin_src bash
-$INSTALL emacs28-git
+$INSTALL emacs-git
 #+end_src
 
 **** Alias
@@ -3582,13 +3626,6 @@ $INSTALL redshift
 $INSTALL obs-studio
 #+end_src
 
-*** Podman
-#+begin_src bash
-$INSTALL podman podman-compose podman-docker
-echo "unqualified-search-registries = ['docker.io']" \
-    | sudo tee /etc/containers/registries.conf
-#+end_src
-
 *** Devour
 #+begin_src bash
 $INSTALL devour
@@ -3689,10 +3726,12 @@ $INSTALL python-pywalfox
 sudo pywalfox install
 #+end_src
 
-***** Discord
+***** Post Script
+:PROPERTIES:
+:header-args:bash: :tangle (concat (getenv "XDG_CONFIG_HOME") "/pywal/post_script.sh") :tangle-mode (identity #o755)
+:END:
 #+begin_src bash
-$INSTALL betterdiscord-installer-bin pywal-discord-git
-pywal-discord -d
+python $XDG_CONFIG_HOME/conky/pywal_conky.py
 #+end_src
 
 *** Neovim
